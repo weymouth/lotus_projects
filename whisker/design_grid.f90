@@ -78,7 +78,8 @@ program design_grid
   if(n<0) then
      f = 1
   else
-     read(string,*,IOSTAT=n) a,h
+     call getarg(2,string)
+     read(string,*,IOSTAT=n) h
      if(n==0) f = f/h
   end if
   print '("Grid size scaling, f =",f8.4)',f
@@ -90,10 +91,10 @@ program design_grid
   h = 0.08
 !
 ! -- set x-inputs
-  n = 32*5
+  n = 32*6
   l1 = 1.2
   l2 = 6
-  alpha = 0.39  ! NOTE: alpha.le.'real alpha' on coarsest grid
+  alpha = 0.2733  ! NOTE: alpha.le.'real alpha' on coarsest grid
 !
 ! -- get metrics
   n = n/f !N
