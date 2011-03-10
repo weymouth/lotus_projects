@@ -94,14 +94,16 @@ program design_grid
      case('c')
         read(string(4:),*) c
         print *,'c',c
-     case('i')
+     case('i':'k')
         read(string(4:),*,IOSTAT=stat) n,l1,l2,alpha
-        if(stat>0) stop 'fuck'
         n = n/f !N
         r1 = r**f
         a = h*f
         b = h*sqrt(r)*(1.-r1)/(1.-r)
         call make_print(n,l1,l2,r1,r1,b,a,b,alpha,c)
+     case default
+        print *,string
+        stop 'unknown argument'
      end select
   end do
 
