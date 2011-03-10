@@ -67,65 +67,43 @@ program design_grid
   implicit none
   character(20) :: string
   real(8) :: f,h,l1,l2,a,b,r1,alpha,r,c
-  integer :: n
+  integer :: n,i,stat
 !
 ! -- set up file
   open(7,file="inp.grid")
 !
-! -- read command line input
-  call getarg(1,string)
-  read(string,*,IOSTAT=n) f
-  if(n<0) then
-     f = 1
-  else
-     call getarg(2,string)
-     read(string,*,IOSTAT=n) h
-     if(n==0) f = f/h
-  end if
-  print '("Grid size scaling, f =",f8.4)',f
-!
 ! -- set global inputs
-  r = 1.011  ! about 1.01
+  r = 1.01  ! about 1.01
   c = 4.0   ! about 4  NOTE: c.eq.'cut midvalue' on coarsest grid
-  r1 = r**f ! -> R
-  h = 0.08
+  f = 1     ! default values
+  n = 32; h = 0.1; l1 = 1; l2 = 1; alpha = 1
 !
-! -- set x-inputs
-  n = 32*6
-  l1 = 1.2
-  l2 = 6
-  alpha = 0.2733  ! NOTE: alpha.le.'real alpha' on coarsest grid
-!
-! -- get metrics
-  n = n/f !N
-  a = h*f
-  b = h*sqrt(r)*(1.-r1)/(1.-r)
-  call make_print(n,l1,l2,r1,r1,b,a,b,alpha,c)
-!
-! -- set y-inputs
-  n = 32*4
-  l1 = 2
-  l2 = 2
-  alpha = 1.0
-!
-! -- get metrics
-  n = n/f !N
-  a = h*f
-  b = h*sqrt(r)*(1.-r1)/(1.-r)
-  call make_print(n,l1,l2,r1,r1,b,a,b,alpha,c)
-!
-! -- set z-inputs
-  n = 32*3
-  l1 = 0
-  l2 = 10.4
-  h = l2/dble(n) ! points per period
-  alpha = 0.5
-!
-! -- get metrics
-  n = n/f !N
-  a = h*f
-  b = h*sqrt(r)*(1.-r1)/(1.-r)
-  call make_print(n,l1,l2,r1,r1,b,a,b,alpha,c)
+! -- read command line input
+  do i=1,iargc()
+     call getarg(i,string)
+     select case(string(2:2))
+     case('h')
+        read(string(4:),*) h
+        print *,'h',h
+     case('f')
+        read(string(4:),*) f
+        print *,'f',f
+     case('r')
+        read(string(4:),*) r
+        print *,'r',r
+     case('c')
+        read(string(4:),*) c
+        print *,'c',c
+     case('i')
+        read(string(4:),*,IOSTAT=stat) n,l1,l2,alpha
+        if(stat>0) stop 'fuck'
+        n = n/f !N
+        r1 = r**f
+        a = h*f
+        b = h*sqrt(r)*(1.-r1)/(1.-r)
+        call make_print(n,l1,l2,r1,r1,b,a,b,alpha,c)
+     end select
+  end do
 
 end program design_grid
 !----------------------------------------------------------------!
