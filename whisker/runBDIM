@@ -18,9 +18,7 @@ fi
 
 # cd and move tecplot stuff
 cd $2
-cp ../tecplot/exec_tec .
-cp ../tecplot/*.mcr .
-cp ../tecplot/*.lay .
+cp ../tecplot/* .
 
 # run the code
 if [ $1 -eq 0 ]; then
@@ -30,10 +28,6 @@ else
 fi
 
 # run the post processing scripts and macros
-./exec_tec 'bod.mcr' 'cfl.lay png.mcr'
-mv image.png cfl.png
-./exec_tec 'forces.lay png.mcr'
-mv image.png forces.png
-./exec_tec 'lam2.lay png.mcr'
+./exec_tec 'bod.mcr' 'lam2.lay png.mcr'
 mv image.png lam2.png
 

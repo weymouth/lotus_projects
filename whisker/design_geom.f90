@@ -5,7 +5,6 @@ program design_geom
   use analytic
   use path
   implicit none
-  type(set) :: dummy
   type(pathSet) :: motion(3)
   character(20) :: string
   real(8) :: a,f
@@ -13,6 +12,7 @@ program design_geom
 !
 ! -- read command line input
   call getarg(1,string)
+
   read(string,*,IOSTAT=n) a
   if(n<0.or.a.eq.0.D0) then
      print *, 'not making path file'
@@ -34,12 +34,9 @@ program design_geom
   end if
 !
 ! -- write the geom
-  dummy = .set.cylinder(1,3,1,0,0,0)
-  open(7,file='inp.ana')
-  call set_write(7,dummy)  ! body
-  call set_write(7,dummy)  ! free surface
-  call set_write(7,dummy)  ! velocity
-  call set_write(7,dummy)  ! domain geometry
+  open(7,file='inp.geom')
+  write(7,'(a4)') 'body'
+  call set_write(7,.set.(/'inp.IGS ','inp.IGS2'/))
   close(7)
 
 end program design_geom
