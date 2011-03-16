@@ -1,7 +1,17 @@
 #!MC 1120
 # Created by Tecplot 360 build 11.3.29.563
-$!READDATASET  '"fort.500.plt" "fort.501.plt" "fort.502.plt" "fort.503.plt" "fort.504.plt" "fort.505.plt" "fort.506.plt" "fort.507.plt" '
-  READDATAOPTION = NEW
+$!Varset |blocks| = 1
+$!Varset |zero| = 500
+
+$!NEWLAYOUT 
+$!Varset |current| = |zero|
+
+$!Varset |current| -= 1
+$!Loop |blocks|
+$!Varset |current| += 1
+
+$!READDATASET  ' "fort.|current|.plt" '
+  READDATAOPTION = APPEND
   RESETSTYLE = YES
   INCLUDETEXT = NO
   INCLUDEGEOM = NO
@@ -10,6 +20,7 @@ $!READDATASET  '"fort.500.plt" "fort.501.plt" "fort.502.plt" "fort.503.plt" "for
   ASSIGNSTRANDIDS = YES
   INITIALPLOTTYPE = CARTESIAN3D
   VARNAMELIST = '"x" "y" "z" "p"'
+$!Endloop
 $!GLOBALCONTOUR 1  VAR = 4
 $!ISOSURFACELAYERS SHOW = YES
 $!ISOSURFACEATTRIBUTES 1  ISOVALUE1 = 0.5

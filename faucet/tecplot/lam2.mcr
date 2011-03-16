@@ -1,8 +1,7 @@
 #!MC 1120
 # Created by Tecplot 360 build 11.3.29.563
-
-$!Varset |blocks| = 12
-$!Varset |zero| = 100
+$!Varset |blocks| = 1
+$!Varset |zero| = 400
 
 $!NEWLAYOUT 
 $!Varset |current| = |zero|
@@ -22,26 +21,35 @@ $!READDATASET  ' "fort.|current|.plt" '
   INITIALPLOTTYPE = CARTESIAN3D
   VARNAMELIST = '"x" "y" "z" "p"'
 $!Endloop
-
 $!GLOBALCONTOUR 1  VAR = 4
 $!ISOSURFACELAYERS SHOW = YES
-$!ISOSURFACEATTRIBUTES 1  ISOVALUE1 = 0
+$!ISOSURFACEATTRIBUTES 1  ISOVALUE1 = -1.0
+$!ISOSURFACEATTRIBUTES 1  OBEYSOURCEZONEBLANKING = YES
 
-$!VarSet |first_line| = |NUMZONES|
-$!VarSet |first_line| += 1
+$!CREATEMIRRORZONES 
+  SOURCEZONES =  [1-|NUMZONES|]
+  MIRRORVAR = 'Y'
+$!CREATEMIRRORZONES 
+  SOURCEZONES =  [1-|NUMZONES|]
+  MIRRORVAR = 'X'
 
-# $!EXTENDEDCOMMAND 
-#   COMMANDPROCESSORID = 'Extract Over Time'
-#   COMMAND = 'ExtractIsoSurfaceOverTime'
+$!RUNMACROFUNCTION  "IJKBlank"
 
-$!CREATEISOZONES 
+$!VarSet |first_zone| = |NUMZONES|
+$!VarSet |first_zone| += 1
 
-$!WRITEDATASET  "./bod.plt"
+
+$!EXTENDEDCOMMAND 
+  COMMANDPROCESSORID = 'Extract Over Time'
+  COMMAND = 'ExtractIsoSurfaceOverTime'
+
+$!WRITEDATASET  "lam2.plt"
   INCLUDETEXT = NO
   INCLUDEGEOM = NO
   INCLUDECUSTOMLABELS = NO
+  INCLUDEDATASHARELINKAGE = YES
   ASSOCIATELAYOUTWITHDATAFILE = NO
-  ZONELIST =  [|first_line|-|NUMZONES|]
+  ZONELIST =  [|first_zone|-|NUMZONES|]
   VARPOSITIONLIST =  [1-3]
   BINARY = YES
   USEPOINTFORMAT = NO

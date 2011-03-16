@@ -22,12 +22,10 @@ cp ../tecplot/* .
 
 # run the code
 if [ $1 -eq 0 ]; then
-    ./exec_BDIM
+    nice -n 20 ./exec_BDIM
 else
-    mpiexec -n $1 ./exec_BDIM
+    nice -n 20 mpiexec -n $1 ./exec_BDIM
 fi
 
 # run the post processing scripts and macros
-./exec_tec 'bod.mcr' 'lam2.lay png.mcr'
-mv image.png lam2.png
-
+./exec_tec 'FI.mcr' 'lam2.mcr'
