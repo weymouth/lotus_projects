@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# preplot with checks
+for i; do
+    if  [ `ls $i | grep $i     -c` -ne 0 ]; then
+    if  [ `ls $i | grep $i.plt -c` -eq 0 ]; then
+	echo preplot: $i
+	preplot $i $i.plt >> junk
+	if  [ $? -ne 0 ]; then
+	    echo exec_tec: problem with $i
+	    exit 2
+	fi
+	if  [ `ls | grep $i.plt -c` -eq 1 ]; then
+	    rm $i
+	fi
+    fi
+    fi
+done
+exit 0

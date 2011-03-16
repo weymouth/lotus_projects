@@ -1,0 +1,5 @@
+0 2.262 0 ! scale = 1/ave width
+90 0 0    ! rotate
+0 0 4.84  ! shift
+0         ! turn off trimming
+F T T F   ! turn off end cap surfaces
