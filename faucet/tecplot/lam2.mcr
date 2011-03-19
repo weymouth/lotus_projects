@@ -1,6 +1,6 @@
 #!MC 1120
 # Created by Tecplot 360 build 11.3.29.563
-$!Varset |blocks| = 1
+$!Varset |blocks| = 12
 $!Varset |zero| = 400
 
 $!NEWLAYOUT 
@@ -26,22 +26,23 @@ $!ISOSURFACELAYERS SHOW = YES
 $!ISOSURFACEATTRIBUTES 1  ISOVALUE1 = -1.0
 $!ISOSURFACEATTRIBUTES 1  OBEYSOURCEZONEBLANKING = YES
 
-$!CREATEMIRRORZONES 
-  SOURCEZONES =  [1-|NUMZONES|]
-  MIRRORVAR = 'Y'
-$!CREATEMIRRORZONES 
-  SOURCEZONES =  [1-|NUMZONES|]
-  MIRRORVAR = 'X'
-
 $!RUNMACROFUNCTION  "IJKBlank"
 
 $!VarSet |first_zone| = |NUMZONES|
 $!VarSet |first_zone| += 1
 
-
 $!EXTENDEDCOMMAND 
   COMMANDPROCESSORID = 'Extract Over Time'
   COMMAND = 'ExtractIsoSurfaceOverTime'
+
+$!DELETEVARS [4,5]
+
+$!CREATEMIRRORZONES 
+  SOURCEZONES =  [|first_zone|-|NUMZONES|]
+  MIRRORVAR = 'Y'
+$!CREATEMIRRORZONES 
+  SOURCEZONES =  [|first_zone|-|NUMZONES|]
+  MIRRORVAR = 'X'
 
 $!WRITEDATASET  "lam2.plt"
   INCLUDETEXT = NO
