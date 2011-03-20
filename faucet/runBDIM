@@ -14,6 +14,7 @@ cp exec_BDIM $2/.
 cp inp.* $2/.
 if [ $# -eq 3 ]; then
     cp $3/fort.1??? $2/.
+    cp $3/fort.2??? $2/.
 fi
 
 # cd and move tecplot stuff
@@ -22,10 +23,12 @@ cp ../tecplot/* .
 
 # run the code
 if [ $1 -eq 0 ]; then
-    nice -n 20 ./exec_BDIM
+    nice -n 20 ./exec_BDIM &
 else
-    nice -n 20 mpiexec -n $1 ./exec_BDIM
+    nice -n 20 mpiexec -n $1 ./exec_BDIM &
 fi
+
+wait 
 
 # run the post processing scripts and macros
 ./exec_tec 'FI.mcr' 'lam2.mcr'
