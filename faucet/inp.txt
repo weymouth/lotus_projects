@@ -1,15 +1,15 @@
 !! ---- Global info ---- !!
 3			 ! number of dimensions
-T			 ! restart switch
+F			 ! restart switch
 0.005 		 ! time step
-5000	 	 ! number of time steps
-5			 ! save/log every x steps
+15000	 	 ! number of time steps
+25			 ! save/log every x steps
 2			 ! ghost thickness
 !! ----  MPI  info  ---- !!
 F,F,F			 ! parrallel boundaries
 2,2,3			 ! number of blocks
 !! ---- Domain info ---- !!
-0,0,0,0,3,3,1 	 ! u,p boundary type (-dims:dims)
+0,0,0,0,5,5,1 	 ! u,p boundary type (-dims:dims)
 0.0			 ! reference frame velocity
 0.0			 ! frame ramp-up time
 9.8e-3		 ! gravity
@@ -31,5 +31,5 @@ T				 ! dynamic free surface
 T F F 500 25 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
 1,0,0,0,1,1,1  		 ! u,p boundary type (-dims:dims)
 !! --- Apriori  info --- !!
-F F F 3000 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+F F F 3000 25 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
 !! ---- End of info ---- !!

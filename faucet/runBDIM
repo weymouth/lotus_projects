@@ -19,7 +19,7 @@ fi
 
 # cd and move tecplot stuff
 cd $2
-cp ../tecplot/* .
+ cp ../tecplot/* .
 
 # run the code
 if [ $1 -eq 0 ]; then
@@ -32,3 +32,4 @@ wait
 
 # run the post processing scripts and macros
 ./exec_tec 'FI.mcr' 'lam2.mcr'
+./exec_tec 'HD.lay HD.mcr'
