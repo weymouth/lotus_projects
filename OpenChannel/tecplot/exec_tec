@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# preplot all files
+for i in fort.[1-9][0-9][0-9]; do
+    nice ./exec_pre $i &
+done
+wait
+
+# run any macros
+for i; do
+    echo exec_tec: macro $i
+    tec360 -b $i >> junk
+    if  [ `grep Err batch.log -c` -ne 0 ]; then
+	echo exec_tec: problem with macro
+	exit 3
+    fi
+done
+
+# clean up
+rm batch.log junk
+
+exit 0

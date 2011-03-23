@@ -75,10 +75,11 @@ program design_grid
 ! -- read command line input
   call getarg(1,string)
   read(string,*,IOSTAT=n) f
-  if(n<0) then
+  if(n.ne.0) then
      f = 1
   else
-     read(string,*,IOSTAT=n) a,h
+     call getarg(2,string)
+     read(string,*,IOSTAT=n) h
      if(n==0) f = f/h
   end if
   print '("Grid size scaling, f =",f8.4)',f
@@ -90,7 +91,7 @@ program design_grid
   h = 1./16.
 !
 ! -- set x-inputs
-  n = 64*3
+  n = 32*6
   l1 = 1
   l2 = 9
   alpha = 0.2  ! NOTE: alpha.le.'real alpha' on coarsest grid
@@ -114,7 +115,7 @@ program design_grid
   call make_print(n,l1,l2,r1,r1,b,a,b,alpha,c)
 !
 ! -- set z-inputs
-  n = 64
+  n = 32*2
   l1 = 1.5
   l2 = 1.5
   alpha = 1.5

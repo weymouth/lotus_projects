@@ -1,37 +1,38 @@
 #!/bin/sh
 
 # check that a directory name was given
-if [ $# -eq 0 ]; then
-  echo runChannel: need directory argument
+if [ $# -le 1 ]; then
+  echo usage: runBDIM proc_num work_dir restart_dir
   exit 1
 fi
 
 # make the dir
-mkdir $1
-rm $1/fort.? 
-rm $1/fort.??
-rm $1/fort.???
+mkdir $2
+rm $1/fort.*
 
 # set up inputs
-cp exec_BDIM $1/.
-cp inp.* $1/.
-if [ $# -eq 2 ]; then
-    cp $2/fort.[1,2]??? $1/.
+cp exec_BDIM $2/.
+cp inp.* $2/.
+if [ $# -eq 3 ]; then
+    cp $3/fort.1??? $2/.
+    cp $3/fort.2??? $2/.
 fi
 
-# run the code
-cd $1
-#mpiexec -n 2 ./exec_BDIM
-./exec_BDIM
+# cd and move tecplot stuff
+cd $2
+cp ../tecplot/* .
 
-# post processing
-cp ../tecplot/FI* .
-cp ../tecplot/cfl.lay .
-#cp ../Rfiles/* .
-#cp ../exec_blob .
-#./exec_blob 0.5 0.25 0.0 > junk
-#tec360 -b body.lay body.mcr > junk
-#tec360 -b freeSurf.lay bodyAndFI.mcr > junk
-tec360 -b FI.mcr > junk
-rm junk
+# run the code
+if [ $1 -eq 0 ]; then
+    nice -n 20 ./exec_BDIM &
+else
+    nice -n 20 mpiexec -n $1 ./exec_BDIM &
+fi
+
+wait 
+
+# run the post processing scripts and macros
+./exec_tec 'FI.mcr' 'bod2.mcr'
+./exec_tec 'bodAndFI.lay HD.mcr'
+./exec_tec 'cfl.lay png.mcr'
 echo "complete"
