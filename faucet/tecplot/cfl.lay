@@ -859,6 +859,11 @@ $!GLOBALPAPER
       TOPHARDCLIPOFFSET = 0.125
       BOTTOMHARDCLIPOFFSET = 0.125
       }
+    A3
+      {
+      WIDTH = 11.693
+      HEIGHT = 16.535
+      }
     }
 $!PAGE 
   NAME = ''
@@ -907,7 +912,7 @@ $!THREEDAXIS
 $!PLOTTYPE  = XYLINE
 $!FRAMENAME  = 'Frame 001'
 $!DELETELINEMAPS 
-$!ACTIVELINEMAPS  =  [1-5]
+$!ACTIVELINEMAPS  =  [1-6]
 $!GLOBALLINEPLOT 
   DATALABELS
     {
@@ -930,7 +935,7 @@ $!LINEMAP  [1]
     }
   LINES
     {
-    COLOR = PURPLE
+    COLOR = CUSTOM10
     }
   SYMBOLS
     {
@@ -954,39 +959,6 @@ $!LINEMAP  [1]
       }
     }
 $!LINEMAP  [2]
-  NAME = '&DV&'
-  ASSIGN
-    {
-    ZONE = 1
-    XAXISVAR = 1
-    YAXISVAR = 2
-    }
-  LINES
-    {
-    COLOR = CYAN
-    }
-  SYMBOLS
-    {
-    COLOR = RED
-    FILLCOLOR = RED
-    }
-  BARCHARTS
-    {
-    COLOR = RED
-    FILLCOLOR = RED
-    }
-  ERRORBARS
-    {
-    COLOR = RED
-    }
-  INDICES
-    {
-    IRANGE
-      {
-      SKIP = 2
-      }
-    }
-$!LINEMAP  [3]
   NAME = '&DV&'
   ASSIGN
     {
@@ -1020,6 +992,39 @@ $!LINEMAP  [3]
       SKIP = 2
       }
     }
+$!LINEMAP  [3]
+  NAME = '&DV&'
+  ASSIGN
+    {
+    ZONE = 1
+    XAXISVAR = 1
+    YAXISVAR = 2
+    }
+  LINES
+    {
+    COLOR = CUSTOM1
+    }
+  SYMBOLS
+    {
+    COLOR = RED
+    FILLCOLOR = RED
+    }
+  BARCHARTS
+    {
+    COLOR = RED
+    FILLCOLOR = RED
+    }
+  ERRORBARS
+    {
+    COLOR = RED
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      SKIP = 2
+      }
+    }
 $!LINEMAP  [4]
   NAME = '&DV&'
   ASSIGN
@@ -1030,7 +1035,7 @@ $!LINEMAP  [4]
     }
   LINES
     {
-    COLOR = GREEN
+    COLOR = BLACK
     }
   SYMBOLS
     {
@@ -1061,10 +1066,44 @@ $!LINEMAP  [5]
     ZONE = 1
     XAXISVAR = 1
     YAXISVAR = 3
+    YAXIS = 2
     }
   LINES
     {
-    SHOW = NO
+    COLOR = CUSTOM6
+    }
+  SYMBOLS
+    {
+    COLOR = GREEN
+    FILLCOLOR = GREEN
+    }
+  BARCHARTS
+    {
+    COLOR = GREEN
+    FILLCOLOR = GREEN
+    }
+  ERRORBARS
+    {
+    COLOR = GREEN
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      SKIP = 2
+      }
+    }
+$!LINEMAP  [6]
+  NAME = '&DV&'
+  ASSIGN
+    {
+    ZONE = 1
+    XAXISVAR = 1
+    YAXISVAR = 3
+    YAXIS = 2
+    }
+  LINES
+    {
     COLOR = BLUE
     }
   SYMBOLS
@@ -1081,6 +1120,14 @@ $!LINEMAP  [5]
     {
     COLOR = GREEN
     }
+  INDICES
+    {
+    IRANGE
+      {
+      MIN = 2
+      SKIP = 2
+      }
+    }
 $!XYLINEAXIS 
   DEPXTOYRATIO = 1
   GRIDAREA
@@ -1091,12 +1138,16 @@ $!XYLINEAXIS
   XDETAIL 1
     {
     RANGEMIN = 0
-    RANGEMAX = 75
+    RANGEMAX = 100
     GRSPACING = 20
     TITLE
       {
       TITLEMODE = USETEXT
       TEXT = 'time'
+      TEXTSHAPE
+        {
+        HEIGHT = 2.6
+        }
       }
     }
 $!XYLINEAXIS 
@@ -1108,6 +1159,33 @@ $!XYLINEAXIS
     TITLE
       {
       TITLEMODE = USETEXT
+      TEXT = 'CFL dt'
+      TEXTSHAPE
+        {
+        HEIGHT = 2.6
+        }
+      OFFSET = 8
+      }
+    }
+$!XYLINEAXIS 
+  YDETAIL 2
+    {
+    COORDSCALE = LOG
+    RANGEMIN = 1.0000000000000000623E-09
+    RANGEMAX = 1
+    GRSPACING = 0.2
+    TITLE
+      {
+      TITLEMODE = USETEXT
+      TEXT = 'Divergence (predictor/corrector)'
+      TEXTSHAPE
+        {
+        HEIGHT = 2.6
+        }
+      }
+    AXISLINE
+      {
+      AXISALIGNMENT = WITHGRIDMAX
       }
     }
 $!SETSTYLEBASE CONFIG

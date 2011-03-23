@@ -15,7 +15,8 @@ program design_geom
 !
 ! -- geom_body 
   write(7,'(a4)') 'body'
-  pipe = .set.cylinder(-1,ndims,r0,0,0,velo)-.set.plane(1,norm,tip,0,velo)
+  pipe = .set.cylinder(1,ndims,r0,0,0,velo)-.set.plane(1,norm,tip,0,velo) &
+     .or.(.set.cylinder(1,ndims,r0*1.1,0,0,0)-.set.cylinder(1,ndims,r0,0,0,0)-.set.plane(1,norm,tip,0,0))
   call set_write(7,pipe)
 !
 ! -- geom_fint

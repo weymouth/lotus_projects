@@ -33,3 +33,4 @@ wait
 # run the post processing scripts and macros
 ./exec_tec 'FI.mcr' 'lam2.mcr'
 ./exec_tec 'HD.lay HD.mcr'
+./exec_tec 'veloAndFI.lay avi.mcr'
