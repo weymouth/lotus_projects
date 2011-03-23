@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# check that a directory name was given
+if [ $# -eq 0 ]; then
+  echo runChannel: need directory argument
+  exit 1
+fi
+
+# make the dir
+mkdir $1
+rm $1/fort.? 
+rm $1/fort.??
+rm $1/fort.???
+
+# set up inputs
+cp exec_BDIM $1/.
+cp inp.* $1/.
+if [ $# -eq 2 ]; then
+    cp $2/fort.[1,2]??? $1/.
+fi
+
+# run the code
+cd $1
+#mpiexec -n 2 ./exec_BDIM
+./exec_BDIM
+
+# post processing
+cp ../tecplot/FI* .
+cp ../tecplot/cfl.lay .
+#cp ../Rfiles/* .
+#cp ../exec_blob .
+#./exec_blob 0.5 0.25 0.0 > junk
+#tec360 -b body.lay body.mcr > junk
+#tec360 -b freeSurf.lay bodyAndFI.mcr > junk
+tec360 -b FI.mcr > junk
+rm junk
+echo "complete"
