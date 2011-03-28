@@ -88,10 +88,10 @@ program design_grid
   r = 1.02   ! about 1.01
   c = 4.00   ! about 4  NOTE: c.eq.'cut midvalue' on coarsest grid
   r1 = r**f  ! -> R
-  h = 1./64.
+  h = 1./128.
 !
 ! -- set x-inputs
-  n = 64*2
+  n = 128*2
   l1 = 0
   l2 = 1.
   alpha = 0.  ! NOTE: alpha.le.'real alpha' on coarsest grid
@@ -106,10 +106,10 @@ program design_grid
   call make_print(n,l1,l2,r1,r1,b,a,b,alpha,c)
 !
 ! -- set z-inputs
-  n = 64*6
-  l1 = 2.0
+  n = 128*7
+  l1 = 3.0
   l2 = 0.75
-  alpha = 4.99
+  alpha = 1.5
 !
 ! -- get metrics
   n = n/f !N
