@@ -1,5 +1,0 @@
-1 2 15		! scale ! note there is something off about the y extents
-0 0 0     	! rotate
-0 0 6	 	! shift
-0        	! turn off trimming
-F F T T  	! turn off surfaces

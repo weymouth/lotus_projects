@@ -1,9 +1,7 @@
 #!MC 1120
 # Created by Tecplot 360 build 11.3.29.563
-$!VarSet |LFDSFN1| = '"fort.11"'
-$!VarSet |LFDSVL1| = '"V1" "V2" "V3" "V4"'
-$!VarSet |LFDSFN2| = '"fort.12"'
-$!VarSet |LFDSVL2| = '"V1" "V2" "V3" "V4"'
+$!VarSet |LFDSFN1| = '"fort.11" "fort.12"'
+$!VarSet |LFDSVL1| = '"V1" "V2" "V3"'
 $!SETSTYLEBASE FACTORY
 $!GLOBALLINKING 
   LINKCOLORMAPS = YES
@@ -861,6 +859,11 @@ $!GLOBALPAPER
       TOPHARDCLIPOFFSET = 0.125
       BOTTOMHARDCLIPOFFSET = 0.125
       }
+    A3
+      {
+      WIDTH = 11.693
+      HEIGHT = 16.535
+      }
     }
 $!PAGE 
   NAME = ''
@@ -893,17 +896,6 @@ $!READDATASET  '|LFDSFN1|'
   VARNAMELIST = '|LFDSVL1|'
 $!REMOVEVAR |LFDSVL1|
 $!REMOVEVAR |LFDSFN1|
-$!READDATASET  '|LFDSFN2|'
-  INITIALPLOTTYPE = XYLINE
-  INCLUDETEXT = NO
-  INCLUDEGEOM = NO
-  READDATAOPTION = APPEND
-  RESETSTYLE = NO
-  ASSIGNSTRANDIDS = YES
-  VARLOADMODE = BYNAME
-  VARNAMELIST = '|LFDSVL2|'
-$!REMOVEVAR |LFDSVL2|
-$!REMOVEVAR |LFDSFN2|
 $!FRAMELAYOUT 
   SHOWHEADER = NO
   HEADERCOLOR = RED
@@ -920,7 +912,7 @@ $!THREEDAXIS
 $!PLOTTYPE  = XYLINE
 $!FRAMENAME  = 'Frame 001'
 $!DELETELINEMAPS 
-$!ACTIVELINEMAPS  =  [1-4]
+$!ACTIVELINEMAPS  =  [1-6]
 $!GLOBALLINEPLOT 
   DATALABELS
     {
@@ -928,19 +920,46 @@ $!GLOBALLINEPLOT
     }
   LEGEND
     {
-    SHOW = YES
-    BOX
-      {
-      MARGIN = 3
-      }
     XYPOS
       {
-      X = 85.267
-      Y = 86.677
+      X = 95
       }
     }
 $!LINEMAP  [1]
-  NAME = 'RHS'
+  NAME = '&DV&'
+  ASSIGN
+    {
+    ZONE = 2
+    XAXISVAR = 1
+    YAXISVAR = 2
+    }
+  LINES
+    {
+    COLOR = CUSTOM10
+    }
+  SYMBOLS
+    {
+    COLOR = RED
+    FILLCOLOR = RED
+    }
+  BARCHARTS
+    {
+    COLOR = RED
+    FILLCOLOR = RED
+    }
+  ERRORBARS
+    {
+    COLOR = RED
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      SKIP = 2
+      }
+    }
+$!LINEMAP  [2]
+  NAME = '&DV&'
   ASSIGN
     {
     ZONE = 2
@@ -954,9 +973,7 @@ $!LINEMAP  [1]
   SYMBOLS
     {
     COLOR = RED
-    FILLMODE = USELINECOLOR
     FILLCOLOR = RED
-    SIZE = 1
     }
   BARCHARTS
     {
@@ -966,73 +983,6 @@ $!LINEMAP  [1]
   ERRORBARS
     {
     COLOR = RED
-    }
-$!LINEMAP  [2]
-  NAME = 'RHS limited'
-  ASSIGN
-    {
-    ZONE = 2
-    XAXISVAR = 1
-    YAXISVAR = 3
-    }
-  LINES
-    {
-    COLOR = GREEN
-    LINEPATTERN = DASHED
-    PATTERNLENGTH = 0.5
-    }
-  SYMBOLS
-    {
-    SYMBOLSHAPE
-      {
-      GEOMSHAPE = CIRCLE
-      }
-    COLOR = GREEN
-    FILLMODE = USELINECOLOR
-    FILLCOLOR = GREEN
-    SIZE = 1
-    }
-  BARCHARTS
-    {
-    COLOR = GREEN
-    FILLCOLOR = GREEN
-    }
-  ERRORBARS
-    {
-    COLOR = GREEN
-    }
-$!LINEMAP  [3]
-  NAME = 'divergence'
-  ASSIGN
-    {
-    ZONE = 1
-    XAXISVAR = 1
-    YAXISVAR = 4
-    YAXIS = 2
-    }
-  LINES
-    {
-    COLOR = BLUE
-    }
-  SYMBOLS
-    {
-    SYMBOLSHAPE
-      {
-      GEOMSHAPE = DEL
-      }
-    COLOR = BLUE
-    FILLMODE = USELINECOLOR
-    FILLCOLOR = BLUE
-    SIZE = 1
-    }
-  BARCHARTS
-    {
-    COLOR = BLUE
-    FILLCOLOR = BLUE
-    }
-  ERRORBARS
-    {
-    COLOR = BLUE
     }
   INDICES
     {
@@ -1042,8 +992,41 @@ $!LINEMAP  [3]
       SKIP = 2
       }
     }
+$!LINEMAP  [3]
+  NAME = '&DV&'
+  ASSIGN
+    {
+    ZONE = 1
+    XAXISVAR = 1
+    YAXISVAR = 2
+    }
+  LINES
+    {
+    COLOR = CUSTOM1
+    }
+  SYMBOLS
+    {
+    COLOR = RED
+    FILLCOLOR = RED
+    }
+  BARCHARTS
+    {
+    COLOR = RED
+    FILLCOLOR = RED
+    }
+  ERRORBARS
+    {
+    COLOR = RED
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      SKIP = 2
+      }
+    }
 $!LINEMAP  [4]
-  NAME = 'final u'
+  NAME = '&DV&'
   ASSIGN
     {
     ZONE = 1
@@ -1057,9 +1040,7 @@ $!LINEMAP  [4]
   SYMBOLS
     {
     COLOR = RED
-    FILLMODE = USELINECOLOR
     FILLCOLOR = RED
-    SIZE = 1
     }
   BARCHARTS
     {
@@ -1070,31 +1051,120 @@ $!LINEMAP  [4]
     {
     COLOR = RED
     }
+  INDICES
+    {
+    IRANGE
+      {
+      MIN = 2
+      SKIP = 2
+      }
+    }
+$!LINEMAP  [5]
+  NAME = '&DV&'
+  ASSIGN
+    {
+    ZONE = 1
+    XAXISVAR = 1
+    YAXISVAR = 3
+    YAXIS = 2
+    }
+  LINES
+    {
+    COLOR = CUSTOM6
+    }
+  SYMBOLS
+    {
+    COLOR = GREEN
+    FILLCOLOR = GREEN
+    }
+  BARCHARTS
+    {
+    COLOR = GREEN
+    FILLCOLOR = GREEN
+    }
+  ERRORBARS
+    {
+    COLOR = GREEN
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      SKIP = 2
+      }
+    }
+$!LINEMAP  [6]
+  NAME = '&DV&'
+  ASSIGN
+    {
+    ZONE = 1
+    XAXISVAR = 1
+    YAXISVAR = 3
+    YAXIS = 2
+    }
+  LINES
+    {
+    COLOR = BLUE
+    }
+  SYMBOLS
+    {
+    COLOR = GREEN
+    FILLCOLOR = GREEN
+    }
+  BARCHARTS
+    {
+    COLOR = GREEN
+    FILLCOLOR = GREEN
+    }
+  ERRORBARS
+    {
+    COLOR = GREEN
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      MIN = 2
+      SKIP = 2
+      }
+    }
 $!XYLINEAXIS 
   DEPXTOYRATIO = 1
+  GRIDAREA
+    {
+    DRAWBORDER = YES
+    }
 $!XYLINEAXIS 
   XDETAIL 1
     {
     RANGEMIN = 0
-    RANGEMAX = 120
-    GRSPACING = 20
+    RANGEMAX = 6
+    GRSPACING = 1
     TITLE
       {
       TITLEMODE = USETEXT
       TEXT = 'time'
+      TEXTSHAPE
+        {
+        HEIGHT = 2.6
+        }
       }
     }
 $!XYLINEAXIS 
   YDETAIL 1
     {
     COORDSCALE = LOG
-    RANGEMIN = 0.0010000000000000000208
-    RANGEMAX = 1
-    GRSPACING = 0.2
+    RANGEMIN = 0.0001
+    RANGEMAX = 0.01
+    GRSPACING = 0.02
     TITLE
       {
       TITLEMODE = USETEXT
-      TEXT = 'dtLimit'
+      TEXT = 'CFL dt'
+      TEXTSHAPE
+        {
+        HEIGHT = 2.6
+        }
       OFFSET = 8
       }
     }
@@ -1103,13 +1173,16 @@ $!XYLINEAXIS
     {
     COORDSCALE = LOG
     RANGEMIN = 1.0000000000000000623E-09
-    RANGEMAX = 0.10000000000000000555
-    GRSPACING = 0.02
+    RANGEMAX = 1
+    GRSPACING = 0.2
     TITLE
       {
       TITLEMODE = USETEXT
-      TEXT = 'L2(div)'
-      OFFSET = 7
+      TEXT = 'Divergence (predictor/corrector)'
+      TEXTSHAPE
+        {
+        HEIGHT = 2.6
+        }
       }
     AXISLINE
       {

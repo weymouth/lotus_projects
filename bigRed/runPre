@@ -1,9 +1,0 @@
-#!/bin/sh
-
-cp ../trunk/* .
-make pre
-makem
-./exec_grid -r=1.011 -h=0.08 -i=192,1.2,6,0.27 -j=128,2,2,1 -h=0.1083333 -k=96,0,10.4,1
-cp whisker.IGS inp.IGS
-cp whisker.IGS2 inp.IGS2
-./exec_geom 0.3 0.3
