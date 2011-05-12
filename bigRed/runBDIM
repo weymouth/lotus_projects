@@ -37,7 +37,7 @@ wait
 # run the post processing scripts and macros
 ./cfl &
 wait
-nice ./exec_tec FI.mcr addBody.mcr bodyInfo.mcr 'bodAndFI.lay HD.mcr' &
+nice ./exec_tec FI.mcr addBody.mcr bodyInfo.mcr 'lamAndBodAndFI.lay HD.mcr' &
 wait
 echo "complete"
 exit 0

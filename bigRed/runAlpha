@@ -1,22 +1,22 @@
 #!/bin/sh
 
-#echo "alpha30"
-#sed s/'90+alpha'/120/ alpha.IGS2 > inp.IGS2
-#./runBDIM 12 alpha30 &
-#wait
+echo "alpha30"
+sed s/'90+alpha'/-60/ alpha.IGS2 > inp.IGS2
+./runBDIM 12 alpha30 &
+wait
 
 echo "alpha20"
-sed s/'90+alpha'/110/ alpha.IGS2 > inp.IGS2
+sed s/'90+alpha'/-70/ alpha.IGS2 > inp.IGS2
 ./runBDIM 12 alpha20 &
 wait
 
 echo "alpha10"
-sed s/'90+alpha'/100/ alpha.IGS2 > inp.IGS2
+sed s/'90+alpha'/-80/ alpha.IGS2 > inp.IGS2
 ./runBDIM 12 alpha10 &
 wait
 
 echo "alpha00"
-sed s/'90+alpha'/90/ alpha.IGS2 > inp.IGS2
+sed s/'90+alpha'/-90/ alpha.IGS2 > inp.IGS2
 ./runBDIM 12 alpha00 &
 wait
 

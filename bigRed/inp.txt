@@ -2,7 +2,7 @@
 3			 ! number of dimensions
 F			 ! restart switch
 0.0025			 ! time step
-0 2000	 		 ! number of time steps
+2000	 		 ! number of time steps
 25			 ! save/log every x steps
 2			 ! ghost thickness
 !! ----  MPI  info  ---- !!
