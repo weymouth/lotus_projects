@@ -1,0 +1,35 @@
+!! ---- Global info ---- !!
+3			 ! number of dimensions
+F			 ! restart switch
+0.002 		 ! time step
+2000	  	 ! number of time steps
+25			 ! save/log every x steps
+2			 ! ghost thickness
+!! ----  MPI  info  ---- !!
+T,F,F			 ! parrallel boundaries
+4,3,1			 ! number of blocks
+!! ---- Domain info ---- !!
+6,0,0,0,6,6,6 	 ! u,p boundary type (-dims:dims)
+0.0			 ! reference frame velocity
+0.0			 ! frame ramp-up time 
+0.0 			 ! gravity  
+!! --- Velocity info --- !!
+4.0e-5			 ! viscosity (dark fluid)
+T                               ! RHS limit
+T F F 200 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+T F F 400 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+!! --- Pressure info --- !!
+T F F 300 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+!! ----  Body info  ---- !!
+T				 ! immersed body present
+-2			 	 ! smoothing width
+T F F 100 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst) 
+T      	      	   	 ! body move
+F	   	      	   	 ! body slip
+!! ----  VOF  info  ---- !!
+F				 ! dynamic free surface
+F F F 500 25 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+1,1,1,9,1,1,1  		 ! u,p boundary type (-dims:dims)
+!! --- Apriori  info --- !!
+F F F 3000 25 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+!! ---- End of info ---- !!
