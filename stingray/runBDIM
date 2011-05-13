@@ -38,7 +38,7 @@ wait
 # run the post processing scripts and macros
 ./cfl &
 wait
-nice ./exec_tec body.mcr &
+nice ./exec_tec body.mcr lam2.mcr &
 wait
 echo "complete"
 exit 0
