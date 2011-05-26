@@ -21,8 +21,11 @@ program design_geom
 !
 ! -- geom_body 
   write(7,'(a4)') 'body'
-  pipe = .set.cylinder(1,ndims,r0,0,0,velo)-.set.plane(1,norm,tip,0,velo) &
-     .or.(.set.cylinder(1,ndims,r0*1.1,0,0,0)-.set.cylinder(1,ndims,r0,0,0,0)-.set.plane(1,norm,tip,0,0))
+  pipe = .set.cylinder(1,ndims,r0,0,0,velo)-.set.plane(1,norm,tip+0.5,0,velo) &
+     .or.(.set.cylinder(1,ndims,r0*1.1,0,0,0)-.set.cylinder(1,ndims,r0,0,0,0)-.set.plane(1,norm,tip,0,0)) &
+     .or..set.sphere(1,0.05,tip+(/0.1,0.4,0.25/),0,0) &
+     .or..set.sphere(1,0.05,tip+(/0.1,0.1,0.25/),0,0) &
+     .or..set.sphere(1,0.05,tip+(/0.4,0.1,0.25/),0,0)
   !scrn = .set.cylinder(1,1,0.25D0,(/0.125D0,0.125D0+h,5.D0/),0,0).or. &
   !       .set.cylinder(1,2,0.25D0,(/0.125D0+h,0.125D0,5.D0/),0,0).or. &
   !       .set.cylinder(1,1,0.25D0,(/0.250D0,0.250D0+h,5.D0/),0,0).or. &
