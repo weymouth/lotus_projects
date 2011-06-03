@@ -1,0 +1,15 @@
+  64                    ! total points
+  0.000000              ! grid starting position
+  1                     ! number of segments
+ 64  0.015625  1.000000 ! segment coeffs (n,a,r)
+  64                    ! total points
+  0.000000              ! grid starting position
+  1                     ! number of segments
+ 64  0.015625  1.000000 ! segment coeffs (n,a,r)
+  64                    ! total points
+  0.000000              ! grid starting position
+  1                     ! number of segments
+ 64  0.015625  1.000000 ! segment coeffs (n,a,r)
+ grid generated using command set:
+ /Users/kelli/Documents/Research/Code/xNFA/trunk/exec_grid  h=0.015625  f=1.0  r
+ =1.03  c=4.17  i=64 0. 1.0 0.  j=64 0. 1. 0.  k=64 0. 1. 0.
