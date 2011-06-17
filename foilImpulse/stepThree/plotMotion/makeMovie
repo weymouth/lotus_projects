@@ -1,0 +1,18 @@
+tec360 -b bod.mcr > junk
+ls -lh bod.plt
+mv batch.log bod.log
+ls -lh bod.log
+tec360 -b pre.mcr  > junk
+ls -lh pre*plt
+zip -Tm pre pre.plt > junk
+ls -lh pre*zip
+mv batch.log pre.log
+ls -lh pre.log
+tec360 -b movie.mcr > junk
+ls -lh movie.avi
+mv batch.log movie.log
+ls -lh movie.log
+open movie.avi &
+zip movieFiles *plt movie.lay movie.avi -x pre.plt > junk
+ls -lh movieFiles.zip
+rm junk

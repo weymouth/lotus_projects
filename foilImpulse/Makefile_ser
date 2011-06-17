@@ -1,0 +1,40 @@
+#
+# makefile for BDIM
+#
+PRODUCT1 = exec_BDIM
+
+OBJECT1 = fglo.o fser.o fgri.o fino.o fana.o fgeo.o fdom.o fran.o fslp.o fbod.o fblo.o fvof.o fqui.o fmul.o fpre.o fapr.o main.o
+
+# impact/sedna ifort
+F90FLAGS = -r8 -fast -Wl,-stack_size,0x10000000
+# jade ftn
+#F90FLAGS = -O0 -Mr8
+# sedna/jade pathscale
+#F90FLAGS = -r8 -Ofast
+
+# parallel compile
+#F90 = mpif90
+#F90 = ftn
+# serial compile
+F90 = ifort
+
+# library info
+LIBS = -lmitmg_ser
+LDIR = -L../mglibrary/.
+IDIR = -I../mglibrary/mitmg_ser_include
+
+#
+.SUFFIXES: .f90
+.f90.o:
+	$(F90) $(F90FLAGS) $(IDIR) -c $*.f90
+
+ALL = $(PRODUCT1) $(PRODUCT2)
+all : $(ALL)
+
+$(PRODUCT1): $(OBJECT1)
+	$(F90) $(F90FLAGS) -o $(PRODUCT1) $(OBJECT1) $(LDIR) $(LIBS)
+
+clean:
+	-rm -f *.o 
+	-rm -f *~
+	-rm -f *.mod
