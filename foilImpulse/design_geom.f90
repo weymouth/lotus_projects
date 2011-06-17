@@ -1,34 +1,53 @@
 !-------------------------------------------------------!
-!----------------- Jet Impact Test case ----------------!
+!--------------- Foil Impulse Test case ----------------!
 !-------------------------------------------------------!
 program design_geom
   use analytic
+  use transform
   implicit none
-  integer,parameter :: ndims=3
-  real(8),parameter :: r0 = 0.5, v0 = 1.0, x1 = 2.0
-  type(set) :: pipe,water,falling_water,drain
-  real (8)  :: velo(3),tip(3),norm(3)
-  velo = 0; velo(ndims) = -v0
-  tip  = 0; tip (ndims) =  x1
-  norm = 0; norm (ndims) = 1.
+  type(set) :: body
+  character(20) :: string
+  character(16) :: name
+  character(255) :: cmdln
+  real(8) :: d,a
+  integer :: i
 !
-! -- geom_body 
-  pipe = .set.cylinder(-1,ndims,r0,0,0,velo)-.set.plane(1,norm,tip,0,velo)
+! -- files
+  open(7,file='inp.geom')
+  open(7+1,file='srf.dat',STATUS='REPLACE')
+  open(7+2,file='grd.dat',STATUS='REPLACE')
+  open(7+3,file='xcp.dat',STATUS='REPLACE')
 !
-! -- geom_fint
-  water = .set.cylinder(1,ndims,r0,0,0,0).or..set.plane(1,norm,0,0,0)
+! -- defaults
+  d = 0.5; a = 10 
 !
-! -- geom_velo
-  falling_water = .set.cylinder(1,ndims,r0,0,0,velo)
+! -- read command line input
+  do i=1,iargc()
+     call getarg(i,string)
+     select case(string(2:2))
+     case('n')
+        read(string(4:),*) name
+        print *,'file name',name
+     case('a')
+        read(string(4:),*) a
+        print *,'angle of attack',a
+     case('d')
+        read(string(4:),*) d
+        print *,'displacement time',d
+     case default
+        print *,string
+        stop 'unknown argument'
+     end select
+  end do
 !
-! -- geom_domain
-  drain = .set.cylinder(1,ndims,r0,0,0,velo)
+! -- construct the stingray
+  write(7,'(a4)') 'body'
+  body = (.set.name.map.(init_affn()**(/a,0.,0./))).map.init_jerk(3,7.,7.+d,10./7.)
+  call set_write(7,body)
 !
-! -- write it up
-  open(7,file='geom.txt')
-  call set_write(7,pipe)
-  call set_write(7,water)
-  call set_write(7,falling_water)
-  call set_write(7,drain)
+! -- print commandline
+  call get_command(cmdln)
+  write(7,*) 'stingray geom: generated using command set:'
+  write(7,*) trim(cmdln)
 
 end program design_geom
