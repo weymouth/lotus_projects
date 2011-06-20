@@ -16,6 +16,7 @@ rm $2/fort.????
 # set up inputs
 cp exec_BDIM $2/.
 cp inp.* $2/.
+cp *.IGS $2/.
 if [ $# -eq 3 ]; then
     cp $3/fort.1??? $2/.
     cp $3/fort.2??? $2/.
@@ -35,9 +36,9 @@ fi
 wait 
 
 # run the post processing scripts and macros
-./cfl &
-wait
-nice ./exec_tec FI.mcr addBody.mcr bodyInfo.mcr 'lamAndBodAndFI.lay HD.mcr' &
+nice ./exec_tec addBody.mcr bodyInfo.mcr
+nice ./exec_tec FI.mcr lam2.mcr 
+nice ./exec_tec 'lamAndBodAndFI.lay avi.mcr'
 wait
 echo "complete"
 exit 0

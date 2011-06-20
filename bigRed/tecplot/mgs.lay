@@ -1,7 +1,7 @@
 #!MC 1300
 # Created by Tecplot 360 build 13.1.0.15185
-$!VarSet |LFDSFN1| = '"fort.11"'
-$!VarSet |LFDSVL1| = '"V1" "V2" "V3" "V4"'
+$!VarSet |LFDSFN1| = '"fort.mgs"'
+$!VarSet |LFDSVL1| = '"V1" "V2"'
 $!SETSTYLEBASE FACTORY
 $!GLOBALLINKING 
   LINKCOLORMAPS = YES
@@ -896,6 +896,8 @@ $!READDATASET  '|LFDSFN1|'
   VARNAMELIST = '|LFDSVL1|'
 $!REMOVEVAR |LFDSVL1|
 $!REMOVEVAR |LFDSFN1|
+$!ALTERDATA 
+  EQUATION = '{t} = i'
 $!FRAMELAYOUT 
   SHOWHEADER = NO
   HEADERCOLOR = RED
@@ -914,7 +916,7 @@ $!FRAMENAME  = 'Frame 001'
 $!GLOBALTIME 
   SOLUTIONTIME = 0
 $!DELETELINEMAPS 
-$!ACTIVELINEMAPS  =  [1-5]
+$!ACTIVELINEMAPS  =  [1-4]
 $!GLOBALLINEPLOT 
   DATALABELS
     {
@@ -928,30 +930,32 @@ $!GLOBALLINEPLOT
       }
     }
 $!LINEMAP  [1]
-  NAME = '&DV&'
+  NAME = '&ZN&'
   ASSIGN
     {
     ZONE = 1
-    XAXISVAR = 1
+    XAXISVAR = 3
     YAXISVAR = 2
     }
   LINES
     {
-    COLOR = CUSTOM2
+    COLOR = RED
     }
   SYMBOLS
     {
-    COLOR = CUSTOM1
-    FILLCOLOR = CUSTOM1
+    COLOR = CUSTOM10
+    FILLMODE = USELINECOLOR
+    FILLCOLOR = RED
+    SIZE = 0.5
     }
   BARCHARTS
     {
-    COLOR = CUSTOM1
-    FILLCOLOR = CUSTOM1
+    COLOR = RED
+    FILLCOLOR = RED
     }
   ERRORBARS
     {
-    COLOR = CUSTOM1
+    COLOR = RED
     }
   INDICES
     {
@@ -962,12 +966,49 @@ $!LINEMAP  [1]
       }
     }
 $!LINEMAP  [2]
-  NAME = '&DV&'
+  NAME = '&ZN&'
   ASSIGN
     {
     ZONE = 1
-    XAXISVAR = 1
-    YAXISVAR = 3
+    XAXISVAR = 3
+    YAXISVAR = 1
+    YAXIS = 2
+    }
+  LINES
+    {
+    COLOR = BLACK
+    }
+  SYMBOLS
+    {
+    COLOR = CUSTOM42
+    FILLMODE = USELINECOLOR
+    FILLCOLOR = RED
+    SIZE = 0.5
+    }
+  BARCHARTS
+    {
+    COLOR = RED
+    FILLCOLOR = RED
+    }
+  ERRORBARS
+    {
+    COLOR = RED
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      MIN = 2
+      SKIP = 2
+      }
+    }
+$!LINEMAP  [3]
+  NAME = '&ZN&'
+  ASSIGN
+    {
+    ZONE = 1
+    XAXISVAR = 3
+    YAXISVAR = 2
     }
   LINES
     {
@@ -975,51 +1016,19 @@ $!LINEMAP  [2]
     }
   SYMBOLS
     {
-    COLOR = CUSTOM3
-    FILLCOLOR = CUSTOM3
+    COLOR = RED
+    FILLMODE = USELINECOLOR
+    FILLCOLOR = RED
+    SIZE = 0.5
     }
   BARCHARTS
     {
-    COLOR = CUSTOM3
-    FILLCOLOR = CUSTOM3
+    COLOR = RED
+    FILLCOLOR = RED
     }
   ERRORBARS
     {
-    COLOR = CUSTOM3
-    }
-  INDICES
-    {
-    IRANGE
-      {
-      SKIP = 2
-      }
-    }
-$!LINEMAP  [3]
-  NAME = '&DV&'
-  ASSIGN
-    {
-    ZONE = 1
-    XAXISVAR = 1
-    YAXISVAR = 4
-    YAXIS = 2
-    }
-  LINES
-    {
-    COLOR = CUSTOM6
-    }
-  SYMBOLS
-    {
-    COLOR = PURPLE
-    FILLCOLOR = PURPLE
-    }
-  BARCHARTS
-    {
-    COLOR = PURPLE
-    FILLCOLOR = PURPLE
-    }
-  ERRORBARS
-    {
-    COLOR = PURPLE
+    COLOR = RED
     }
   INDICES
     {
@@ -1029,134 +1038,99 @@ $!LINEMAP  [3]
       }
     }
 $!LINEMAP  [4]
-  NAME = '&DV&'
+  NAME = '&ZN&'
   ASSIGN
     {
     ZONE = 1
-    XAXISVAR = 1
-    YAXISVAR = 3
-    }
-  LINES
-    {
-    COLOR = CUSTOM40
-    }
-  SYMBOLS
-    {
-    COLOR = CUSTOM3
-    FILLCOLOR = CUSTOM3
-    }
-  BARCHARTS
-    {
-    COLOR = CUSTOM3
-    FILLCOLOR = CUSTOM3
-    }
-  ERRORBARS
-    {
-    COLOR = CUSTOM3
-    }
-  INDICES
-    {
-    IRANGE
-      {
-      MIN = 2
-      SKIP = 2
-      }
-    }
-$!LINEMAP  [5]
-  NAME = '&DV&'
-  ASSIGN
-    {
-    ZONE = 1
-    XAXISVAR = 1
-    YAXISVAR = 4
+    XAXISVAR = 3
+    YAXISVAR = 1
     YAXIS = 2
     }
   LINES
     {
-    COLOR = BLUE
+    COLOR = BLACK
     }
   SYMBOLS
     {
-    COLOR = PURPLE
-    FILLCOLOR = PURPLE
+    COLOR = BLUE
+    FILLMODE = USELINECOLOR
+    FILLCOLOR = RED
+    SIZE = 0.5
     }
   BARCHARTS
     {
-    COLOR = PURPLE
-    FILLCOLOR = PURPLE
+    COLOR = RED
+    FILLCOLOR = RED
     }
   ERRORBARS
     {
-    COLOR = PURPLE
+    COLOR = RED
     }
   INDICES
     {
     IRANGE
       {
-      MIN = 2
       SKIP = 2
       }
     }
 $!XYLINEAXIS 
   DEPXTOYRATIO = 1
-  GRIDAREA
-    {
-    DRAWBORDER = YES
-    }
 $!XYLINEAXIS 
   XDETAIL 1
     {
-    RANGEMIN = 0
-    RANGEMAX = 10
-    GRSPACING = 2
+    RANGEMIN = 1
+    RANGEMAX = 3152
+    GRSPACING = 500
+    TICKS
+      {
+      SHOWONAXISLINE = NO
+      }
+    TICKLABEL
+      {
+      TEXTSHAPE
+        {
+        HEIGHT = 2
+        }
+      }
     TITLE
       {
       TITLEMODE = USETEXT
-      TEXT = 'time'
-      TEXTSHAPE
-        {
-        HEIGHT = 2.6
-        }
+      TEXT = 'it'
       }
     }
 $!XYLINEAXIS 
   YDETAIL 1
     {
     COORDSCALE = LOG
-    RANGEMIN = 0.00001
-    RANGEMAX = 0.10000
-    GRSPACING = 0.01
-    TITLE
+    RANGEMIN = 1.0000000000000000364E-10
+    RANGEMAX = 1
+    GRSPACING = 0.2
+    TICKS
       {
-      TITLEMODE = USETEXT
-      TEXT = 'time step'
-      TEXTSHAPE
-        {
-        HEIGHT = 2.6
-        }
+      SHOWONAXISLINE = NO
       }
     }
 $!XYLINEAXIS 
   YDETAIL 2
     {
-    COORDSCALE = LOG
-    RANGEMIN = 1.0E-10
-    RANGEMAX = 1.0
-    GRSPACING = 2
-    TITLE
+    RANGEMIN = 0
+    RANGEMAX = 51
+    GRSPACING = 10
+    TICKS
       {
-      TITLEMODE = USETEXT
-      TEXT = 'divergence (predictor/corrector)'
-      TEXTSHAPE
-        {
-        HEIGHT = 2.6
-        }
+      SHOWONAXISLINE = NO
       }
     AXISLINE
       {
       AXISALIGNMENT = WITHGRIDMAX
       }
     }
+$!VIEW AXISFIT
+  AXIS = 'X'
+  AXISNUM = 1
+$!LINEPLOTLAYERS 
+  SHOWLINES = NO
+  SHOWSYMBOLS = YES
 $!FRAMECONTROL ACTIVATEBYNUMBER
   FRAME = 1
 $!SETSTYLEBASE CONFIG
