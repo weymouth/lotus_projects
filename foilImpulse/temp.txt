@@ -1,8 +1,8 @@
 !! ---- Global info ---- !!
 3			 ! number of dimensions
-T			 ! restart switch
-0.01			 ! print interval
-1.00			 ! simulation end time
+lres			 ! restart switch
+dtPrint			 ! print interval
+timeEnd			 ! simulation end time
 !! ----  MPI  info  ---- !!
 F,F,F			 ! parrallel boundaries
 2,3,2			 ! number of blocks
@@ -19,8 +19,8 @@ T F F 300 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
 !! ----  Body info  ---- !!
 T		    	 ! immersed body present
 -2.5			 ! smoothing width
-T F F 100 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst) 
-T       		 ! body move
+T bodyRwnd F 100 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst) 
+bodyMove       		 ! body move
 F	   	      	 ! body slip
 !! ----  VOF  info  ---- !!
 F			  ! dynamic free surface

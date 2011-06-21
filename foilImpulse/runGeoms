@@ -1,0 +1,64 @@
+echo "square alpha=10"
+sed 's/GEOM/square/' temp.geom > inp.geom
+
+echo "Steady"
+sed 's/lres/F/
+     s/dtPrint/0.08/
+     s/timeEnd/7.12/
+     s/bodyRwnd/T/
+     s/bodyMove/F/' temp.txt > inp.txt
+./runBDIM 12 squareSteadyAlpha10 &
+wait
+
+echo "Impulse"
+sed 's/lres/T/
+     s/dtPrint/0.01/
+     s/timeEnd/1.00/
+     s/bodyRwnd/F/
+     s/bodyMove/T/' temp.txt > inp.txt
+./runBDIM 12 squareImpulseAlpha10 squareSteadyAlpha10 &
+wait
+
+echo "half alpha=10"
+sed 's/GEOM/half/' temp.geom > inp.geom
+
+echo "Steady"
+sed 's/lres/F/
+     s/dtPrint/0.08/
+     s/timeEnd/7.12/
+     s/bodyRwnd/T/
+     s/bodyMove/F/' temp.txt > inp.txt
+./runBDIM 12 halfSteadyAlpha10 &
+wait
+
+echo "Impulse"
+sed 's/lres/T/
+     s/dtPrint/0.01/
+     s/timeEnd/1.00/
+     s/bodyRwnd/F/
+     s/bodyMove/T/' temp.txt > inp.txt
+./runBDIM 12 halfImpulseAlpha10 halfSteadyAlpha10 &
+wait
+
+echo "full alpha=10"
+sed 's/GEOM/full/' temp.geom > inp.geom
+
+echo "Steady"
+sed 's/lres/F/
+     s/dtPrint/0.08/
+     s/timeEnd/7.12/
+     s/bodyRwnd/T/
+     s/bodyMove/F/' temp.txt > inp.txt
+./runBDIM 12 fullSteadyAlpha10 &
+wait
+
+echo "Impulse"
+sed 's/lres/T/
+     s/dtPrint/0.01/
+     s/timeEnd/1.00/
+     s/bodyRwnd/F/
+     s/bodyMove/T/' temp.txt > inp.txt
+./runBDIM 12 fullImpulseAlpha10 fullSteadyAlpha10 &
+wait
+
+echo "Complete"

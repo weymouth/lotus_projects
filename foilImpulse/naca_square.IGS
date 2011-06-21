@@ -2,7 +2,6 @@ F F T T				! turn off top and bottom
 -4.219 -10.271 4*0 0.36626	! offset,rotate,scale
 0.05               		! buffer
 0.5				! centroid for flip
-31 31 141			! grid points
 SolidWorks IGES file using NURBS representation for surfaces            S      1
 1H,,1H;,20Hnaca0012foil2.SLDPRT,40HZ:\Dahl\Vanishing Foil\naca0012foil2.G      1
 IGS,15HSolidWorks 2010,15HSolidWorks 2010,32,308,15,308,15,20Hnaca0012foG      2

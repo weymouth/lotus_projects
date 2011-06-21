@@ -6,8 +6,8 @@ program design_geom
   use transform
   implicit none
   type(set) :: body
-  character(20) :: string
-  character(16) :: name
+  character(30) :: string
+  character(26) :: name
   character(255) :: cmdln
   real(8) :: d,a
   integer :: i
@@ -27,13 +27,13 @@ program design_geom
      select case(string(2:2))
      case('n')
         read(string(4:),*) name
-        print *,'file name',name
+        print *,'file name:',name
      case('a')
         read(string(4:),*) a
-        print *,'angle of attack',a
+        print *,'angle of attack: ',a
      case('d')
         read(string(4:),*) d
-        print *,'displacement time',d
+        print *,'displacement time: ',d
      case default
         print *,string
         stop 'unknown argument'
@@ -42,7 +42,9 @@ program design_geom
 !
 ! -- construct the stingray
   write(7,'(a4)') 'body'
-  body = (.set.name.map.(init_affn()**(/a,0.,0./))).map.init_jerk(3,7.,7.+d,10./7.)
+  body = .set.name.and..set.plane(1,(/0,0,-1/),0,0,0)
+  body = body.map.(init_affn()**(/a,0.,0./))
+  body = body.map.init_jerk(3,7.12,7.12+d,10./7.)
   call set_write(7,body)
 !
 ! -- print commandline
