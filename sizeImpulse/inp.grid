@@ -1,0 +1,14 @@
+  512                                     ! total points
+ -5.974515516810                          ! grid starting position
+  3                                       ! number of segments
+  128  0.471439799728E-01  0.995037190210 ! segment coeffs (n,a,r)
+  180  0.250000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
+  204  0.250621894396E-01  1.004987562112 ! segment coeffs (n,a,r)
+  384                                     ! total points
+ -6.165454528690                          ! grid starting position
+  3                                       ! number of segments
+  132  0.480915739703E-01  0.995037190210 ! segment coeffs (n,a,r)
+  120  0.250000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
+  132  0.250621894396E-01  1.004987562112 ! segment coeffs (n,a,r)
+ grid generated using command set:
+ ./exec_grid -h=0.05 -f=0.5 -i=256,1.5,3,.5 -j=192,1.5,1.5,1

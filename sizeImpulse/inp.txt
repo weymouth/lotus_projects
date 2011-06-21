@@ -1,0 +1,27 @@
+!! ---- Global info ---- !!
+2			 ! number of dimensions
+F			 ! restart switch
+0.01			 ! print interval
+2.0		     	 ! simulation duration
+!! ----  MPI  info  ---- !!
+F,F	 		 ! parrallel boundaries
+4,3			 ! number of blocks
+!! ---- Domain info ---- !!
+1,0,0,6,1   	 ! u,p boundary type (-dims:dims)
+1.0			 ! reference frame velocity
+0.1			 ! frame ramp-up time
+!! --- Velocity info --- !!
+1e-3			 ! viscosity (dark fluid)
+T F F 200 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+T F F 400 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+!! --- Pressure info --- !!
+T F F 300 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+!! ----  Body info  ---- !!
+T				 ! immersed body present
+-2.5			 	 ! smoothing width
+T F F 100 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst) 
+T      	      	   	 ! body move
+F  	      	   	 ! body slip
+!! ----  VOF  info  ---- !!
+!! --- Apriori  info --- !!
+!! ---- End of info ---- !!
