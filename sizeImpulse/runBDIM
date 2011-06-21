@@ -33,7 +33,8 @@ fi
 wait 
 
 # run the post processing scripts and macros
-nice ./exec_tec line.mcr 'omega.lay avi.mcr' &
+rm fort.[1-4]?[0-3,5-9]
+nice ./exec_tec line.mcr
 wait
 echo "complete"
 exit 0

@@ -12,10 +12,10 @@ F,F	 		 ! parrallel boundaries
 0.1			 ! frame ramp-up time
 !! --- Velocity info --- !!
 1e-3			 ! viscosity (dark fluid)
-T F F 200 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+F F F 200 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
 T F F 400 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
 !! --- Pressure info --- !!
-T F F 300 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+F F F 300 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
 !! ----  Body info  ---- !!
 T				 ! immersed body present
 -2.5			 	 ! smoothing width
