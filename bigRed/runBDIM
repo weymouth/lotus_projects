@@ -36,9 +36,15 @@ fi
 wait 
 
 # run the post processing scripts and macros
-nice ./exec_tec addBody.mcr bodyInfo.mcr
-nice ./exec_tec FI.mcr lam2.mcr 
-nice ./exec_tec 'lamAndBodAndFI.lay avi.mcr'
+nice ./exec_tec bodyInfo.mcr
+nice ./exec_tec fint.mcr lam2.mcr 
+nice ./exec_tec 'dp.lay avi.mcr'
+zip -m body fort.1??.plt &
+zip -m velo fort.2??.plt &
+zip -m pres fort.3??.plt &
+zip -m lam2 fort.4??.plt &
+zip -m restart fort.1??? &
+zip -m restartFint fort.2??? &
 wait
 echo "complete"
 exit 0

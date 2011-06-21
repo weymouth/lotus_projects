@@ -1,6 +1,6 @@
 #!MC 1300
 # Created by Tecplot 360 build 13.1.0.15185
-$!VarSet |LFDSFN1| = '"fort.mgs"'
+$!VarSet |LFDSFN1| = '"mgs.txt"'
 $!VarSet |LFDSVL1| = '"V1" "V2"'
 $!SETSTYLEBASE FACTORY
 $!GLOBALLINKING 

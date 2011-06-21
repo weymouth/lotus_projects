@@ -1,12 +1,79 @@
 #!MC 1120
 # Created by Tecplot 360 build 11.3.29.563
 $!Varset |blocks| = 12
-$!Varset |zero| = 300
+$!Varset |body| = 100
+$!Varset |press| = 300
+$!Varset |fint| = 500
+
+$!Loop |blocks|
 
 $!NEWLAYOUT 
-$!Varset |current| = |zero|
 
-$!Varset |current| -= 1
+$!Varset |bnum| = (|Loop|+|body|-1)
+$!Varset |pnum| = (|Loop|+|press|-1)
+$!Varset |fnum| = (|Loop|+|fint|-1)
+
+$!READDATASET  ' "fort.|bnum|.plt" '
+  READDATAOPTION = APPEND
+  RESETSTYLE = YES
+  INCLUDETEXT = NO
+  INCLUDEGEOM = NO
+  INCLUDECUSTOMLABELS = NO
+  VARLOADMODE = BYNAME
+  ASSIGNSTRANDIDS = YES
+  INITIALPLOTTYPE = CARTESIAN3D
+  VARNAMELIST = '"x" "y" "z" "p" "f" "dis"'
+
+$!READDATASET  ' "fort.|fnum|.plt" '
+  READDATAOPTION = APPEND
+  RESETSTYLE = YES
+  INCLUDETEXT = NO
+  INCLUDEGEOM = NO
+  INCLUDECUSTOMLABELS = NO
+  VARLOADMODE = BYNAME
+  ASSIGNSTRANDIDS = YES
+  INITIALPLOTTYPE = CARTESIAN3D
+  VARNAMELIST = '"x" "y" "z" "p" "f" "dis"'
+
+$!Varset |steps| = (|NUMZONES|-1)
+$!Varset |first| = (|NUMZONES|+1)
+
+$!READDATASET  ' "fort.|pnum|.plt" '
+  READDATAOPTION = APPEND
+  RESETSTYLE = YES
+  INCLUDETEXT = NO
+  INCLUDEGEOM = NO
+  INCLUDECUSTOMLABELS = NO
+  VARLOADMODE = BYNAME
+  ASSIGNSTRANDIDS = YES
+  INITIALPLOTTYPE = CARTESIAN3D
+  VARNAMELIST = '"x" "y" "z" "p" "f" "dis"'
+
+$!ALTERDATA
+  EQUATION = '{dis} = {p}[1]'
+$!Loop |steps|
+$!Varset |fzone| = (1+|Loop|)
+$!Varset |pzone| = (1+|Loop|+|steps|)
+$!ALTERDATA  [|pzone|]
+  EQUATION = '{f} = {p}[|fzone|]'
+$!Endloop
+
+$!WRITEDATASET  "./bodyInfo.|pnum|.plt"
+  INCLUDETEXT = NO
+  INCLUDEGEOM = NO
+  INCLUDECUSTOMLABELS = NO
+  ASSOCIATELAYOUTWITHDATAFILE = NO
+  ZONELIST =  [|first|-|NUMZONES|]
+  INCLUDEDATASHARELINKAGE = YES
+  BINARY = YES
+  USEPOINTFORMAT = NO
+  PRECISION = 9
+
+$!Endloop
+
+$!NEWLAYOUT 
+$!Varset |current| = (|press|-1)
+
 $!Loop |blocks|
 $!Varset |current| += 1
 
@@ -29,14 +96,14 @@ $!ISOSURFACEATTRIBUTES 1  OBEYSOURCEZONEBLANKING = YES
 
 $!RUNMACROFUNCTION  "IJKBlank"
 
-$!VarSet |first_zone| = (|NUMZONES|+1)
+$!VarSet |first| = (|NUMZONES|+1)
 $!EXTENDEDCOMMAND 
   COMMANDPROCESSORID = 'Extract Over Time'
   COMMAND = 'ExtractIsoSurfaceOverTime'
 
 #$!DELETEVARS [6,7]
 #$!CREATEMIRRORZONES 
-#  SOURCEZONES =  [|first_zone|-|NUMZONES|]
+#  SOURCEZONES =  [|first|-|NUMZONES|]
 #  MIRRORVAR = 'Y'
 
 $!WRITEDATASET  "bodyInfo.plt"
@@ -45,7 +112,7 @@ $!WRITEDATASET  "bodyInfo.plt"
   INCLUDECUSTOMLABELS = NO
   INCLUDEDATASHARELINKAGE = YES
   ASSOCIATELAYOUTWITHDATAFILE = NO
-  ZONELIST =  [|first_zone|-|NUMZONES|]
+  ZONELIST =  [|first|-|NUMZONES|]
   VARPOSITIONLIST =  [1-5]
   BINARY = YES
   USEPOINTFORMAT = NO
