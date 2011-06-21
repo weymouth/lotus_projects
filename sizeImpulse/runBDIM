@@ -1,0 +1,39 @@
+#!/bin/sh
+
+# check that a directory name was given
+if [ $# -le 1 ]; then
+  echo usage: runBDIM proc_num work_dir restart_dir
+  exit 1
+fi
+
+# make the dir
+mkdir $2
+rm $2/fort.[1-9]*
+
+# set up inputs
+cp exec_BDIM $2/.
+cp inp.* $2/.
+cp *IGS $2/.
+if [ $# -eq 3 ]; then
+    cp $3/fort.1??? $2/.
+    cp $3/fort.2??? $2/.
+fi
+
+# cd and move tecplot stuff
+cd $2
+cp ../tecplot/* .
+
+# run the code
+if [ $1 -eq 0 ]; then
+    ./exec_BDIM &
+else
+    mpiexec -n $1 ./exec_BDIM &
+fi
+
+wait 
+
+# run the post processing scripts and macros
+nice ./exec_tec line.mcr 'omega.lay avi.mcr' &
+wait
+echo "complete"
+exit 0
