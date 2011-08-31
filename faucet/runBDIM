@@ -8,6 +8,7 @@ fi
 
 # make the dir
 mkdir $2
+rm $2/fort.[1-9]*
 
 # set up inputs
 cp exec_BDIM $2/.
@@ -31,6 +32,14 @@ fi
 wait 
 
 # run the post processing scripts and macros
-./exec_tec 'FI.mcr' 'lam2.mcr'
-./exec_tec 'HD.lay HD.mcr'
-./exec_tec 'veloAndFI.lay avi.mcr'
+nice ./exec_tec 'FI.mcr' 'lam2.mcr'
+nice ./exec_tec 'HD.lay HD.mcr'
+nice ./exec_tec 'veloAndFI.lay avi.mcr'
+zip body fort.1??.plt
+zip velo fort.2??.plt
+zip -m lam2 fort.4??.plt
+zip -m fint fort.5??.plt
+zip -m rest fort.????
+wait
+echo "complete"
+exit 0

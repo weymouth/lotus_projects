@@ -4,12 +4,12 @@ $!Varset |blocks| = 12
 $!Varset |zero| = 400
 
 $!NEWLAYOUT 
-$!Varset |current| = |zero|
+$!Varset |current| = (|zero|-1)
+$!VarSet |first_zone| = 1
 
-$!Varset |current| -= 1
 $!Loop |blocks|
-$!Varset |current| += 1
 
+$!Varset |current| += 1
 $!READDATASET  ' "fort.|current|.plt" '
   READDATAOPTION = APPEND
   RESETSTYLE = YES
@@ -20,7 +20,11 @@ $!READDATASET  ' "fort.|current|.plt" '
   ASSIGNSTRANDIDS = YES
   INITIALPLOTTYPE = CARTESIAN3D
   VARNAMELIST = '"x" "y" "z" "p"'
+$!DELETEZONES[|first_zone|]
+$!VarSet |first_zone| = (|NUMZONES|+1)
+
 $!Endloop
+
 $!GLOBALCONTOUR 1  VAR = 4
 $!ISOSURFACELAYERS SHOW = YES
 $!ISOSURFACEATTRIBUTES 1  ISOVALUE1 = -1.0
@@ -28,8 +32,7 @@ $!ISOSURFACEATTRIBUTES 1  OBEYSOURCEZONEBLANKING = YES
 
 $!RUNMACROFUNCTION  "IJKBlank"
 
-$!VarSet |first_zone| = |NUMZONES|
-$!VarSet |first_zone| += 1
+$!VarSet |first_zone| = (|NUMZONES|+1)
 
 $!EXTENDEDCOMMAND 
   COMMANDPROCESSORID = 'Extract Over Time'
