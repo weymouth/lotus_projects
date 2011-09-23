@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# check that a directory name was given
+if [ $# -le 2 ]; then
+  echo usage: runDouble proc_num work_dir restart_dir
+  exit 1
+fi
+
+# make the dir
+mkdir $2
+rm $2/*
+
+# set up inputs
+cp exec_double $2/.
+cp inp.* $2/.
+
+# cd and unzip restart stuff
+cd $2
+unzip ../$3/rest.zip
+rm fort.2???
+
+# run the code
+echo "running"
+if [ $1 -eq 0 ]; then
+    nice -n 20 ./exec_double &
+else
+    nice -n 20 mpiexec -n $1 ./exec_double &
+fi
+
+wait 
+
+# run the post processing scripts and macros
+zip -m rest fort.????
+wait
+echo "complete"
+say "complete"
+exit 0

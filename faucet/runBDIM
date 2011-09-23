@@ -8,21 +8,21 @@ fi
 
 # make the dir
 mkdir $2
-rm $2/fort.[1-9]*
+rm $2/*
 
 # set up inputs
 cp exec_BDIM $2/.
 cp inp.* $2/.
+cp tecplot/* $2/.
+
+# cd and unzip restart stuff
+cd $2
 if [ $# -eq 3 ]; then
-    cp $3/fort.1??? $2/.
-    cp $3/fort.2??? $2/.
+    unzip ../$3/rest.zip
 fi
 
-# cd and move tecplot stuff
-cd $2
- cp ../tecplot/* .
-
 # run the code
+echo "running"
 if [ $1 -eq 0 ]; then
     nice -n 20 ./exec_BDIM &
 else
@@ -33,13 +33,14 @@ wait
 
 # run the post processing scripts and macros
 nice ./exec_tec 'FI.mcr' 'lam2.mcr'
-nice ./exec_tec 'HD.lay HD.mcr'
+#nice ./exec_tec 'HD.lay HD.mcr'
 nice ./exec_tec 'veloAndFI.lay avi.mcr'
-zip body fort.1??.plt
-zip velo fort.2??.plt
+zip -m body fort.1??.plt
+zip -m velo fort.2??.plt
 zip -m lam2 fort.4??.plt
 zip -m fint fort.5??.plt
 zip -m rest fort.????
 wait
 echo "complete"
+say "complete"
 exit 0

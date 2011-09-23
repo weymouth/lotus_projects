@@ -6,7 +6,7 @@ program design_geom
   implicit none
   integer,parameter :: ndims=3
   real(8),parameter :: r0 = 0.5, v0 = 1.0, x1 = 0.8
-  type(set) :: pipe,water,falling_water
+  type(set) :: pipe,water
   real (8)  :: velo(3),tip(3),norm(3)
 
   open(7,file='inp.geom')
@@ -22,12 +22,8 @@ program design_geom
 
 ! -- geom_fint
   write(7,'(a4)') 'fint'
-  water = .set.cylinder(1,ndims,r0,0,0,0).or..set.plane(1,norm,0,0,0)
+  water = .set.cylinder(1,ndims,r0,0,0,0)-.set.plane(1,norm,tip,0,velo) &
+       .or..set.plane(1,norm,0,0,0)
   call set_write(7,water)
-!
-! -- geom_velo
-  write(7,'(a4)') 'velo'
-  falling_water = .set.cylinder(1,ndims,r0,0,0,velo)-.set.plane(1,norm,0,0,velo)
-  call set_write(7,falling_water)
 
 end program design_geom

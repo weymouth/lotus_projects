@@ -1,5 +1,5 @@
 #!MC 1300
-# Created by Tecplot 360 build 13.1.0.15185
+# Created by Tecplot 360 build 13.1.1.16314
 $!VarSet |LFDSFN1| = '"fort.11"'
 $!VarSet |LFDSVL1| = '"V1" "V2" "V3" "V4"'
 $!SETSTYLEBASE FACTORY
@@ -914,7 +914,7 @@ $!FRAMENAME  = 'Frame 001'
 $!GLOBALTIME 
   SOLUTIONTIME = 0
 $!DELETELINEMAPS 
-$!ACTIVELINEMAPS  =  [1-5]
+$!ACTIVELINEMAPS  =  [1-3]
 $!GLOBALLINEPLOT 
   DATALABELS
     {
@@ -953,14 +953,6 @@ $!LINEMAP  [1]
     {
     COLOR = CUSTOM1
     }
-  INDICES
-    {
-    IRANGE
-      {
-      MIN = 2
-      SKIP = 2
-      }
-    }
 $!LINEMAP  [2]
   NAME = '&DV&'
   ASSIGN
@@ -986,13 +978,6 @@ $!LINEMAP  [2]
   ERRORBARS
     {
     COLOR = CUSTOM3
-    }
-  INDICES
-    {
-    IRANGE
-      {
-      SKIP = 2
-      }
     }
 $!LINEMAP  [3]
   NAME = '&DV&'
@@ -1021,82 +1006,6 @@ $!LINEMAP  [3]
     {
     COLOR = PURPLE
     }
-  INDICES
-    {
-    IRANGE
-      {
-      SKIP = 2
-      }
-    }
-$!LINEMAP  [4]
-  NAME = '&DV&'
-  ASSIGN
-    {
-    ZONE = 1
-    XAXISVAR = 1
-    YAXISVAR = 3
-    }
-  LINES
-    {
-    COLOR = CUSTOM40
-    }
-  SYMBOLS
-    {
-    COLOR = CUSTOM3
-    FILLCOLOR = CUSTOM3
-    }
-  BARCHARTS
-    {
-    COLOR = CUSTOM3
-    FILLCOLOR = CUSTOM3
-    }
-  ERRORBARS
-    {
-    COLOR = CUSTOM3
-    }
-  INDICES
-    {
-    IRANGE
-      {
-      MIN = 2
-      SKIP = 2
-      }
-    }
-$!LINEMAP  [5]
-  NAME = '&DV&'
-  ASSIGN
-    {
-    ZONE = 1
-    XAXISVAR = 1
-    YAXISVAR = 4
-    YAXIS = 2
-    }
-  LINES
-    {
-    COLOR = BLUE
-    }
-  SYMBOLS
-    {
-    COLOR = PURPLE
-    FILLCOLOR = PURPLE
-    }
-  BARCHARTS
-    {
-    COLOR = PURPLE
-    FILLCOLOR = PURPLE
-    }
-  ERRORBARS
-    {
-    COLOR = PURPLE
-    }
-  INDICES
-    {
-    IRANGE
-      {
-      MIN = 2
-      SKIP = 2
-      }
-    }
 $!XYLINEAXIS 
   DEPXTOYRATIO = 1
   GRIDAREA
@@ -1106,9 +1015,9 @@ $!XYLINEAXIS
 $!XYLINEAXIS 
   XDETAIL 1
     {
-    RANGEMIN = 0
-    RANGEMAX = 10
-    GRSPACING = 2
+    RANGEMIN = 0.00078125001164153218269
+    RANGEMAX = 0.125
+    GRSPACING = 0.02
     TITLE
       {
       TITLEMODE = USETEXT
@@ -1123,8 +1032,8 @@ $!XYLINEAXIS
   YDETAIL 1
     {
     COORDSCALE = LOG
-    RANGEMIN = 0.00001
-    RANGEMAX = 0.10000
+    RANGEMIN = 1.0000000000000000818E-05
+    RANGEMAX = 0.10000000000000000555
     GRSPACING = 0.01
     TITLE
       {
@@ -1140,9 +1049,9 @@ $!XYLINEAXIS
   YDETAIL 2
     {
     COORDSCALE = LOG
-    RANGEMIN = 1.0E-10
-    RANGEMAX = 1.0
-    GRSPACING = 2
+    RANGEMIN = 1.0000000000000000364E-10
+    RANGEMAX = 1
+    GRSPACING = 0.2
     TITLE
       {
       TITLEMODE = USETEXT
