@@ -1,7 +1,7 @@
-#!MC 1120
-# Created by Tecplot 360 build 11.3.29.563
-$!VarSet |LFDSFN1| = '"fort.10"'
-$!VarSet |LFDSVL1| = '"V1" "V2" "V3" "V4"'
+#!MC 1300
+# Created by Tecplot 360 build 13.1.0.15185
+$!VarSet |LFDSFN1| = '"mgs.txt"'
+$!VarSet |LFDSVL1| = '"V1" "V2"'
 $!SETSTYLEBASE FACTORY
 $!GLOBALLINKING 
   LINKCOLORMAPS = YES
@@ -859,6 +859,11 @@ $!GLOBALPAPER
       TOPHARDCLIPOFFSET = 0.125
       BOTTOMHARDCLIPOFFSET = 0.125
       }
+    A3
+      {
+      WIDTH = 11.693
+      HEIGHT = 16.535
+      }
     }
 $!PAGE 
   NAME = ''
@@ -892,11 +897,7 @@ $!READDATASET  '|LFDSFN1|'
 $!REMOVEVAR |LFDSVL1|
 $!REMOVEVAR |LFDSFN1|
 $!ALTERDATA 
-  EQUATION = 'V2 = 2.*V2/10.4'
-$!ALTERDATA 
-  EQUATION = 'V3 = 2.*V3/10.4'
-$!ALTERDATA 
-  EQUATION = 'V4 = 2.*V4/10.4'
+  EQUATION = '{t} = i'
 $!FRAMELAYOUT 
   SHOWHEADER = NO
   HEADERCOLOR = RED
@@ -912,8 +913,10 @@ $!THREEDAXIS
   BOXASPECTRATIOLIMIT = 25
 $!PLOTTYPE  = XYLINE
 $!FRAMENAME  = 'Frame 001'
+$!GLOBALTIME 
+  SOLUTIONTIME = 0
 $!DELETELINEMAPS 
-$!ACTIVELINEMAPS  =  [1-2]
+$!ACTIVELINEMAPS  =  [1-4]
 $!GLOBALLINEPLOT 
   DATALABELS
     {
@@ -927,21 +930,23 @@ $!GLOBALLINEPLOT
       }
     }
 $!LINEMAP  [1]
-  NAME = '&DV&'
+  NAME = '&ZN&'
   ASSIGN
     {
     ZONE = 1
-    XAXISVAR = 1
+    XAXISVAR = 3
     YAXISVAR = 2
     }
   LINES
     {
-    COLOR = BLACK
+    COLOR = RED
     }
   SYMBOLS
     {
-    COLOR = RED
+    COLOR = CUSTOM10
+    FILLMODE = USELINECOLOR
     FILLCOLOR = RED
+    SIZE = 0.5
     }
   BARCHARTS
     {
@@ -951,14 +956,23 @@ $!LINEMAP  [1]
   ERRORBARS
     {
     COLOR = RED
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      MIN = 2
+      SKIP = 2
+      }
     }
 $!LINEMAP  [2]
-  NAME = '&DV&'
+  NAME = '&ZN&'
   ASSIGN
     {
     ZONE = 1
-    XAXISVAR = 1
-    YAXISVAR = 3
+    XAXISVAR = 3
+    YAXISVAR = 1
+    YAXIS = 2
     }
   LINES
     {
@@ -966,68 +980,157 @@ $!LINEMAP  [2]
     }
   SYMBOLS
     {
-    COLOR = GREEN
-    FILLCOLOR = GREEN
+    COLOR = CUSTOM42
+    FILLMODE = USELINECOLOR
+    FILLCOLOR = RED
+    SIZE = 0.5
     }
   BARCHARTS
     {
-    COLOR = GREEN
-    FILLCOLOR = GREEN
+    COLOR = RED
+    FILLCOLOR = RED
     }
   ERRORBARS
     {
-    COLOR = GREEN
+    COLOR = RED
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      MIN = 2
+      SKIP = 2
+      }
     }
 $!LINEMAP  [3]
-  NAME = '&DV&'
+  NAME = '&ZN&'
   ASSIGN
     {
     ZONE = 1
-    XAXISVAR = 1
-    YAXISVAR = 4
+    XAXISVAR = 3
+    YAXISVAR = 2
     }
   LINES
     {
-    COLOR = BLUE
+    COLOR = RED
+    }
+  SYMBOLS
+    {
+    COLOR = RED
+    FILLMODE = USELINECOLOR
+    FILLCOLOR = RED
+    SIZE = 0.5
+    }
+  BARCHARTS
+    {
+    COLOR = RED
+    FILLCOLOR = RED
+    }
+  ERRORBARS
+    {
+    COLOR = RED
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      SKIP = 2
+      }
+    }
+$!LINEMAP  [4]
+  NAME = '&ZN&'
+  ASSIGN
+    {
+    ZONE = 1
+    XAXISVAR = 3
+    YAXISVAR = 1
+    YAXIS = 2
+    }
+  LINES
+    {
+    COLOR = BLACK
     }
   SYMBOLS
     {
     COLOR = BLUE
-    FILLCOLOR = BLUE
+    FILLMODE = USELINECOLOR
+    FILLCOLOR = RED
+    SIZE = 0.5
     }
   BARCHARTS
     {
-    COLOR = BLUE
-    FILLCOLOR = BLUE
+    COLOR = RED
+    FILLCOLOR = RED
     }
   ERRORBARS
     {
-    COLOR = BLUE
+    COLOR = RED
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      SKIP = 2
+      }
     }
 $!XYLINEAXIS 
   DEPXTOYRATIO = 1
 $!XYLINEAXIS 
   XDETAIL 1
     {
-    RANGEMIN = 0
-    RANGEMAX = 190.5790535583496137
-    GRSPACING = 50
+    RANGEMIN = 1
+    RANGEMAX = 3152
+    GRSPACING = 500
+    TICKS
+      {
+      SHOWONAXISLINE = NO
+      }
+    TICKLABEL
+      {
+      TEXTSHAPE
+        {
+        HEIGHT = 2
+        }
+      }
     TITLE
       {
       TITLEMODE = USETEXT
-      TEXT = 'tU/D'
+      TEXT = 'it'
       }
     }
 $!XYLINEAXIS 
   YDETAIL 1
     {
-    RANGEMIN = -3
-    RANGEMAX = 3
-    GRSPACING = 0.5
-    TITLE
+    COORDSCALE = LOG
+    RANGEMIN = 1.0000000000000000364E-10
+    RANGEMAX = 1
+    GRSPACING = 0.2
+    TICKS
       {
-      TITLEMODE = USETEXT
-      TEXT = '2F/<greek>r</greek> U<sup>2</sup> DS'
+      SHOWONAXISLINE = NO
       }
     }
+$!XYLINEAXIS 
+  YDETAIL 2
+    {
+    RANGEMIN = 0
+    RANGEMAX = 51
+    GRSPACING = 10
+    TICKS
+      {
+      SHOWONAXISLINE = NO
+      }
+    AXISLINE
+      {
+      AXISALIGNMENT = WITHGRIDMAX
+      }
+    }
+$!VIEW AXISFIT
+  AXIS = 'X'
+  AXISNUM = 1
+$!LINEPLOTLAYERS 
+  SHOWLINES = NO
+  SHOWSYMBOLS = YES
+$!FRAMECONTROL ACTIVATEBYNUMBER
+  FRAME = 1
 $!SETSTYLEBASE CONFIG

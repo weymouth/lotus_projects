@@ -8,12 +8,20 @@ fi
 
 # make the dir
 mkdir $2
+rm $2/fort.?
+rm $2/fort.??
+rm $2/fort.???
+rm $2/fort.????
 
 # set up inputs
 cp exec_BDIM $2/.
 cp inp.* $2/.
 if [ $# -eq 3 ]; then
     cp $3/fort.1??? $2/.
+    cp $3/fort.2??? $2/.
+    cp $3/inp.geom $2/.
+    cp $3/inp.IGS $2/.
+    tail -n 2 $3/fort.10 > $2/inp.force
 fi
 
 # cd and move tecplot stuff
@@ -22,12 +30,16 @@ cp ../tecplot/* .
 
 # run the code
 if [ $1 -eq 0 ]; then
-    ./exec_BDIM
+    ./exec_BDIM &
 else
-    mpiexec -n $1 ./exec_BDIM
+    mpiexec -n $1 ./exec_BDIM &
 fi
 
-# run the post processing scripts and macros
-./exec_tec 'bod.mcr' 'lam2.lay png.mcr'
-mv image.png lam2.png
+wait 
 
+# run the post processing scripts and macros
+nice ./exec_tec body.mcr lam2.mcr &
+wait
+#./exec_zip
+echo "complete"
+exit 0
