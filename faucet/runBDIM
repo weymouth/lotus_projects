@@ -32,11 +32,14 @@ fi
 wait 
 
 # run the post processing scripts and macros
-nice ./exec_tec 'FI.mcr' 'lam2.mcr'
-#nice ./exec_tec 'HD.lay HD.mcr'
+nice ./exec_tec 'lam2.mcr'
+nice ./exec_tec 'veloAndLam2.lay avi.mcr'
+mv movie.avi lam2.avi
+nice ./exec_tec 'FI.mcr'
 nice ./exec_tec 'veloAndFI.lay avi.mcr'
+mv movie.avi FI.avi
 zip -m body fort.1??.plt
-zip -m velo fort.2??.plt
+#zip -m velo fort.2??.plt
 zip -m lam2 fort.4??.plt
 zip -m fint fort.5??.plt
 zip -m rest fort.????
