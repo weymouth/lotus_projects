@@ -1,5 +1,5 @@
 #!MC 1300
-# Created by Tecplot 360 build 13.1.0.15185
+# Created by Tecplot 360 build 13.1.1.16314
 $!VarSet |LFDSFN1| = '"vort.plt"'
 $!VarSet |LFDSVL1| = '"x" "y" "p"'
 $!VarSet |LFDSFN2| = '"body.plt"'
@@ -8,11 +8,12 @@ $!SETSTYLEBASE FACTORY
 $!GLOBALLINKING 
   LINKCOLORMAPS = YES
 $!GLOBALCOLORMAP  1
-  CONTOURCOLORMAP = SMRAINBOW
+  CONTOURCOLORMAP = USERDEF
 $!COLORMAPCONTROL 1 RESETTOFACTORY
 $!GLOBALCOLORMAP  1
-  SMRAINBOW
+  USERDEFINED
     {
+    NUMCONTROLPOINTS = 4
     CONTROLPOINT 1
       {
       COLORMAPFRACTION = 0
@@ -20,7 +21,7 @@ $!GLOBALCOLORMAP  1
         {
         R = 0
         G = 0
-        B = 255
+        B = 0
         }
       TRAILRGB
         {
@@ -31,66 +32,50 @@ $!GLOBALCOLORMAP  1
       }
     CONTROLPOINT 2
       {
-      COLORMAPFRACTION = 0.25
+      COLORMAPFRACTION = 0.4666
       LEADRGB
         {
-        R = 0
+        R = 255
         G = 255
         B = 255
         }
       TRAILRGB
         {
-        R = 0
-        G = 255
-        B = 255
+        R = 128
+        G = 128
+        B = 128
         }
       }
     CONTROLPOINT 3
       {
-      COLORMAPFRACTION = 0.5
+      COLORMAPFRACTION = 0.5344
       LEADRGB
         {
-        R = 0
-        G = 255
-        B = 0
+        R = 128
+        G = 128
+        B = 128
         }
       TRAILRGB
         {
-        R = 0
+        R = 255
         G = 255
-        B = 0
+        B = 255
         }
       }
     CONTROLPOINT 4
-      {
-      COLORMAPFRACTION = 0.75
-      LEADRGB
-        {
-        R = 255
-        G = 255
-        B = 0
-        }
-      TRAILRGB
-        {
-        R = 255
-        G = 255
-        B = 0
-        }
-      }
-    CONTROLPOINT 5
       {
       COLORMAPFRACTION = 1
       LEADRGB
         {
         R = 255
-        G = 0
+        G = 255
         B = 0
         }
       TRAILRGB
         {
         R = 255
-        G = 0
-        B = 0
+        G = 255
+        B = 255
         }
       }
     }
@@ -909,7 +894,17 @@ $!READDATASET  '|LFDSFN2|'
   VARNAMELIST = '|LFDSVL2|'
 $!REMOVEVAR |LFDSVL2|
 $!REMOVEVAR |LFDSFN2|
+$!RENAMEDATASETVAR 
+  VAR = 1
+  NAME = '<greek>w'
+$!RENAMEDATASETVAR 
+  VAR = 1
+  NAME = 'x'
+$!RENAMEDATASETVAR 
+  VAR = 3
+  NAME = '<greek>w'
 $!FRAMELAYOUT 
+  SHOWBORDER = NO
   SHOWHEADER = NO
   HEADERCOLOR = RED
   XYPOS
@@ -925,19 +920,34 @@ $!THREEDAXIS
 $!PLOTTYPE  = CARTESIAN2D
 $!FRAMENAME  = 'Frame 001'
 $!GLOBALTIME 
-  SOLUTIONTIME = 2.00999999999999979
-$!ACTIVEFIELDMAPS  =  [1-203]
+  SOLUTIONTIME = 1.55000000000000004
+$!ACTIVEFIELDMAPS  =  [1-202]
 $!GLOBALRGB 
   RANGEMIN = 0
   RANGEMAX = 1
 $!GLOBALCONTOUR  1
   VAR = 3
-  DEFNUMLEVELS = 12
+  DEFNUMLEVELS = 21
+  LABELS
+    {
+    AUTOLEVELSKIP = 2
+    }
   LEGEND
     {
+    SHOW = YES
     XYPOS
       {
-      X = 95
+      X = 97.023
+      Y = 44.062
+      }
+    OVERLAYBARGRID = NO
+    HEADERTEXTSHAPE
+      {
+      HEIGHT = 3.5
+      }
+    BOX
+      {
+      MARGIN = 6
       }
     }
   COLORCUTOFF
@@ -949,27 +959,36 @@ $!GLOBALCONTOUR  1
     {
     CONTINUOUSCOLOR
       {
-      CMIN = -57.74
-      CMAX = 1
+      CMIN = -20
+      CMAX = 20
       }
     }
 $!CONTOURLEVELS NEW
   CONTOURGROUP = 1
   RAWDATA
-12
--100
--31.4
+19
+-25
+-22.5
+-20
+-17.5
+-15
+-12.5
 -10
--3.14
--1
--0.314
-0.314
-1
-3.14
+-7.5
+-5
+0
+5
+7.5
 10
-31.4
-100
+12.5
+15
+17.5
+20
+22.5
+25
 $!GLOBALCONTOUR  2
+  VAR = 3
+  DEFNUMLEVELS = 2
   LEGEND
     {
     XYPOS
@@ -977,14 +996,30 @@ $!GLOBALCONTOUR  2
       X = 95
       }
     }
+  COLORCUTOFF
+    {
+    RANGEMIN = -26.845
+    RANGEMAX = 1
+    }
   COLORMAPFILTER
     {
     CONTINUOUSCOLOR
       {
-      CMIN = 0
+      CMIN = -51.69
       CMAX = 1
       }
     }
+  CONTOURLINESTYLE
+    {
+    CONTOURLINEMODE = DASHNEGATIVE
+    PATTERNLENGTH = 0.5
+    }
+$!CONTOURLEVELS NEW
+  CONTOURGROUP = 2
+  RAWDATA
+2
+-6
+6
 $!GLOBALCONTOUR  3
   LEGEND
     {
@@ -1103,6 +1138,7 @@ $!FIELDMAP  [1]
   CONTOUR
     {
     CONTOURTYPE = FLOOD
+    LINECONTOURGROUP = 2
     COLOR = BLACK
     USELIGHTINGEFFECT = YES
     }
@@ -11397,49 +11433,6 @@ $!FIELDMAP  [202]
     {
     LIGHTINGEFFECT = GOURAUD
     }
-$!FIELDMAP  [203]
-  MESH
-    {
-    COLOR = BLACK
-    }
-  CONTOUR
-    {
-    COLOR = YELLOW
-    }
-  VECTOR
-    {
-    COLOR = YELLOW
-    }
-  SCATTER
-    {
-    COLOR = YELLOW
-    }
-  SHADE
-    {
-    COLOR = WHITE
-    }
-  EDGELAYER
-    {
-    SHOW = NO
-    COLOR = YELLOW
-    }
-  POINTS
-    {
-    POINTSTOPLOT = SURFACENODES
-    }
-  SURFACES
-    {
-    SURFACESTOPLOT = KPLANES
-    }
-  VOLUMEMODE
-    {
-    VOLUMEOBJECTSTOPLOT
-      {
-      SHOWISOSURFACES = NO
-      SHOWSLICES = NO
-      SHOWSTREAMTRACES = NO
-      }
-    }
 $!TWODAXIS 
   XDETAIL
     {
@@ -11451,20 +11444,73 @@ $!TWODAXIS
     }
 $!VIEW FIT
 $!TWODAXIS 
+  PRESERVEAXISSCALE = YES
   DEPXTOYRATIO = 1
+  GRIDAREA
+    {
+    DRAWBORDER = YES
+    LINETHICKNESS = 0.1
+    }
+  VIEWPORTPOSITION
+    {
+    X1 = 9.5872
+    Y1 = 8.4432
+    X2 = 97.606
+    Y2 = 74.457
+    }
+  VIEWPORTTOPSNAPTARGET = 77.4772727273
 $!TWODAXIS 
   XDETAIL
     {
-    RANGEMIN = -1.5380000000000000338
-    RANGEMAX = 2.0543234821428564274
+    RANGEMIN = -1
+    RANGEMAX = 1.9999999999999995559
     GRSPACING = 0.5
+    TICKS
+      {
+      SHOWONAXISLINE = NO
+      LINETHICKNESS = 0.1
+      }
+    TITLE
+      {
+      TITLEMODE = USETEXT
+      TEXT = '(x-x<sub>c</sub>)/D'
+      TEXTSHAPE
+        {
+        ISBOLD = NO
+        HEIGHT = 3.6
+        }
+      }
+    AXISLINE
+      {
+      LINETHICKNESS = 0.1
+      }
     }
 $!TWODAXIS 
   YDETAIL
     {
-    RANGEMIN = -1.6390000000000000124
-    RANGEMAX = 1.6393278000000000016
+    RANGEMIN = -1
+    RANGEMAX = 0.99999091103264281521
     GRSPACING = 0.5
+    TICKS
+      {
+      SHOWONAXISLINE = NO
+      LINETHICKNESS = 0.1
+      }
+    TITLE
+      {
+      TITLEMODE = USETEXT
+      TEXT = 'y/D'
+      TEXTSHAPE
+        {
+        ISBOLD = NO
+        HEIGHT = 3.6
+        }
+      OFFSET = 5
+      }
+    AXISLINE
+      {
+      LINETHICKNESS = 0.1
+      }
     }
 $!ISOSURFACEATTRIBUTES  1
   OBEYSOURCEZONEBLANKING = NO

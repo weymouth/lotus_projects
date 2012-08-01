@@ -2,7 +2,7 @@
 2			 ! number of dimensions
 F			 ! restart switch
 0.01			 ! print interval
-2.0		     	 ! simulation duration
+0.35		     	 ! simulation duration
 !! ----  MPI  info  ---- !!
 F,F	 		 ! parrallel boundaries
 4,3			 ! number of blocks
@@ -12,16 +12,22 @@ F,F	 		 ! parrallel boundaries
 0.1			 ! frame ramp-up time
 !! --- Velocity info --- !!
 1e-3			 ! viscosity (dark fluid)
-F F F 200 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
-T F F 400 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+T F F 200 10 1 0	 ! velocity
+T F F 400 10 1 0	 ! 2D vorticity, 3D lam_2
+F F F 000 10 1 0	 ! 3D <omega_z>_z
+F F F 000 10 1 0	 ! 3D vorticity field
+F     	       		   	 ! read ICs from fort.1??? files
+!! --- Apriori  info --- !!
+F F F 3000 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+!! --- Probe  info --- !!
+F F F 800 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
 !! --- Pressure info --- !!
-F F F 300 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+T F F 300 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
 !! ----  Body info  ---- !!
 T				 ! immersed body present
 -2.5			 	 ! smoothing width
 T F F 100 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst) 
 T      	      	   	 ! body move
-F  	      	   	 ! body slip
+F			 ! body slip
 !! ----  VOF  info  ---- !!
-!! --- Apriori  info --- !!
 !! ---- End of info ---- !!

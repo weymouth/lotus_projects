@@ -33,8 +33,16 @@ fi
 wait 
 
 # run the post processing scripts and macros
-rm fort.[1-4]?[0-3,5-9]
-nice ./exec_tec line.mcr
+rm fort.[1-9]?[0-3,5-9]
+nice ./exec_tec line.mcr bodyAndPress.mcr
+nice ./exec_tec 'pressure.lay png.mcr'
+mv fort.404.plt vort.plt
+mv fort.204.plt velo.plt
+nice ./exec_tec 'ke.lay int.mcr'
+zip -m restart fort.[1-2]???
+zip -m vort fort.3???
+zip -m velo fort.4???
+# rm fort.*
 wait
 echo "complete"
 exit 0
