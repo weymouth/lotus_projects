@@ -1,10 +1,12 @@
 #!/bin/sh
 
 # preplot all files
-for i in fort.[1-9][0-9][0-9]; do
+for j in  1 2 3 4 5 6 7 8 9; do
+for i in fort.$j[0-9][0-9]; do
     nice ./exec_pre $i &
 done
 wait
+done
 
 # run any macros
 for i; do

@@ -17,7 +17,7 @@ program design_geom
   open(7+3,file='xcp.dat',STATUS='REPLACE')
 !
 ! -- defaults
-  amp=0.2; f=1; k=2; off=0; peak=90; tail=0
+  amp=0.2; f=1.33; k=2.2; off=0; peak=90; tail=0
 !
 ! -- read command line input
   do i=1,iargc()

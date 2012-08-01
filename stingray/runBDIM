@@ -14,19 +14,18 @@ rm $2/fort.???
 rm $2/fort.????
 
 # set up inputs
+cp tecplot/* $2/.
 cp exec_BDIM $2/.
 cp inp.* $2/.
 cp *IGS $2/.
 if [ $# -eq 3 ]; then
     cp $3/fort.1??? $2/.
     cp $3/fort.2??? $2/.
+    cp $3/inp.geom .
 fi
 
-# cd and move tecplot stuff
+# cd and run
 cd $2
-cp ../tecplot/* .
-
-# run the code
 if [ $1 -eq 0 ]; then
     ./exec_BDIM &
 else
@@ -36,9 +35,10 @@ fi
 wait 
 
 # run the post processing scripts and macros
-./cfl &
-wait
 nice ./exec_tec body.mcr lam2.mcr &
 wait
+nice ./exec_tec 'bodyAndLam2.lay avi.mcr' &
+wait
+./exec_zip
 echo "complete"
 exit 0
