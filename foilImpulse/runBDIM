@@ -36,14 +36,17 @@ fi
 wait 
 
 # run the post processing scripts and macros
+zip  vort_txt.zip fort.2?? &
+zip  lam2_txt.zip fort.4?? &
+wait
 nice ./exec_tec 
-nice ./exec_tec body.mcr lam2.mcr vort.mcr
-nice ./exec_tec 'movie.lay avi.mcr'
+nice ./exec_tec body.mcr lam2.mcr
+nice ./exec_tec 'lam2.lay avi.mcr'
+nice ./exec_tec 'lam2_top.lay png.mcr'
 zip -m body.zip fort.1??.plt &
-zip -m velo.zip fort.2??.plt &
 zip -m pres.zip fort.3??.plt &
 zip -m lam2.zip fort.4??.plt &
-zip -m vort.zip vort.2??.plt &
+zip -m vort.zip fort.2??.plt &
 wait
 rm batch.log junk
 echo "complete"

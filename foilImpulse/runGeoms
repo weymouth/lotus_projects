@@ -3,8 +3,8 @@ sed 's/GEOM/square/' temp.geom > inp.geom
 
 echo "Steady"
 sed 's/lres/F/
-     s/dtPrint/0.08/
-     s/timeEnd/7.12/
+     s/dtPrint/0.1/
+     s/timeEnd/7.1/
      s/bodyRwnd/T/
      s/bodyMove/F/' temp.txt > inp.txt
 ./runBDIM 12 squareSteadyAlpha10 &
@@ -24,8 +24,8 @@ sed 's/GEOM/half/' temp.geom > inp.geom
 
 echo "Steady"
 sed 's/lres/F/
-     s/dtPrint/0.08/
-     s/timeEnd/7.12/
+     s/dtPrint/0.1/
+     s/timeEnd/7.1/
      s/bodyRwnd/T/
      s/bodyMove/F/' temp.txt > inp.txt
 ./runBDIM 12 halfSteadyAlpha10 &
@@ -45,8 +45,8 @@ sed 's/GEOM/full/' temp.geom > inp.geom
 
 echo "Steady"
 sed 's/lres/F/
-     s/dtPrint/0.08/
-     s/timeEnd/7.12/
+     s/dtPrint/0.1/
+     s/timeEnd/7.1/
      s/bodyRwnd/T/
      s/bodyMove/F/' temp.txt > inp.txt
 ./runBDIM 12 fullSteadyAlpha10 &
