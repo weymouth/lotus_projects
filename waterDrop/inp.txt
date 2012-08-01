@@ -2,7 +2,7 @@
 3			 ! number of dimensions
 F			 ! restart switch
 0.05			 ! print interval
-10.			 ! simulation duration
+6.5			 ! simulation duration
 !! ----  MPI  info  ---- !!
 F,F,F			 ! parrallel boundaries
 2,2,3			 ! number of blocks

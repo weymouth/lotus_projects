@@ -31,7 +31,6 @@ fi
 wait 
 
 # run the post processing scripts and macros
-cfl; mgs
 ./exec_tec 'FI.mcr' 'FI.lay avi.mcr'
 zip velo.zip fort.2??.plt 
 zip restart.zip fort.[1-2]??? 

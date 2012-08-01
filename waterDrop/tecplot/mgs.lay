@@ -943,7 +943,7 @@ $!LINEMAP  [1]
     }
   SYMBOLS
     {
-    COLOR = RED
+    COLOR = CUSTOM10
     FILLMODE = USELINECOLOR
     FILLCOLOR = RED
     SIZE = 0.5
@@ -961,6 +961,7 @@ $!LINEMAP  [1]
     {
     IRANGE
       {
+      MIN = 2
       SKIP = 2
       }
     }
@@ -970,15 +971,16 @@ $!LINEMAP  [2]
     {
     ZONE = 1
     XAXISVAR = 3
-    YAXISVAR = 2
+    YAXISVAR = 1
+    YAXIS = 2
     }
   LINES
     {
-    COLOR = RED
+    COLOR = BLACK
     }
   SYMBOLS
     {
-    COLOR = CUSTOM40
+    COLOR = CUSTOM42
     FILLMODE = USELINECOLOR
     FILLCOLOR = RED
     SIZE = 0.5
@@ -1006,16 +1008,15 @@ $!LINEMAP  [3]
     {
     ZONE = 1
     XAXISVAR = 3
-    YAXISVAR = 1
-    YAXIS = 2
+    YAXISVAR = 2
     }
   LINES
     {
-    COLOR = BLACK
+    COLOR = RED
     }
   SYMBOLS
     {
-    COLOR = CUSTOM6
+    COLOR = RED
     FILLMODE = USELINECOLOR
     FILLCOLOR = RED
     SIZE = 0.5
@@ -1051,7 +1052,7 @@ $!LINEMAP  [4]
     }
   SYMBOLS
     {
-    COLOR = CUSTOM38
+    COLOR = BLUE
     FILLMODE = USELINECOLOR
     FILLCOLOR = RED
     SIZE = 0.5
@@ -1069,7 +1070,6 @@ $!LINEMAP  [4]
     {
     IRANGE
       {
-      MIN = 2
       SKIP = 2
       }
     }
@@ -1079,7 +1079,7 @@ $!XYLINEAXIS
   XDETAIL 1
     {
     RANGEMIN = 1
-    RANGEMAX = 1532
+    RANGEMAX = 3152
     GRSPACING = 500
     TICKS
       {
@@ -1114,7 +1114,7 @@ $!XYLINEAXIS
   YDETAIL 2
     {
     RANGEMIN = 0
-    RANGEMAX = 50
+    RANGEMAX = 51
     GRSPACING = 10
     TICKS
       {
