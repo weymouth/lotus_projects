@@ -3,7 +3,6 @@
 F			 ! restart switch
 1 			 ! print interval
 100	     	         ! simulation end time
-1e-2		         ! dt lower limit
 !! ----  MPI  info  ---- !!
 F,F,T		 ! parallel boundaries (x,y,z)
 3,4,1		 ! number of blocks (x,y,z)
@@ -21,24 +20,15 @@ F F F 700	   	 ! vector velocity print
 T F F 400	 	 ! scalar print (vort in 2D, lambda in 3D)
 T F F 600	 	 ! z-averaged z-vorticity print (3D only) 
 T F F 200	 	 ! vector vorticity print (3D only)
-F                        ! read IC from restart
 !! --- Apriori  info --- !!
-F F F 3000	 	 ! apriori file
 !! --- Probe  info --- !!
-F F F 800	         ! probe file print
-3*0.5                    ! probe location
 !! --- Pressure info --- !!
-F F F 300	   	 ! pressure field print
 !! ----  Body info  ---- !!
 T			 ! immersed body present
 -2		 	 ! smoothing width
 T F F 100	 	 ! distance function print
 T            	   	 ! body move
 F   	      	   	 ! body slip
-F   	      	   	 ! body correction
+T   	      	   	 ! body correction
 !! ----  VOF  info  ---- !!
-F			 ! dynamic free surface
-F F F 500		 ! vof field print
-1,1,1,9,1,1,1  	         ! u,p boundary type (-dims:dims)
-0                        ! vof cutoff size
 !! ---- End of info ---- !!

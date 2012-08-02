@@ -38,8 +38,11 @@ fi
 wait 
 
 # run the post processing scripts and macros
+./runStat
 nice ./runTec body.mcr lam2.mcr &
 wait
-#./runZip
-echo "complete"
+./runTec 'avi.mcr lam2.lay'
+mv movie.avi lam2.avi
+./runZip
+echo "runBDIM:complete"
 exit 0
