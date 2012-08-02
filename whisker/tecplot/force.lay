@@ -1,5 +1,5 @@
 #!MC 1300
-# Created by Tecplot 360 build 13.1.1.16314
+# Created by Tecplot 360 build 13.3.0.21255
 $!VarSet |LFDSFN1| = '"fort.10"'
 $!VarSet |LFDSVL1| = '"V1" "V2" "V3" "V4"'
 $!SETSTYLEBASE FACTORY
@@ -923,18 +923,23 @@ $!GLOBALLINEPLOT
     }
   LEGEND
     {
+    SHOW = YES
+    TEXTSHAPE
+      {
+      HEIGHT = 2.5
+      }
     BOX
       {
       BOXTYPE = NONE
       }
     XYPOS
       {
-      X = 86.278
-      Y = 30.284
+      X = 46.967
+      Y = 76.733
       }
     }
 $!LINEMAP  [1]
-  NAME = 'drag'
+  NAME = 'pressure drag'
   ASSIGN
     {
     ZONE = 1
@@ -970,7 +975,7 @@ $!LINEMAP  [1]
       }
     }
 $!LINEMAP  [2]
-  NAME = 'lift'
+  NAME = 'pressure lift'
   ASSIGN
     {
     ZONE = 1
@@ -1040,7 +1045,7 @@ $!LINEMAP  [3]
       }
     }
 $!LINEMAP  [4]
-  NAME = 'drag'
+  NAME = 'viscous drag'
   ASSIGN
     {
     ZONE = 1
@@ -1075,7 +1080,7 @@ $!LINEMAP  [4]
       }
     }
 $!LINEMAP  [5]
-  NAME = 'lift'
+  NAME = 'viscous lift'
   ASSIGN
     {
     ZONE = 1
@@ -1152,8 +1157,8 @@ $!XYLINEAXIS
   XDETAIL 1
     {
     RANGEMIN = 0
-    RANGEMAX = 200
-    GRSPACING = 50
+    RANGEMAX = 10.001425743103027344
+    GRSPACING = 2
     TICKS
       {
       SHOWONAXISLINE = NO
@@ -1169,10 +1174,9 @@ $!XYLINEAXIS
 $!XYLINEAXIS 
   YDETAIL 1
     {
-    RANGEMIN = -2
-    RANGEMAX = 3
-    AUTOGRID = NO
-    GRSPACING = 1
+    RANGEMIN = -0.023316467180848121643
+    RANGEMAX = 1.0785358881548745558E-06
+    GRSPACING = 0.005
     TITLE
       {
       TITLEMODE = USETEXT
@@ -1182,9 +1186,9 @@ $!XYLINEAXIS
 $!XYLINEAXIS 
   YDETAIL 2
     {
-    RANGEMIN = -4
-    RANGEMAX = 6
-    GRSPACING = 2
+    RANGEMIN = 2.3979808361218601931E-07
+    RANGEMAX = 0.99950909614562988281
+    GRSPACING = 0.2
     TITLE
       {
       TITLEMODE = USETEXT
@@ -1195,6 +1199,15 @@ $!XYLINEAXIS
       AXISALIGNMENT = WITHGRIDMAX
       }
     }
+$!VIEW AXISFIT
+  AXIS = 'X'
+  AXISNUM = 1
+$!VIEW AXISFIT
+  AXIS = 'Y'
+  AXISNUM = 1
+$!VIEW AXISFIT
+  AXIS = 'Y'
+  AXISNUM = 2
 $!FRAMECONTROL ACTIVATEBYNUMBER
   FRAME = 1
 $!SETSTYLEBASE CONFIG

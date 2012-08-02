@@ -38,8 +38,8 @@ fi
 wait 
 
 # run the post processing scripts and macros
-nice ./exec_tec body.mcr lam2.mcr &
+nice ./runTec body.mcr lam2.mcr &
 wait
-#./exec_zip
+#./runZip
 echo "complete"
 exit 0

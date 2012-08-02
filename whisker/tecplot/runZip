@@ -18,5 +18,5 @@ function archiveDIR
     done
 }
 archiveDIR
-echo "complete"
+echo "runZip:complete"
 exit 0
