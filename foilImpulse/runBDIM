@@ -16,7 +16,6 @@ rm $2/fort.????
 # set up inputs
 cp exec_BDIM $2/.
 cp inp.* $2/.
-cp *IGS $2/.
 if [ $# -eq 3 ]; then
     cp $3/fort.1??? $2/.
     cp $3/fort.2??? $2/.
@@ -36,18 +35,17 @@ fi
 wait 
 
 # run the post processing scripts and macros
-zip  vort_txt.zip fort.2?? &
-zip  lam2_txt.zip fort.4?? &
+./runStat
+mkdir vort; cp fort.2?? vort/
+mkdir lam2; cp fort.4?? lam2/
+mkdir velo; cp fort.7?? velo/
+nice ./runTec 
 wait
-nice ./exec_tec 
-nice ./exec_tec body.mcr lam2.mcr
-nice ./exec_tec 'lam2.lay avi.mcr'
-nice ./exec_tec 'lam2_top.lay png.mcr'
-zip -m body.zip fort.1??.plt &
-zip -m pres.zip fort.3??.plt &
-zip -m lam2.zip fort.4??.plt &
-zip -m vort.zip fort.2??.plt &
+nice ./runTec body.mcr lam2.mcr
+nice ./runTec 'lam2.lay avi.mcr'
+nice ./runTec 'lam2_top.lay png.mcr'
 wait
+./runZip
 rm batch.log junk
-echo "complete"
+echo "runBDIM: complete"
 exit 0

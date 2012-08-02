@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# check that a file prefix was given
+if [ $# -lt 1 ]; then
+  echo usage: runGEOM file_prefix
+  exit 1
+fi
+
+# change the prefix inside the geom file
+sed s/$1/'inp'/ $1.geom > inp.geom
+
+# cp the IGS file
+cp $1.IGS inp.IGS
+
+echo "setupGEOM: complete"
+exit 0

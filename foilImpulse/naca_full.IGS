@@ -1,8 +1,4 @@
 F F T F F					! turn off top and bottom
--4.219 -10.271 -18.874 0 180 0 3*0.36626	! offset,rotate,scale
-0.05               				! buffer
-0.5						! centroid for flip
-31 31 141					! grid
 SolidWorks IGES file using analytic representation for surfaces         S      1
 1H,,1H;,24Hnaca0012foil_streamlined,77HC:\Users\s_chin\Documents\MT WorkG      1
 \Vanishing Foil\naca0012foil_streamlined.IGS,15HSolidWorks 2010,15HSolidG      2
