@@ -2,7 +2,7 @@
 3			 ! number of dimensions
 F			 ! restart switch
 1 			 ! print interval
-10	     	         ! simulation end time
+100	     	         ! simulation end time
 1e-2		         ! dt lower limit
 !! ----  MPI  info  ---- !!
 F,F,T		 ! parallel boundaries (x,y,z)
