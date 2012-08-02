@@ -12,14 +12,14 @@ F,F,F			 ! parrallel boundaries
 2.0			 	 ! frame ramp-up time 
 !! --- Velocity info --- !!
 7.14e-5			! viscosity (dark fluid)
-F F F 500 10 1 0	! vector velocity (prnt,rwnd,xxx,file number)
-T F F 400 10 1 0	! scalar (vort in 2D, lam2 in 3D) 
-F F F 600 10 1 0	! averaged vort in z, 3D only
-T F F 200 10 1 0	! vector vorticity, 3D only
+T F F 700	   	 ! vector velocity print
+T F F 400	 	 ! scalar print (vort in 2D, lambda in 3D)
+F F F 600	 	 ! z-averaged z-vorticity print (3D only) 
+T F F 200	 	 ! vector vorticity print (3D only)
 !! --- Apriori  info --- !!
 !! --- Probe  info --- !!
 !! --- Pressure info --- !!
-T F F 300 10 1 0	! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+F F F 300	   	 ! pressure field print
 !! ----  Body info  ---- !!
 T				! immersed body present
 -4			 	! smoothing width

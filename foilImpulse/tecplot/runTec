@@ -3,17 +3,17 @@
 # preplot all files
 for j in  1 2 3 4 5 6 7 8 9; do
 for i in fort.$j[0-9][0-9]; do
-    nice ./exec_pre $i &
+    nice ./runPre $i &
 done
 wait
 done
 
 # run any macros
 for i; do
-    echo exec_tec: macro $i
+    echo runTec: macro $i
     tec360 -b $i >> junk
     if  [ `grep Err batch.log -c` -ne 0 ]; then
-	echo exec_tec: problem with macro
+	echo runTec: problem with macro
 	exit 3
     fi
 done

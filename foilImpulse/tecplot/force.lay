@@ -1,6 +1,6 @@
 #!MC 1300
-# Created by Tecplot 360 build 13.1.1.16314
-$!VarSet |LFDSFN1| = '"fort.11"'
+# Created by Tecplot 360 build 13.3.0.21255
+$!VarSet |LFDSFN1| = '"fort.10"'
 $!VarSet |LFDSVL1| = '"V1" "V2" "V3" "V4"'
 $!SETSTYLEBASE FACTORY
 $!GLOBALLINKING 
@@ -897,6 +897,7 @@ $!READDATASET  '|LFDSFN1|'
 $!REMOVEVAR |LFDSVL1|
 $!REMOVEVAR |LFDSFN1|
 $!FRAMELAYOUT 
+  SHOWBORDER = NO
   SHOWHEADER = NO
   HEADERCOLOR = RED
   XYPOS
@@ -914,7 +915,7 @@ $!FRAMENAME  = 'Frame 001'
 $!GLOBALTIME 
   SOLUTIONTIME = 0
 $!DELETELINEMAPS 
-$!ACTIVELINEMAPS  =  [1-3]
+$!ACTIVELINEMAPS  =  [1-2,4-5]
 $!GLOBALLINEPLOT 
   DATALABELS
     {
@@ -922,39 +923,59 @@ $!GLOBALLINEPLOT
     }
   LEGEND
     {
+    SHOW = YES
+    TEXTSHAPE
+      {
+      HEIGHT = 2.5
+      }
+    BOX
+      {
+      BOXTYPE = NONE
+      }
     XYPOS
       {
-      X = 95
+      X = 46.967
+      Y = 76.733
       }
     }
 $!LINEMAP  [1]
-  NAME = '&DV&'
+  NAME = 'pressure drag'
   ASSIGN
     {
     ZONE = 1
     XAXISVAR = 1
     YAXISVAR = 2
+    YAXIS = 2
     }
   LINES
     {
-    COLOR = CUSTOM2
+    COLOR = RED
+    LINEPATTERN = DOTTED
+    PATTERNLENGTH = 0.5
     }
   SYMBOLS
     {
-    COLOR = CUSTOM1
-    FILLCOLOR = CUSTOM1
+    COLOR = RED
+    FILLCOLOR = RED
     }
   BARCHARTS
     {
-    COLOR = CUSTOM1
-    FILLCOLOR = CUSTOM1
+    COLOR = RED
+    FILLCOLOR = RED
     }
   ERRORBARS
     {
-    COLOR = CUSTOM1
+    COLOR = RED
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      SKIP = 2
+      }
     }
 $!LINEMAP  [2]
-  NAME = '&DV&'
+  NAME = 'pressure lift'
   ASSIGN
     {
     ZONE = 1
@@ -963,48 +984,168 @@ $!LINEMAP  [2]
     }
   LINES
     {
-    COLOR = RED
+    COLOR = GREEN
+    LINEPATTERN = DOTTED
+    PATTERNLENGTH = 0.5
     }
   SYMBOLS
     {
-    COLOR = CUSTOM3
-    FILLCOLOR = CUSTOM3
+    COLOR = GREEN
+    FILLCOLOR = GREEN
     }
   BARCHARTS
     {
-    COLOR = CUSTOM3
-    FILLCOLOR = CUSTOM3
+    COLOR = GREEN
+    FILLCOLOR = GREEN
     }
   ERRORBARS
     {
-    COLOR = CUSTOM3
+    COLOR = GREEN
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      SKIP = 2
+      }
     }
 $!LINEMAP  [3]
-  NAME = '&DV&'
+  NAME = 'z'
   ASSIGN
     {
     ZONE = 1
     XAXISVAR = 1
     YAXISVAR = 4
+    }
+  LINES
+    {
+    COLOR = BLUE
+    LINEPATTERN = DOTTED
+    PATTERNLENGTH = 0.5
+    }
+  SYMBOLS
+    {
+    COLOR = BLUE
+    FILLCOLOR = BLUE
+    }
+  BARCHARTS
+    {
+    COLOR = BLUE
+    FILLCOLOR = BLUE
+    }
+  ERRORBARS
+    {
+    COLOR = BLUE
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      SKIP = 2
+      }
+    }
+$!LINEMAP  [4]
+  NAME = 'viscous drag'
+  ASSIGN
+    {
+    ZONE = 1
+    XAXISVAR = 1
+    YAXISVAR = 2
     YAXIS = 2
     }
   LINES
     {
-    COLOR = CUSTOM6
+    COLOR = RED
     }
   SYMBOLS
     {
-    COLOR = PURPLE
-    FILLCOLOR = PURPLE
+    COLOR = RED
+    FILLCOLOR = RED
     }
   BARCHARTS
     {
-    COLOR = PURPLE
-    FILLCOLOR = PURPLE
+    COLOR = RED
+    FILLCOLOR = RED
     }
   ERRORBARS
     {
-    COLOR = PURPLE
+    COLOR = RED
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      MIN = 2
+      SKIP = 2
+      }
+    }
+$!LINEMAP  [5]
+  NAME = 'viscous lift'
+  ASSIGN
+    {
+    ZONE = 1
+    XAXISVAR = 1
+    YAXISVAR = 3
+    }
+  LINES
+    {
+    COLOR = GREEN
+    }
+  SYMBOLS
+    {
+    COLOR = GREEN
+    FILLCOLOR = GREEN
+    }
+  BARCHARTS
+    {
+    COLOR = GREEN
+    FILLCOLOR = GREEN
+    }
+  ERRORBARS
+    {
+    COLOR = GREEN
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      MIN = 2
+      SKIP = 2
+      }
+    }
+$!LINEMAP  [6]
+  NAME = 'z'
+  ASSIGN
+    {
+    ZONE = 1
+    XAXISVAR = 1
+    YAXISVAR = 4
+    }
+  LINES
+    {
+    COLOR = BLUE
+    }
+  SYMBOLS
+    {
+    COLOR = BLUE
+    FILLCOLOR = BLUE
+    }
+  BARCHARTS
+    {
+    COLOR = BLUE
+    FILLCOLOR = BLUE
+    }
+  ERRORBARS
+    {
+    COLOR = BLUE
+    }
+  INDICES
+    {
+    IRANGE
+      {
+      MIN = 2
+      SKIP = 2
+      }
     }
 $!XYLINEAXIS 
   DEPXTOYRATIO = 1
@@ -1015,51 +1156,43 @@ $!XYLINEAXIS
 $!XYLINEAXIS 
   XDETAIL 1
     {
-    RANGEMIN = 0.00078125001164153218269
-    RANGEMAX = 0.125
-    GRSPACING = 0.02
+    RANGEMIN = 0
+    RANGEMAX = 10.001425743103027344
+    GRSPACING = 2
+    TICKS
+      {
+      SHOWONAXISLINE = NO
+      SHOWONGRIDBORDERMIN = YES
+      SHOWONGRIDBORDERMAX = YES
+      }
     TITLE
       {
       TITLEMODE = USETEXT
-      TEXT = 'time'
-      TEXTSHAPE
-        {
-        HEIGHT = 2.6
-        }
+      TEXT = 'tU/w'
       }
     }
 $!XYLINEAXIS 
   YDETAIL 1
     {
-    COORDSCALE = LOG
-    RANGEMIN = 1.0000000000000000818E-05
-    RANGEMAX = 0.10000000000000000555
-    GRSPACING = 0.01
+    RANGEMIN = -0.023316467180848121643
+    RANGEMAX = 1.0785358881548745558E-06
+    GRSPACING = 0.005
     TITLE
       {
       TITLEMODE = USETEXT
-      TEXT = 'time step'
-      TEXTSHAPE
-        {
-        HEIGHT = 2.6
-        }
+      TEXT = 'Lift'
       }
     }
 $!XYLINEAXIS 
   YDETAIL 2
     {
-    COORDSCALE = LOG
-    RANGEMIN = 1.0000000000000000364E-10
-    RANGEMAX = 1
+    RANGEMIN = 2.3979808361218601931E-07
+    RANGEMAX = 0.99950909614562988281
     GRSPACING = 0.2
     TITLE
       {
       TITLEMODE = USETEXT
-      TEXT = 'divergence (predictor/corrector)'
-      TEXTSHAPE
-        {
-        HEIGHT = 2.6
-        }
+      TEXT = 'Drag'
       }
     AXISLINE
       {
@@ -1072,6 +1205,9 @@ $!VIEW AXISFIT
 $!VIEW AXISFIT
   AXIS = 'Y'
   AXISNUM = 1
+$!VIEW AXISFIT
+  AXIS = 'Y'
+  AXISNUM = 2
 $!FRAMECONTROL ACTIVATEBYNUMBER
   FRAME = 1
 $!SETSTYLEBASE CONFIG
