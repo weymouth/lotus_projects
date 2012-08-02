@@ -1,8 +1,4 @@
-F F T T     ! turn off extra surface
-2*0 -1 3*0 0.98 ! control point tranform (shift, rotate, scale)
-0.1                ! buffer
-0.5                ! weight centroid toward min
-3*21               ! grid
+F F T T     ! turn off extra surfaces
 SolidWorks IGES file using analytic representation for surfaces         S      1
 1H,,1H;,11H2_1_ellipse,65HC:\Users\James Schulmeister\Documents\drawingsG      1
 \3D\2_1_ellipse.IGS,15HSolidWorks 2010,15HSolidWorks 2010,32,308,15,    G      2

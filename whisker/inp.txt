@@ -3,35 +3,41 @@
 F			 ! restart switch
 80 			 ! print interval
 800	     	         ! simulation end time
-5e-3		 	 ! dt lower limit
+5e-3		 ! dt lower limit
 !! ----  MPI  info  ---- !!
-F,F,T		 ! parrallel boundaries
-3,4,1		 ! number of blocks
+F,F,T		 ! parallel boundaries (x,y,z)
+3,4,1		 ! number of blocks (x,y,z)
 !! ---- Domain info ---- !!
 0,6,0,0,6,6,0   	 ! u,p boundary type (-dims:dims)
 1.0			 ! reference frame velocity
 100			 ! frame ramp-up time
 0                       ! gravity
-1e-2                    ! distubance amp
+1e-2                 ! disturbance amp
 0                       ! y wavenumber
 1                       ! z wavenumber
 !! --- Velocity info --- !!
-2.0e-3			 ! viscosity (dark fluid)
-T F F 200 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
-T F F 400 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
-T F F 600 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
-!! --- Pressure info --- !!
-F F F 300 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
-!! ----  Body info  ---- !!
-T				 ! immersed body present
--2			 	 ! smoothing width
-T F F 100 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst) 
-T      	      	   	 ! body move
-F	   	      	   	 ! body slip
-!! ----  VOF  info  ---- !!
-F				 ! dynamic free surface
-F F F 500 25 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
-1,1,1,9,1,1,1  		 ! u,p boundary type (-dims:dims)
+2.0e-3		 ! viscosity (dark fluid)
+F F F 700	   	 ! vector velocity print
+T F F 400	 	 ! scalar print (vort in 2D, lambda in 3D)
+T F F 600	 	 ! z-averaged z-vorticity print (3D only) 
+T F F 200	 	 ! vector vorticity print (3D only)
+F                       ! read IC from restart
 !! --- Apriori  info --- !!
-F F F 3000 25 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+!! --- Probe  info --- !!
+F F F 800	        ! probe file print
+3*0.5                ! probe location
+!! --- Pressure info --- !!
+F F F 300	   	 ! pressure field print
+!! ----  Body info  ---- !!
+T			 ! immersed body present
+-2		 	 ! smoothing width
+T F F 100	 	 ! distance function print
+T            	   	 ! body move
+F   	      	   	 ! body slip
+F   	      	   	 ! body correction
+!! ----  VOF  info  ---- !!
+F			 ! dynamic free surface
+F F F 500		 ! vof field print
+1,1,1,9,1,1,1  	 ! u,p boundary type (-dims:dims)
+0                       ! vof cutoff size
 !! ---- End of info ---- !!

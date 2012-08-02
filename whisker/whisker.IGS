@@ -1,9 +1,5 @@
-F T T F T              ! turn off extra surface
-0 0 120.5 90 0 0 .0375 ! control point tranform (shift, rotate, scale)
-0.1                ! buffer
-0.5                ! weight centroid toward min
-31 21 81           ! grid
-SolidWorks IGES file using NURBS representation for surfaces            S      1
+F T T F T              ! turn off extra surfaces                        S      1
+SolidWorks IGES file using NURBS representation for surfaces            S      2
 1H,,1H;,23HWhisker_FlatEnds.SLDPRT,77HC:\Documents and Settings\user\My G      1
 Documents\beem\Whisker\Whisker_FlatEnds.IGS,15HSolidWorks 2010,15HSolidWG      2
 orks 2010,32,308,15,308,15,23HWhisker_FlatEnds.SLDPRT,1.,2,2HMM,50,     G      3
