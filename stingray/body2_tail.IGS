@@ -1,8 +1,5 @@
-F F 4*T F    ! turn off the stablizer pieces
-3*0 0 90 0 8.14E-3 ! control point tranform (shift, rotate, scale)
-0.01               ! buffer
+F F T T T T F      ! turn off the stablizer pieces
 0.8                ! weight centroid toward min
-3*21               ! grid
 SolidWorks IGES file using NURBS representation for surfaces            S      1
 1H,,1H;,5Hbody2,60HC:\Users\pablov\Documents\SolidWorks\mantaray\body2_tG      1
 ail.IGS,15HSolidWorks 2010,15HSolidWorks 2010,32,308,15,308,15,5Hbody2, G      2

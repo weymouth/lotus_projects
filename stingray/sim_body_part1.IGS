@@ -1,8 +1,4 @@
-4*F                ! keep all surfaces on
-3*0 0 90 0 8.14E-3 ! control point tranform (shift, rotate, scale)
-0.01               ! buffer
-0.5                ! centroid
-3*41               ! grid
+F F F F  ! turn off surfaces?
 SolidWorks IGES file using NURBS representation for surfaces            S      1
 1H,,1H;,8Hsim_body,58HD:\CENSAM_computers\SolidWorks\mantaray\sim_body_pG      1
 art1.IGS,15HSolidWorks 2010,15HSolidWorks 2010,32,308,15,308,15,8Hsim_boG      2
