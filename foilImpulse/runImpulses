@@ -1,0 +1,23 @@
+echo "Impulse"
+sed 's/lres/T/
+     s/dtPrint/0.01/
+     s/timeEnd/1.00/
+     s/bodyRwnd/F/
+     s/bodyMove/T/' temp.txt > inp.txt
+
+echo "naca_square"
+./setupGeom naca_square
+./runBDIM 12 squareImpulse squareSteady &
+wait
+
+echo "naca_half"
+./setupGeom naca_half
+./runBDIM 12 halfImpulse halfSteady &
+wait
+
+echo "naca_full"
+./setupGeom naca_full
+./runBDIM 12 fullImpulse fullSteady &
+wait
+
+echo "runImpulses:Complete"

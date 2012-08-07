@@ -14,11 +14,11 @@ rm $2/fort.???
 rm $2/fort.????
 
 # set up inputs
-cp exec_BDIM $2/.
+cp $MGLHOME/bin/exec_BDIM $2/.
 cp inp.* $2/.
 if [ $# -eq 3 ]; then
-    cp $3/fort.1??? $2/.
-    cp $3/fort.2??? $2/.
+    cp $3/restart.zip $2/initial.zip
+    unzip $3/restart.zip -d $2
 fi
 
 # cd and move tecplot stuff
