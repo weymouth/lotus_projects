@@ -22,7 +22,7 @@ T F F 200	 	 ! vector vorticity print (3D only)
 F F F 300	   	 ! pressure field print
 !! ----  Body info  ---- !!
 T				! immersed body present
--4			 	! smoothing width
+-2			 	! smoothing width
 T bodyRwnd F 100 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst) 
 bodyMove       		 ! body move
 F	   	      	 	! body slip

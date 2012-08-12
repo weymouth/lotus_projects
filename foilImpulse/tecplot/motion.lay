@@ -925,7 +925,7 @@ $!GLOBALLINEPLOT
       }
     }
 $!LINEMAP  [1]
-  NAME = 'force'
+  NAME = 'position'
   ASSIGN
     {
     ZONE = 1
@@ -951,7 +951,7 @@ $!LINEMAP  [1]
     COLOR = RED
     }
 $!LINEMAP  [2]
-  NAME = 'position'
+  NAME = 'velocity'
   ASSIGN
     {
     ZONE = 1
