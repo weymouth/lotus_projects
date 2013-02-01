@@ -1,18 +1,16 @@
- 3072                                     ! total points
--20.605097814517                          ! grid starting position
+ 2048                                     ! total points
+ -9.362111654621                          ! grid starting position
   5                                       ! number of segments
-  728  0.250000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
-   67  0.247121955749E-01  0.979523250460 ! segment coeffs (n,a,r)
-  720  0.625000000000E-02  1.000000000000 ! segment coeffs (n,a,r)
-   67  0.630789959769E-02  1.020904812143 ! segment coeffs (n,a,r)
- 1490  0.250000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
- 2304                                     ! total points
--23.555097814517                          ! grid starting position
-  5                                       ! number of segments
-  846  0.250000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
-   67  0.247121955749E-01  0.979523250460 ! segment coeffs (n,a,r)
-  480  0.625000000000E-02  1.000000000000 ! segment coeffs (n,a,r)
-   67  0.630789959769E-02  1.020904812143 ! segment coeffs (n,a,r)
-  844  0.250000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
+  287  0.200000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
+  279  0.199857274181E-01  0.995037190210 ! segment coeffs (n,a,r)
+  520  0.500000000000E-02  1.000000000000 ! segment coeffs (n,a,r)
+  279  0.501243788791E-02  1.004987562112 ! segment coeffs (n,a,r)
+  683  0.200000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
+ 1536                                     ! total points
+  0.000000000000                          ! grid starting position
+  3                                       ! number of segments
+  120  0.500000000000E-02  1.000000000000 ! segment coeffs (n,a,r)
+  279  0.501243788791E-02  1.004987562112 ! segment coeffs (n,a,r)
+ 1137  0.200000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
  grid generated using command set:
- ./exec_grid -h=0.05 -r=1.18 -f=0.125 -i=384,1.5,3,.5 -j=288,1.5,1.5,1
+ exec_grid -h=0.01 -f=0.5 -i=1024,0.6,2,0.5 -j=768,0,0.6,0

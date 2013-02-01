@@ -1,5 +1,5 @@
 #!MC 1300
-# Created by Tecplot 360 build 13.3.0.21255
+# Created by Tecplot 360 build 13.1.1.16314
 $!VarSet |LFDSFN1| = '"vort.plt"'
 $!VarSet |LFDSVL1| = '"x" "y" "p"'
 $!VarSet |LFDSFN2| = '"body.plt"'
@@ -909,25 +909,25 @@ $!FRAMELAYOUT
   HEADERCOLOR = RED
   XYPOS
     {
-    X = -2.0496
-    Y = 3.8864
+    X = 1
+    Y = 0.25
     }
-  WIDTH = 13.245
-  HEIGHT = 4.3636
+  WIDTH = 9
+  HEIGHT = 8
 $!THREEDAXIS 
   ASPECTRATIOLIMIT = 25
   BOXASPECTRATIOLIMIT = 25
 $!PLOTTYPE  = CARTESIAN2D
 $!FRAMENAME  = 'Frame 001'
 $!GLOBALTIME 
-  SOLUTIONTIME = 0
+  SOLUTIONTIME = 1.55000000000000004
 $!ACTIVEFIELDMAPS  =  [1-202]
 $!GLOBALRGB 
   RANGEMIN = 0
   RANGEMAX = 1
 $!GLOBALCONTOUR  1
   VAR = 3
-  DEFNUMLEVELS = 19
+  DEFNUMLEVELS = 21
   LABELS
     {
     AUTOLEVELSKIP = 2
@@ -938,16 +938,12 @@ $!GLOBALCONTOUR  1
     XYPOS
       {
       X = 97.023
-      Y = 73.222
+      Y = 44.062
       }
     OVERLAYBARGRID = NO
     HEADERTEXTSHAPE
       {
-      HEIGHT = 4.5
-      }
-    NUMBERTEXTSHAPE
-      {
-      HEIGHT = 4.5
+      HEIGHT = 3.5
       }
     BOX
       {
@@ -11448,6 +11444,7 @@ $!TWODAXIS
     }
 $!VIEW FIT
 $!TWODAXIS 
+  PRESERVEAXISSCALE = YES
   DEPXTOYRATIO = 1
   GRIDAREA
     {
@@ -11456,38 +11453,31 @@ $!TWODAXIS
     }
   VIEWPORTPOSITION
     {
-    X1 = 8.2927
-    Y1 = 9.3896
-    X2 = 97.452
-    Y2 = 91.143
+    X1 = 9.5872
+    Y1 = 8.4432
+    X2 = 97.606
+    Y2 = 74.457
     }
-  VIEWPORTTOPSNAPTARGET = 91.1426619245
+  VIEWPORTTOPSNAPTARGET = 77.4772727273
 $!TWODAXIS 
   XDETAIL
     {
-    RANGEMIN = -2.5
-    RANGEMAX = 1.0000366737658898941
+    RANGEMIN = -1
+    RANGEMAX = 1.9999999999999995559
     GRSPACING = 0.5
     TICKS
       {
       SHOWONAXISLINE = NO
       LINETHICKNESS = 0.1
       }
-    TICKLABEL
-      {
-      TEXTSHAPE
-        {
-        HEIGHT = 4
-        }
-      }
     TITLE
       {
       TITLEMODE = USETEXT
-      TEXT = 'x/D'
+      TEXT = '(x-x<sub>c</sub>)/D'
       TEXTSHAPE
         {
         ISBOLD = NO
-        HEIGHT = 4.6
+        HEIGHT = 3.6
         }
       }
     AXISLINE
@@ -11498,20 +11488,13 @@ $!TWODAXIS
 $!TWODAXIS 
   YDETAIL
     {
-    RANGEMIN = 0
-    RANGEMAX = 1.0573117126703182045
-    GRSPACING = 0.2
+    RANGEMIN = -1
+    RANGEMAX = 0.99999091103264281521
+    GRSPACING = 0.5
     TICKS
       {
       SHOWONAXISLINE = NO
       LINETHICKNESS = 0.1
-      }
-    TICKLABEL
-      {
-      TEXTSHAPE
-        {
-        HEIGHT = 4
-        }
       }
     TITLE
       {
@@ -11520,7 +11503,7 @@ $!TWODAXIS
       TEXTSHAPE
         {
         ISBOLD = NO
-        HEIGHT = 4.6
+        HEIGHT = 3.6
         }
       OFFSET = 5
       }

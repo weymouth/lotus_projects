@@ -8,15 +8,18 @@ fi
 
 # make the dir
 mkdir $2
-rm $2/fort.[1-9]*
+rm $2/fort.?
+rm $2/fort.??
+rm $2/fort.???
+rm $2/fort.????
 
 # set up inputs
-cp exec_BDIM $2/.
+cp $MGLHOME/bin/exec_BDIM $2/.
 cp inp.* $2/.
-cp *IGS $2/.
 if [ $# -eq 3 ]; then
-    cp $3/fort.1??? $2/.
-    cp $3/fort.2??? $2/.
+    cp $3/restart.zip $2/initial.zip
+    unzip $3/restart.zip -d $2
+    mv $2/out.geom $2/inp.geom
 fi
 
 # cd and move tecplot stuff
@@ -25,24 +28,24 @@ cp ../tecplot/* .
 
 # run the code
 if [ $1 -eq 0 ]; then
-    ./exec_BDIM &
+    ./exec_BDIM
 else
-    mpiexec -n $1 ./exec_BDIM &
+    mpiexec -n $1 ./exec_BDIM
 fi
 
 wait 
+echo "runBDIM" $2 ": simulation complete"
+
+# pack up restart files
+zip -m restart fort.[1-2]??? out.geom 1>/dev/null
 
 # run the post processing scripts and macros
-rm fort.[1-9]?[0-3,5-9]
-nice ./exec_tec line.mcr bodyAndPress.mcr
-nice ./exec_tec 'pressure.lay png.mcr'
-mv fort.404.plt vort.plt
-mv fort.204.plt velo.plt
-nice ./exec_tec 'ke.lay int.mcr'
-zip -m restart fort.[1-2]???
-zip -m vort fort.3???
-zip -m velo fort.4???
-# rm fort.*
-wait
+./runStat
+rm fort.[1-9]?[0-2,4-9]
+nice ./runTec line.mcr
+rm fort.103.plt; mv fort.203.plt velo.plt; mv fort.303.plt pres.plt; mv fort.403.plt vort.plt
+./runZip
+nice ./runTec 'BComega.lay avi.mcr'
+nice ./runTec 'omega.lay pngShift.mcr'
 echo "complete"
 exit 0
