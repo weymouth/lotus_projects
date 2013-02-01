@@ -17,10 +17,9 @@ rm $2/fort.????
 cp exec_BDIM $2/.
 cp inp.* $2/.
 if [ $# -eq 3 ]; then
-    cp $3/fort.1??? $2/.
-    cp $3/fort.2??? $2/.
+    cp $3/restart.zip $2/initial.zip
+    unzip $3/restart.zip -d $2
     cp $3/inp.geom $2/.
-    cp $3/inp.IGS $2/.
     tail -n 2 $3/fort.10 > $2/inp.force
 fi
 
