@@ -19,6 +19,7 @@ cp inp.* $2/.
 if [ $# -eq 3 ]; then
     cp $3/restart.zip $2/initial.zip
     unzip $3/restart.zip -d $2
+#    cp $3/out.geom $2/inp.geom
 fi
 
 # cd and move tecplot stuff
@@ -27,25 +28,27 @@ cp ../tecplot/* .
 
 # run the code
 if [ $1 -eq 0 ]; then
-    ./exec_BDIM &
+    ./exec_BDIM
 else
-    mpiexec -n $1 ./exec_BDIM &
+    mpiexec -n $1 ./exec_BDIM
 fi
 
-wait 
+echo "runBDIM" $2 ": simulation complete"
 
 # run the post processing scripts and macros
 ./runStat
-mkdir vort; cp fort.2?? vort/
-mkdir lam2; cp fort.4?? lam2/
-mkdir velo; cp fort.7?? velo/
-nice ./runTec 
-wait
+zip -m restart fort.[1-2]???
 nice ./runTec body.mcr lam2.mcr
 nice ./runTec 'lam2.lay avi.mcr'
+mv movie.avi lam2.avi
+nice ./runTec 'lam2_zoom.lay avi.mcr'
+mv movie.avi lam2_zoom.avi
 nice ./runTec 'lam2_top.lay png.mcr'
 wait
+
+echo "runBDIM" $2 ": visualization complete"
 ./runZip
 rm batch.log junk
-echo "runBDIM: complete"
+echo "runBDIM" $2 ": cleanup complete"
+
 exit 0

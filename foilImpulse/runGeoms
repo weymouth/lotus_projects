@@ -1,64 +1,62 @@
 echo "naca_square"
 ./setupGeom naca_square
 
-echo "Steady"
-sed 's/lres/F/
-     s/dtPrint/0.1/
-     s/timeEnd/7.1/
+echo "Steady2"
+sed 's/lres/T/
+     s/dtPrint/0.2/
+     s/timeEnd/8.4/
      s/bodyRwnd/T/
      s/bodyMove/F/' temp.txt > inp.txt
-./runBDIM 12 squareSteady &
-wait
+./runBDIM 12 squareSteady2 squareSteady
 
 echo "Impulse"
 sed 's/lres/T/
-     s/dtPrint/0.01/
-     s/timeEnd/1.00/
+     s/dtPrint/0.02/
+     s/timeEnd/4.0/
      s/bodyRwnd/F/
      s/bodyMove/T/' temp.txt > inp.txt
-./runBDIM 12 squareImpulse squareSteady &
-wait
+./runBDIM 12 squareImpulse squareSteady2
+
+echo 'clean exit'
+exit 0
 
 echo "naca_half"
 ./setupGeom naca_half
 
 echo "Steady"
 sed 's/lres/F/
-     s/dtPrint/0.1/
-     s/timeEnd/7.1/
+     s/dtPrint/0.2/
+     s/timeEnd/14.0/
      s/bodyRwnd/T/
      s/bodyMove/F/' temp.txt > inp.txt
-./runBDIM 12 halfSteady &
-wait
+./runBDIM 12 halfSteady
 
 echo "Impulse"
 sed 's/lres/T/
-     s/dtPrint/0.01/
-     s/timeEnd/1.00/
+     s/dtPrint/0.02/
+     s/timeEnd/3.5/
      s/bodyRwnd/F/
      s/bodyMove/T/' temp.txt > inp.txt
-./runBDIM 12 halfImpulse halfSteady &
-wait
+./runBDIM 12 halfImpulse halfSteady
 
 echo "naca_full"
 ./setupGeom naca_full
 
 echo "Steady"
 sed 's/lres/F/
-     s/dtPrint/0.1/
-     s/timeEnd/7.1/
+     s/dtPrint/0.2/
+     s/timeEnd/14.0/
      s/bodyRwnd/T/
      s/bodyMove/F/' temp.txt > inp.txt
-./runBDIM 12 fullSteady &
-wait
+./runBDIM 12 fullSteady
 
 echo "Impulse"
 sed 's/lres/T/
-     s/dtPrint/0.01/
-     s/timeEnd/1.00/
+     s/dtPrint/0.02/
+     s/timeEnd/3.50/
      s/bodyRwnd/F/
      s/bodyMove/T/' temp.txt > inp.txt
-./runBDIM 12 fullImpulse fullSteady &
-wait
+./runBDIM 12 fullImpulse fullSteady
 
-echo "runGeoms:Complete"
+echo 'runGeoms complete'
+exit 0

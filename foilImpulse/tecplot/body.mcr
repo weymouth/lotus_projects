@@ -30,9 +30,14 @@ $!ISOSURFACEATTRIBUTES 1  OBEYSOURCEZONEBLANKING = YES
 $!RUNMACROFUNCTION  "IJKBlank"
 
 $!VarSet |first_zone| = (|NUMZONES|+1)
-$!EXTENDEDCOMMAND 
-  COMMANDPROCESSORID = 'Extract Over Time'
-  COMMAND = 'ExtractIsoSurfaceOverTime'
+$!IF |NUMZONES| == |blocks|
+   $!CREATEISOZONES 
+$!ENDIF
+$!IF |NUMZONES| > |blocks|
+   $!EXTENDEDCOMMAND 
+     COMMANDPROCESSORID = 'Extract Over Time'
+     COMMAND = 'ExtractIsoSurfaceOverTime'
+$!ENDIF
 
 #$!DELETEVARS [4,5]
 #$!CREATEMIRRORZONES 

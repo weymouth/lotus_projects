@@ -1,31 +1,29 @@
 !! ---- Global info ---- !!
 3			 ! number of dimensions
 lres			 ! restart switch
-dtPrint		 ! print interval
-timeEnd		 ! simulation end time
+dtPrint		         ! print interval
+timeEnd		         ! simulation end time
 !! ----  MPI  info  ---- !!
 F,F,F			 ! parrallel boundaries
-2,3,2			 ! number of blocks
+3,1,4			 ! number of blocks
 !! ---- Domain info ---- !!
 1,6,0,0,6,6,0 	    	 ! u,p boundary type (-dims:dims)
-1.0			         ! reference frame velocity
-2.0			 	 ! frame ramp-up time 
+1.0			 ! reference frame velocity
+2.0			 ! frame ramp-up time 
 !! --- Velocity info --- !!
-7.14e-5			! viscosity (dark fluid)
-T F F 700	   	 ! vector velocity print
+7.14e-5			 ! viscosity (dark fluid)
+F F F 700	   	 ! vector velocity print
 T F F 400	 	 ! scalar print (vort in 2D, lambda in 3D)
-F F F 600	 	 ! z-averaged z-vorticity print (3D only) 
+T F F 600	 	 ! z-averaged z-vorticity print (3D only) 
 T F F 200	 	 ! vector vorticity print (3D only)
 !! --- Apriori  info --- !!
 !! --- Probe  info --- !!
 !! --- Pressure info --- !!
 F F F 300	   	 ! pressure field print
 !! ----  Body info  ---- !!
-T				! immersed body present
--2			 	! smoothing width
-T bodyRwnd F 100 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst) 
+T			 ! immersed body present
+-2			 ! smoothing width
+T bodyRwnd F 100 	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst) 
 bodyMove       		 ! body move
-F	   	      	 	! body slip
-T				! body correct
 !! ----  VOF  info  ---- !!
 !! ---- End of info ---- !!

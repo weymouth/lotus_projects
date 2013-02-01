@@ -1,23 +1,23 @@
-  256                                     ! total points
- -1.665689606233                          ! grid starting position
+  288                                     ! total points
+ -1.999221299809                          ! grid starting position
   4                                       ! number of segments
-   32  0.507460886575E-01  0.970873786408 ! segment coeffs (n,a,r)
-  125  0.200000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
-   47  0.202977831302E-01  1.030000000000 ! segment coeffs (n,a,r)
-   52  0.800000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
-   96                                     ! total points
- -0.926977276302                          ! grid starting position
+   59  0.398125560482E-01  0.980392156863 ! segment coeffs (n,a,r)
+  128  0.125000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
+   70  0.126243811730E-01  1.020000000000 ! segment coeffs (n,a,r)
+   31  0.500000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
+  128                                     ! total points
+ -0.969099491589                          ! grid starting position
   3                                       ! number of segments
-   23  0.311141211585E-01  0.970873786408 ! segment coeffs (n,a,r)
-   50  0.160000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
-   23  0.162382265041E-01  1.030000000000 ! segment coeffs (n,a,r)
-  256                                     ! total points
- -1.476463553890                          ! grid starting position
+   48  0.200528113290E-01  0.990099009901 ! segment coeffs (n,a,r)
+   32  0.125000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
+   48  0.125623445264E-01  1.010000000000 ! segment coeffs (n,a,r)
+  384                                     ! total points
+ -1.989366267908                          ! grid starting position
   4                                       ! number of segments
-   41  0.529697085316E-01  0.970873786408 ! segment coeffs (n,a,r)
-  112  0.160000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
-   47  0.162382265041E-01  1.030000000000 ! segment coeffs (n,a,r)
-   56  0.640000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
+   89  0.301544625797E-01  0.990099009901 ! segment coeffs (n,a,r)
+  144  0.125000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
+  139  0.125623445264E-01  1.010000000000 ! segment coeffs (n,a,r)
+   12  0.500000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
  grid generated using command set:
- exec_grid -f=1 -r=1.03 -h=0.02 -i=256,0.6,1.9,0.2 -h=0.016 -j=96,0.4,0.4,1 -k=2
- 56,.2,1.6,0.215
+ exec_grid -r=1.02 -h=0.0125 -i=288,.6,1,.449 -r=1.01 -j=128,0.2,0.2,1.0 -k=384,
+ .2,1.6,.3333
