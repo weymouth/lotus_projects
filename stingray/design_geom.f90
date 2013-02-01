@@ -7,7 +7,7 @@ program design_geom
   type(model_info) :: tail,pos,neg,main
   character(20) :: string
   character(255) :: cmdln
-  real(8) :: amp=0.2,f=1.33,k=1.8
+  real(8) :: amp=0.2,f=1.33,k=1.475
   logical :: bio=.true.
   integer :: i
 !

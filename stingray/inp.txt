@@ -1,32 +1,29 @@
 !! ---- Global info ---- !!
 3			 ! number of dimensions
 F			 ! restart switch
-0.016		 ! print interval
+0.04			 ! print interval
 4.0 		     	 ! simulation end time
 !! ----  MPI  info  ---- !!
-T,F,F			 ! parrallel boundaries
-4,3,1			 ! number of blocks
+F,F,F			 ! parrallel boundaries
+4,1,3			 ! number of blocks
 !! ---- Domain info ---- !!
-6,0,0,0,6,6,6 	 ! u,p boundary type (-dims:dims)
+6,0,0,0,6,6,6 	    	 ! u,p boundary type (-dims:dims)
 1.0			 ! reference frame velocity
 1.0			 ! frame ramp-up time 
-0.0 			 ! gravity  
 !! --- Velocity info --- !!
-6.667e-5		 ! viscosity (dark fluid)
-T F F 200 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
-T F F 400 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+2.32e-5		 ! viscosity (dark fluid)
+F F F 600		 ! velocity
+T F F 400		 ! lam2/2D vorticity
+F F F 700		 ! <vort_z>_z 
+T F F 200		 ! vorticity
+!! --- Aprioiri info --- !!
+!! --- Probe info --- !!
 !! --- Pressure info --- !!
-T F F 300 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
+T F F 300 	     	 ! pressure
 !! ----  Body info  ---- !!
 T			 ! immersed body present
 -2		 	 ! smoothing width
-T F F 100 10 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst) 
+T F F 100		 ! distance function
 T      	      	   	 ! body move
-F   	      	   	 ! body slip
 !! ----  VOF  info  ---- !!
-F			 ! dynamic free surface
-F F F 500 25 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
-1,1,1,9,1,1,1  		 ! u,p boundary type (-dims:dims)
-!! --- Apriori  info --- !!
-F F F 3000 25 1 0	 ! print flags (prnt,rwnd,lwrs,file,tmod,skip,ghst)
 !! ---- End of info ---- !!

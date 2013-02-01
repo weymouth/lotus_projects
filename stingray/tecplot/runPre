@@ -7,7 +7,7 @@ for i; do
 	echo preplot: $i
 	nice preplot $i $i.plt >> junk
 	if  [ $? -ne 0 ]; then
-	    echo exec_tec: problem with $i
+	    echo runPre: problem with $i
 	    exit 2
 	fi
 	if  [ `ls | grep $i.plt -c` -eq 1 ]; then

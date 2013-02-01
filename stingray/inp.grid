@@ -1,19 +1,19 @@
- 256                    ! total points
- -2.330432              ! grid starting position
-  3                     ! number of segments
- 32  0.041044  0.990099 ! segment coeffs (n,a,r)
-140  0.030000  1.000000 ! segment coeffs (n,a,r)
- 84  0.030150  1.010000 ! segment coeffs (n,a,r)
-  96                    ! total points
-  0.000000              ! grid starting position
-  2                     ! number of segments
- 40  0.030000  1.000000 ! segment coeffs (n,a,r)
- 56  0.030150  1.010000 ! segment coeffs (n,a,r)
- 192                    ! total points
- -1.809138              ! grid starting position
-  3                     ! number of segments
- 63  0.027937  0.990099 ! segment coeffs (n,a,r)
- 66  0.015000  1.000000 ! segment coeffs (n,a,r)
- 63  0.015075  1.010000 ! segment coeffs (n,a,r)
+  512                                     ! total points
+ -3.650057652326                          ! grid starting position
+  3                                       ! number of segments
+   97  0.391835544108E-01  0.990099009901 ! segment coeffs (n,a,r)
+  280  0.150000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
+  135  0.150748134317E-01  1.010000000000 ! segment coeffs (n,a,r)
+  128                                     ! total points
+  0.000000000000                          ! grid starting position
+  2                                       ! number of segments
+   80  0.150000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
+   48  0.150748134317E-01  1.010000000000 ! segment coeffs (n,a,r)
+  192                                     ! total points
+ -1.809138457041                          ! grid starting position
+  3                                       ! number of segments
+   63  0.279368297050E-01  0.990099009901 ! segment coeffs (n,a,r)
+   66  0.150000000000E-01  1.000000000000 ! segment coeffs (n,a,r)
+   63  0.150748134317E-01  1.010000000000 ! segment coeffs (n,a,r)
  grid generated using command set:
- ./exec_grid -h=0.03 -i=256,1.2,3,.33 -j=96,0,1.2,0 -h=0.015 -k=192,0.5,0.5,1
+ exec_grid -h=0.015 -i=512,1.2,3,.5 -j=128,0,1.2,0 -k=192,0.5,0.5,1
