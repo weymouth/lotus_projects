@@ -17,9 +17,8 @@ program square_cyl
   real,parameter     :: yc = m(2)/2 ! location
   type(fluid)        :: a           ! fluid
   type(vfield)       :: beta,norm   ! body indicator and normal
-  integer            :: n(3),i,j,k
-  real               :: fx,fy,x(3)
-  real,pointer,dimension(:,:,:) :: bx,by,bz,nx,ny
+  integer            :: n(3)
+  real               :: fx,fy
 !
 ! -- Init MPI if on
 #if MPION
@@ -31,35 +30,7 @@ program square_cyl
     if(ndims==2) n(3) = 1
 !
 ! -- Initialize the square
-    call beta%init(n)
-    bx => beta%e(1)%point()
-    by => beta%e(2)%point()
-    if(ndims==3) bz => beta%e(3)%point()
-    call norm%init(n)
-    nx => norm%e(1)%point()
-    ny => norm%e(2)%point()
-    do concurrent (i=1:n(1),j=1:n(2),k=1:n(3))
-       x = beta%e(1)%pos(i,j,k,1)-yc               ! x component
-       if(     x(1) < -0.5*L .or. x(1) > 0.5*L &
-          .or. x(2) < -0.5*L .or. x(2) > 0.5*L) bx(i,j,k) = 1
-       if(x(2) > -0.5*L .and. x(2) < 0.5*L) then
-          if( x(1) ==  0.5*L   ) nx(i,j,k) =  1
-          if( x(1) == -0.5*L-1 ) nx(i,j,k) = -1
-       end if
-       x = beta%e(2)%pos(i,j,k,2)-yc               ! y component
-       if(     x(1) < -0.5*L .or. x(1) > 0.5*L &
-          .or. x(2) < -0.5*L .or. x(2) > 0.5*L) by(i,j,k) = 1
-       if(x(1) > -0.5*L .and. x(1) < 0.5*L) then
-          if( x(2) ==  0.5*L   ) ny(i,j,k) =  1
-          if( x(2) == -0.5*L-1 ) ny(i,j,k) = -1
-       end if
-       if(ndims==3) then
-          x = beta%e(3)%pos(i,j,k,3)-yc            ! z component
-          if(     x(1) < -0.5*L .or. x(1) > 0.5*L &
-             .or. x(2) < -0.5*L .or. x(2) > 0.5*L) bz(i,j,k) = 1
-       end if
-    end do
-    call beta%applyBC
+    call body(beta,norm)
 !
 ! -- initialize fluid
     call a%init(n,beta,V=(/1.,0.,0./),nu=nu,seed=s)
@@ -88,5 +59,59 @@ program square_cyl
 #if MPION
     call mympi_end
 #endif
+contains
+  subroutine body(beta,norm)
+    use geom_shape
+    implicit none
+    type(set)    :: square
+    type(prop)   :: p
+    type(vfield),intent(inout) :: beta,norm
+    real,pointer,dimension(:,:,:) :: bp,n1,n2
+    integer :: d,i,j,k
+    real(8) :: x(3)
+!
+! -- define body
+    square = plane(4,1,(/-1,0,0/),(/yc-L/2.,0.,0./),0,0) &
+        .and.plane(4,1,(/ 1,0,0/),(/yc+L/2.,0.,0./),0,0) &
+        .and.plane(4,1,(/0,-1,0/),(/0.,yc-L/2.,0./),0,0) &
+        .and.plane(4,1,(/0, 1,0/),(/0.,yc+L/2.,0./),0,0)
+!
+! -- fill arrays
+    call beta%init(n)
+    do d=1,ndims
+       bp => beta%e(d)%point()
+       do concurrent (i=1:n(1),j=1:n(2),k=1:n(3))
+          x = beta%e(d)%pos(i,j,k)
+          p = square%at(x)
+          bp(i,j,k) = mu0(p%distance)
+       end do
+    end do
+    call beta%applyBC
+
+    call norm%init(n,centered=.true.)
+    n1 => norm%e(1)%point() 
+    n2 => norm%e(2)%point() 
+    eps = .55
+    do concurrent (i=1:n(1),j=1:n(2),k=1:n(3))
+       x = norm%e(1)%pos(i,j,k)
+       p = square%at(x)
+       n1(i,j,k) = p%normal(1)*mu1(p%distance)
+       n2(i,j,k) = p%normal(2)*mu1(p%distance)
+    end do
+  end subroutine body
+!
+  pure real function mu0(dis)
+    implicit none 
+    real(8),intent(in) :: dis
+    mu0 = 0
+    if(dis>0) mu0 = 1
+  end function mu0
+!
+  pure real function mu1(dis)
+    implicit none 
+    real(8),intent(in) :: dis
+    mu1 = 0
+    if(abs(dis-0.5)<0.01) mu1 = 1
+  end function mu1
 end program square_cyl
 !

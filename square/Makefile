@@ -29,9 +29,9 @@ FC = $(F90) -cpp
 endif
 
 # library info
-LIBS = -lfluid #-lgeom
-LDIR = -L$(MGLHOME)/oop/. #-L$(MGLHOME)/geom_lib/.
-IDIR = -I$(MGLHOME)/oop/fluid_lib_include #-I$(MGLHOME)/geom_lib/geom_lib_include
+LIBS = -lfluid -lgeom
+LDIR = -L$(MGLHOME)/oop/. -L$(MGLHOME)/geom_lib/.
+IDIR = -I$(MGLHOME)/oop/fluid_lib_include -I$(MGLHOME)/geom_lib/geom_lib_include
 
 # make
 .SUFFIXES: .f90
