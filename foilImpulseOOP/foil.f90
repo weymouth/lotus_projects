@@ -8,7 +8,7 @@ program foil_impulse
   use bodyMod
   use geom_shape ! to define the geomtry
   implicit none
-  integer,parameter  :: f=2**5             ! resolution  
+  integer,parameter  :: f=2**4             ! resolution  
   real,parameter     :: Re = 410           ! Reynolds number
   integer,parameter  :: ndims=3            ! dimensions
   integer,parameter  :: b(3) = (/4,1,4/)   ! blocks
@@ -43,9 +43,10 @@ program foil_impulse
   model_fill = .false.
   info%file = 'naca_square.IGS'
   info%x = (/-4.219,-10.271,0./)
-  info%s = 0.36626
-  foil = model_init(info) &
-       .map.(((init_affn()**(/alpha,0.D0,0.D0/))+(/zc,yc,zc/))*L)
+  info%s = 0.36626*L
+  foil = (model_init(info) &
+       .map.((init_affn()**(/alpha,0.D0,0.D0/))+(/zc,yc,0.D0/)))&
+       .and.plane(4,1,(/0,0,-1/),(/zc,yc,zc/),0,0)
 !
 ! -- Initialize fluid
   call flow%init(n,foil,V=(/1.,0.,0./),nu=nu)
