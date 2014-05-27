@@ -17,10 +17,11 @@ program square_cyl
   integer,parameter  :: m(3) = f*d  ! points
   real,parameter     :: nu = L/Re   ! viscosity
   real,parameter     :: yc = m(2)/2 ! location
-  type(fluid)        :: a           ! fluid
-  type(body)         :: square      ! body geometry
   integer            :: n(3)
   real               :: force(3)
+!
+  type(fluid)        :: flow
+  type(body)         :: square
 !
 ! -- Initialize MPI (if MPI is ON)
 #if MPION
@@ -40,20 +41,20 @@ program square_cyl
         .and.plane(4,1,(/0, 1,0/),(/0.,yc+L/2.,0./),0,0)
 !
 ! -- Initialize fluid
-    call a%init(n,square,V=(/1.,0.,0./),nu=nu,seed=s)
-    call a%write
+    call flow%init(n,square,V=(/1.,0.,0./),nu=nu,seed=s)
+    call flow%write
     if(mympi_rank()==0) print *, '-- Square Cylinder --'
     if(mympi_rank()==0) print '("   N=",i0," L=",f0.0," nu=",f0.4)', ndims,L,nu
 !
 ! -- Run it
-    do while (a%time<100*L)
-       call a%update
-       if(mod(a%time,5*L)<a%dt) call a%write
+    do while (flow%time<100*L)
+       call flow%update
+       if(mod(flow%time,5*L)<flow%dt) call flow%write
 !
 ! -- Print force on the square
-       force = square%pforce(a%pressure)
+       force = square%pforce(flow%pressure)
        if(ndims==3) force = force/real(m(3))
-       write(9,'(f10.4,f7.4,2e16.8)') a%time/L,a%dt,2.*force(1:2)/L
+       write(9,'(f10.4,f7.4,2e16.8)') flow%time/L,flow%dt,2.*force(1:2)/L
        flush(9)
     end do
     if(mympi_rank()==0) write(6,*) '--- complete --- '
