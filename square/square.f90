@@ -20,12 +20,14 @@ program square_cyl
   type(fluid)        :: a           ! fluid
   type(body)         :: square      ! body geometry
   integer            :: n(3)
-  real               :: fx,fy
+  real               :: force(3)
 !
-! -- Init MPI if on
+! -- Initialize MPI (if MPI is ON)
 #if MPION
-    n = m/b
     call init_mympi(ndims,set_blocks=b(:ndims),set_periodic=p(:ndims))
+!
+! -- Get grid size
+    n = m/b
 #else
     n = m
 #endif
@@ -37,29 +39,26 @@ program square_cyl
         .and.plane(4,1,(/0,-1,0/),(/0.,yc-L/2.,0./),0,0) &
         .and.plane(4,1,(/0, 1,0/),(/0.,yc+L/2.,0./),0,0)
 !
-! -- initialize fluid
+! -- Initialize fluid
     call a%init(n,square,V=(/1.,0.,0./),nu=nu,seed=s)
+    call a%write
+    if(mympi_rank()==0) print *, '-- Square Cylinder --'
+    if(mympi_rank()==0) print '("   N=",i0," L=",f0.0," nu=",f0.4)', ndims,L,nu
 !
-! -- run it
-    if(mympi_rank()==0) write(6,*) '-- Square Cylinder -- '
-    if(mympi_rank()==0) write(6,'("   N=",i0," L=",f0.0," nu=",f0.4)') ndims,L,nu
-    a%write = .true.
-    do while (a%time<100*L .or. a%write)
+! -- Run it
+    do while (a%time<100*L)
        call a%update
-       if(mod(a%time,5*L)<a%dt) a%write = .true.
+       if(mod(a%time,5*L)<a%dt) call a%write
 !
-! -- get force
-       fx = a%pforce(1)
-       fy = a%pforce(2)
-       if(ndims==3) then
-          fx = fx/real(m(3)); fy = fy/real(m(3))
-       end if
-       write(9,'(f10.4,f7.4,2e16.8)') a%time/L,a%dt,2.*fx/L,2.*fy/L
-       flush(8); flush(9)
+! -- Print force on the square
+       force = square%pforce(a%pressure)
+       if(ndims==3) force = force/real(m(3))
+       write(9,'(f10.4,f7.4,2e16.8)') a%time/L,a%dt,2.*force(1:2)/L
+       flush(9)
     end do
     if(mympi_rank()==0) write(6,*) '--- complete --- '
 !
-! -- Finalize MPI if on
+! -- Finalize MPI
 #if MPION
     call mympi_end
 #endif
