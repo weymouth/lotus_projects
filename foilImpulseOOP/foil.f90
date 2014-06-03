@@ -12,8 +12,10 @@ program foil_impulse
   real(8),parameter  :: alpha = 10         ! AOA
   integer,parameter  :: b(3) = (/2,4,2/)   ! blocks
   integer,parameter  :: d(3) = (/6,4,6/)   ! domain size
+  real,parameter     :: T = 0.5            ! yank period
+  real,parameter     :: U = -3             ! yank speed
 !
-  integer,parameter  :: ndims = 3   ! dimensions
+  integer,parameter  :: ndims = 2   ! dimensions
   real(8),parameter  :: L = f       ! length
   integer,parameter  :: m(3) = f*d  ! points
   real,parameter     :: nu = L/Re   ! viscosity
@@ -49,18 +51,32 @@ program foil_impulse
        .map.((init_affn()**(/alpha,0.D0,0.D0/))+(/yc,yc,0.D0/)))
   if(ndims==3) geom = geom.and.plane(4,1,(/0,0,-1/),yc,0,0)
   foil = geom
+!!$  foil =    plane(4,1,(/-1,0,0/),(/yc-0.5*L,yc,yc/),0,0) &
+!!$       .and.plane(4,1,(/ 1,0,0/),(/yc+0.5*L,yc,yc/),0,0) &
+!!$       .and.plane(4,1,(/0,-1,0/),yc,0,0)
   area = L
   if(ndims==3) area = L*(m(3)-yc)
 !
 ! -- Initialize fluid
-  call flow%init(n,foil,V=(/1.,0.,0./),nu=nu)
+  call flow%init(n,foil,V=(/1.,0.,0./),nu=nu,NN=11)
   call flow%write
   if(mympi_rank()==0) print *, '-- init complete --'
 !
 ! -- Run it
-  do while (flow%time<L)
+  do while (flow%time<1*L)
+!
+! -- parameters
+     flow%g(ndims) = U*sin(flow%time/L/T*2.*pi)/L/T*2.*pi
+     flow%velocity%e(ndims)%bound_val = U*(1.-cos(flow%time/L/T*2.*pi))
+     if(flow%time>T*L) then
+        flow%g(ndims) = 0; flow%velocity%e(ndims)%bound_val = 0
+     end if
+     if(mympi_rank()==0) print '("   t=",f0.4," g=",f0.4," u=",f0.4)', &
+          flow%time/L,flow%g(ndims),flow%velocity%e(ndims)%bound_val
+!
+!-- run it
      call flow%update
-     if(mod(flow%time,0.05*L)<flow%dt) call flow%write
+     if(mod(flow%time,0.1*L)<flow%dt) call flow%write
 !
 ! -- Print force on the square
      force = foil%pforce(flow%pressure)
