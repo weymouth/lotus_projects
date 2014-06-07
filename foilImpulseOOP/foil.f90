@@ -58,25 +58,35 @@ program foil_impulse
   if(ndims==3) area = L*(m(3)-yc)
 !
 ! -- Initialize fluid
-  call flow%init(n,foil,V=(/1.,0.,0./),nu=nu,NN=11)
+!!$  call flow%init(n,foil,V=(/1.,0.,0./),nu=nu,NN=10)
+  call flow%init(n,foil,V=(/0.,0.,0./),nu=nu)
   call flow%write
   if(mympi_rank()==0) print *, '-- init complete --'
 !
 ! -- Run it
-  do while (flow%time<1*L)
+  do while (flow%time<0*L)
 !
 ! -- parameters
-     flow%g(ndims) = U*sin(flow%time/L/T*2.*pi)/L/T*2.*pi
-     flow%velocity%e(ndims)%bound_val = U*(1.-cos(flow%time/L/T*2.*pi))
-     if(flow%time>T*L) then
-        flow%g(ndims) = 0; flow%velocity%e(ndims)%bound_val = 0
-     end if
-     if(mympi_rank()==0) print '("   t=",f0.4," g=",f0.4," u=",f0.4)', &
-          flow%time/L,flow%g(ndims),flow%velocity%e(ndims)%bound_val
+     
+!!$     flow%g(1) = 0.5*sin(flow%time/L)/L
+!!$     flow%velocity%e(1)%bound_val = 0.5*(1.-cos(flow%time/L))
+!!$     if(flow%time>pi*L) then
+!!$        flow%g(1) = 0; flow%velocity%e(1)%bound_val = 1.0
+!!$     end if
+!!$     if(mympi_rank()==0) print '("   t=",f0.4," g=",f0.4," u=",f0.4)', &
+!!$          flow%time/L,flow%g(1),flow%velocity%e(1)%bound_val
+
+!!$     flow%g(ndims) = U*sin(flow%time/L/T*2.*pi)/L/T*2.*pi
+!!$     flow%velocity%e(ndims)%bound_val = U*(1.-cos(flow%time/L/T*2.*pi))
+!!$     if(flow%time>T*L) then
+!!$        flow%g(ndims) = 0; flow%velocity%e(ndims)%bound_val = 0
+!!$     end if
+!!$     if(mympi_rank()==0) print '("   t=",f0.4," g=",f0.4," u=",f0.4)', &
+!!$          flow%time/L,flow%g(ndims),flow%velocity%e(ndims)%bound_val
 !
 !-- run it
      call flow%update
-     if(mod(flow%time,0.1*L)<flow%dt) call flow%write
+     if(mod(flow%time,L)<flow%dt) call flow%write
 !
 ! -- Print force on the square
      force = foil%pforce(flow%pressure)
