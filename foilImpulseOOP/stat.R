@@ -6,15 +6,14 @@ n = 2000
 j = round(seq(1,l,len=min(l,n)))
 data = data[j,]
 CFL = qplot(time,CFL,data=data,geom="line")
-data = subset(data,time>0.1)
 t = 0.5*max(data$time)
 late = subset(data,time>t)
 mdrag = mean(late$drag)
 plift = max(late$lift)
 drag = qplot(time,drag,data=data,geom="line")
-drag = drag+annotate("text",x=1,y=mdrag,label=paste("mean",round(mdrag,2)))
+drag = drag+annotate("text",x=t,y=mdrag,label=paste("mean",round(mdrag,2)))
 lift = qplot(time,lift,data=data,geom="line")
-lift = lift+annotate("text",x=1,y=plift*0.95,label=paste("peak",round(plift,2)))
+lift = lift+annotate("text",x=t,y=plift*0.95,label=paste("peak",round(plift,2)))
 
 ppdf = function(plot,name){
      pdf(name,8,4)
