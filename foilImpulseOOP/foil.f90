@@ -31,12 +31,12 @@ program foil_impulse
 !
 ! -- Set up run parameters
   real    :: V(3)=0, tStop=30, dtPrint=3   ! ramp parameters
-  real    :: T=10, Uave=0.5, Tend=5
+  real    :: T=10, Umax=1.0, Tend=5
   integer :: NN=0, dim=1
   if(yank) then                            ! yank parameters
      V = (/1,0,0/); tStop = 2; dtPrint = 0.02
-     T = 0.6; Uave=-3; Tend = 0.6
-     NN = 10; dim=ndims
+     Umax = -6; T = -pi*0.9/Umax; Tend = T
+     NN = 20; dim=ndims
   end if
 !
 ! -- Initialize MPI (if MPI is ON)
@@ -74,9 +74,6 @@ program foil_impulse
 !
 ! -- Initialize fluid
   call flow%init(n,foil,V=V,nu=nu,NN=NN)
-  call mympi_end
-  stop
-
   if(mympi_rank()==0) print *, '-- init complete --'
 !
 ! -- Time update loop
@@ -111,8 +108,15 @@ program foil_impulse
 #endif
 contains
   real function uref(time)
-    real,intent(in) :: time    
-    uref = Uave*(1.-cos(time/T*2.*pi))
+    real,intent(in) :: time
+    if(time/T*10<0.5) then
+       uref = sin(time/T*pi*10)
+    else if((T-time)/T*10<0.5) then
+       uref = sin((T-time)/T*pi*10)
+    else
+       uref = 1.
+    end if
+    uref = Umax*uref*sin(time/T*pi)
   end function uref
 end program foil_impulse
 !
