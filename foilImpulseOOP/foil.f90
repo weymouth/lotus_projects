@@ -18,7 +18,7 @@ program foil_impulse
   integer,parameter  :: ndims = 3   ! dimensions
   real(8),parameter  :: L = f       ! length
   integer,parameter  :: m(3) = f*d  ! points
-  real,parameter     :: nu = L/Re   ! viscosity
+  real,parameter     :: nu = 0 !L/Re   ! viscosity
   real(8),parameter  :: yc = 2*L ! location
   real(8),parameter  :: zc = m(3)/2 ! location
   integer            :: n(3)
@@ -31,12 +31,12 @@ program foil_impulse
 !
 ! -- Set up run parameters
   real    :: V(3)=0, tStop=30, dtPrint=3   ! ramp parameters
-  real    :: T=10, Umax=1.0, Tend=5
-  integer :: NN=0, dim=1
+  real    :: T=10, Umax=1.0, Tend=5, tShift=0
+  integer :: dim=1
   if(yank) then                            ! yank parameters
      V = (/1,0,0/); tStop = 2; dtPrint = 0.02
      Umax = -6; T = -pi*0.9/Umax; Tend = T
-     NN = 20; dim=ndims
+     dim=ndims
   end if
 !
 ! -- Initialize MPI (if MPI is ON)
@@ -61,25 +61,27 @@ program foil_impulse
 ! -- Initialize the foil geometry
 !  surface_debug = .true.
   model_fill = .false.
-  info%file = 'naca_half.IGS'
+  info%file = 'naca_square.IGS'
   info%x = (/-4.219,-10.271,-18.876/)
   info%s = 0.36626*L*(/1,1,-1/)
   geom = (model_init(info) &
        .map.(init_affn()**(/alpha,0.D0,0.D0/))) ! rotate by alpha
-!  if(ndims==3) geom = geom.and.plane(4,1,(/0,0,-1/),0,0,0)
+  if(ndims==3) geom = geom.and.plane(4,1,(/0,0,-1/),0,0,0)
 !  call shape_write(100,geom)
   foil = geom
   area = L
   if(ndims==3) area = L*zc
 !
 ! -- Initialize fluid
-  call flow%init(n,foil,V=V,nu=nu,NN=NN)
+  call flow%init(n,foil,V=V)
+  call flow%resume
+!  tShift = flow%time/L
   if(mympi_rank()==0) print *, '-- init complete --'
 !
 ! -- Time update loop
-  do while (flow%time/L<tStop)
+  do while (flow%time/L<tStop+tShift)
      dt = flow%dt/L
-     t0 = flow%time/L
+     t0 = flow%time/L-tShift ! for motion
      t1 = t0+dt
 !
 ! -- Accelerate the reference frame
@@ -88,8 +90,13 @@ program foil_impulse
      flow%velocity%e(dim)%bound_val = u
      flow%g(dim) = (u-uref(t0))/(dt*L)
      if(t0>Tend) flow%g(dim) = 0
+     t1 = t1+tShift ! for printing
      if(mympi_rank()==0) print 1,t1,flow%g(dim),u
 1    format("   t=",f0.4," g=",f0.4," u=",f0.4)
+!
+! -- shift grid
+     if(V(1)>0) call xg(1)%shift(-V(1)*flow%dt)
+     call xg(dim)%shift(-u*flow%dt)
 !
 !-- update and write fluid
      call flow%update

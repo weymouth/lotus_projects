@@ -1,0 +1,25 @@
+#!/bin/sh
+
+if [ $# -eq 0 ]; then
+    echo no range given. will tar all files
+
+    ls -1 datp/fluid*pvti 2>/dev/null | while read LINE; do 
+	i=`echo $LINE | cut -d'.' -f2`
+	echo $i
+	tar -zcvf fluid.$i.tgz datp/fluid.$i.pvti dat*/fluid.$i.vti
+    done
+fi
+
+if [ $# -eq 2 ]; then
+    echo will tar files in range $1 - $2
+
+    for i in `seq $1 $2`; do
+	if  [ `ls -1p datp/fluid.$i.pvti | grep -vc "/$"` -ne 0 ]; then
+	    echo $i
+	    tar -zcvf fluid.$i.tgz datp/fluid.$i.pvti dat*/fluid.$i.vti
+	fi
+    done
+fi
+
+echo "runTar:complete"
+exit 0
