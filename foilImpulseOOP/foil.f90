@@ -8,17 +8,17 @@ program foil_impulse
   use geom_shape  ! to create geometry
   use gridMod,    only: xg
   implicit none
-  integer,parameter  :: f=3*2**5           ! resolution  
-  real,parameter     :: Re = 1000          ! Reynolds number
-  real(8),parameter  :: alpha = 10         ! AOA
+  integer,parameter  :: f=3*2**6           ! resolution  
+  real,parameter     :: Re = 1.4e4         ! Reynolds number
+  real(8),parameter  :: alpha = 5          ! AOA
   integer,parameter  :: b(3) = (/2,4,2/)   ! blocks
   integer,parameter  :: d(3) = (/4,4,6/)   ! domain size
   logical,parameter  :: yank=.false.       ! ramp or yank?
 !
-  integer,parameter  :: ndims = 3   ! dimensions
+  integer,parameter  :: ndims = 2   ! dimensions
   real(8),parameter  :: L = f       ! length
   integer,parameter  :: m(3) = f*d  ! points
-  real,parameter     :: nu = 0 !L/Re   ! viscosity
+  real,parameter     :: nu = L/Re   ! viscosity
   real(8),parameter  :: yc = 2*L ! location
   real(8),parameter  :: zc = m(3)/2 ! location
   integer            :: n(3)
@@ -34,7 +34,7 @@ program foil_impulse
   real    :: T=10, Umax=1.0, Tend=5, tShift=0
   integer :: dim=1
   if(yank) then                            ! yank parameters
-     V = (/1,0,0/); tStop = 2; dtPrint = 0.02
+     V = (/1,0,0/); tShift = tStop; tStop = 2; dtPrint = 0.02
      Umax = -6; T = -pi*0.9/Umax; Tend = T
      dim=ndims
   end if
@@ -50,8 +50,8 @@ program foil_impulse
 #endif
   if(ndims==2) n(3) = 1
   call xg(1)%init(m(1),0.75*f,2.0*f,0.5,r=1.03)
-  call xg(2)%init(m(2),0.5*f,0.5*f,1.0,h=0.5,r=1.03)
-  call xg(3)%init(m(3),2.0*f,1.0*f,1.0)
+  call xg(2)%init(m(2),0.25*f,0.25*f,1.0,h=0.25,r=1.03,c=10.)
+  if(ndims==3) call xg(3)%init(m(3),2.0*f,1.0*f,1.0)
   if(mympi_rank()==0) print *, '-- Foil Impulse --'
   if(mympi_rank()==0) print '("   L=",i0," nu=",f0.4)', f,nu
   if(mympi_rank()==0) call xg(1)%write
@@ -73,9 +73,8 @@ program foil_impulse
   if(ndims==3) area = L*zc
 !
 ! -- Initialize fluid
-  call flow%init(n,foil,V=V)
+  call flow%init(n,foil,V=V,nu=nu)
   call flow%resume
-!  tShift = flow%time/L
   if(mympi_rank()==0) print *, '-- init complete --'
 !
 ! -- Time update loop
