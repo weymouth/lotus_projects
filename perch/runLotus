@@ -1,0 +1,40 @@
+# run the post processing scripts and macros
+
+#!/bin/sh
+
+# check that a directory name was given
+if [ $# -le 1 ]; then
+  echo usage: runLotus proc_num work_dir restart_dir
+  exit 1
+fi
+
+# make the exe
+make lotus
+
+# make the dir
+mkdir $2
+
+# set up inputs
+mv lotus $2/.
+cp input.* $2/.
+if [ $# -eq 3 ]; then
+  echo usage: not setup for resume yet
+  exit 1
+fi
+
+# cd and move tecplot stuff
+cd $2
+cp ../postproc/* .
+
+# run the code
+if [ $1 -eq 0 ]; then
+    ./lotus &
+else
+    mpirun -n $1 ./lotus &
+fi
+
+wait 
+
+# run the post processing scripts and macros
+./runStat
+exit 0
