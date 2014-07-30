@@ -9,24 +9,29 @@ if [ $# -le 1 ]; then
 fi
 
 # make the exe
-make lotus
-
-# make the dir
+make -C $MGLHOME/geom_lib/ libgeom.a
+make -C $MGLHOME/oop/ libfluid.a
+make -f $MGLHOME/oop/Makefile lotus
+echo made Lotus executable
+# setup the directory
 mkdir $2
-
-# set up inputs
 mv lotus $2/.
+mv lotus.o $2/.
+cp lotus.f90 $2/.
 cp input.* $2/.
 if [ $# -eq 3 ]; then
   echo usage: not setup for resume yet
   exit 1
 fi
 
-# cd and move tecplot stuff
+# cd and move addons
 cd $2
 cp ../postproc/* .
 
 # run the code
+echo 
+echo running
+echo
 if [ $1 -eq 0 ]; then
     ./lotus &
 else
