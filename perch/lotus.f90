@@ -15,13 +15,13 @@ program perch
   integer,parameter  :: d(3) = (/6,6,1/)   ! domain size
 !
   integer,parameter  :: ndims = 2   ! dimensions
-  real(8),parameter  :: L = f       ! length
+  real,parameter     :: L = f       ! length
   integer,parameter  :: m(3) = f*d  ! points
   real,parameter     :: nu = L/Re   ! viscosity
   real,parameter     :: T = L/Xi    ! motion period
   integer            :: n(3)
   real               :: t0,t1,dt,dtPrint=0.1
-  real               :: area,u,a,force(3)
+  real               :: area,u,u0,a,force(3)
 !
   type(fluid)        :: flow
   type(body)         :: foil
@@ -47,32 +47,31 @@ program perch
   if(mympi_rank()==0) print '("   L=",i0," nu=",f0.4)', f,nu
 !
 ! -- Initialize the foil geometry
-  info%file = 'input.IGS'
-  info%x = (/-4.219,-10.271,-16.876/)
-  info%s = 0.36626*L*(/1,1,-1/)
-  foil = model_init(info).map.jerk(5,6,0,T,0,0)
+  foil = naca(L,0.12,(/0.16,0.,0./))
   area = L
   if(ndims==3) area = L*m(3)
 !
 ! -- Initialize fluid
-  call flow%init(n,foil,nu=nu)
+  call flow%init(n,foil,V=(/1.,0.,0./),nu=nu)
+  flow%velocity%e%exit = .true.
   call flow%resume
-!!$  if(flow%time==0.) flow%time = -5*L
+  if(flow%time==0.) flow%time = -5*L
   if(mympi_rank()==0) print *, '-- init complete --'
 !
 ! -- Time update loop
-  do while (flow%time/T<0.2)
+  do while (flow%time/T<2)
      dt = flow%dt/T
      t0 = flow%time/T
      t1 = t0+dt
 !
 ! -- Deccelerate
-     u = t1
-     if(t1>1) u = 1.
+     u = 1.; u0 = 1
+     if(t0>0) u0 = 1.-t0
+     if(t0>1) u0 = 0.
+     if(t1>0) u = 1.-t1
+     if(t1>1) u = 0.
      flow%velocity%e(1)%bound_val = u
-
-     a = (u-t0)/flow%dt
-     if(t0>1) a = 0
+     a = (u-u0)/flow%dt
      flow%g(1) = a
 
      if(mympi_rank()==0) print 1,t1,a,u
@@ -93,4 +92,39 @@ program perch
 #if MPION
   call mympi_end
 #endif
+
+contains
+  type(set) function naca(c,t,o)
+    real,intent(in)   :: c,t,o(3)
+    integer :: m = 20,i
+    real    :: p(3)=0,q(3)=0,n(3)
+
+    p = 0; 
+    q(1) = (1./m)**2; q(2) = t*oord(q(1))
+    print *,q
+    n = (/p(2)-q(2),q(1)-p(1),0./)
+    n = n/sqrt(sum(n*n))
+    naca = plane(4,1,n,c*(p-o),0,0).and.plane(4,1,mirror(n),mirror(c*(p-o)),0,0)
+
+    do i=2,m
+       p = q
+       q(1) = (real(i)/m)**2; q(2) = t*oord(q(1))
+       print *,q
+       n = (/p(2)-q(2),q(1)-p(1),0./)
+       n = n/sqrt(sum(n*n)) 
+       naca = naca.and.plane(4,1,n,c*(p-o),0,0).and.plane(4,1,mirror(n),mirror(c*(p-o)),0,0)
+    end do
+
+  end function naca
+
+  function mirror(a) result(b)
+    real,intent(in) :: a(3)
+    real :: b(3)
+    b = a; b(2) = -b(2)
+  end function mirror
+
+  real function oord(x) result(y)
+    real,intent(in) :: x
+    y = 5*(0.2969*sqrt(x)-0.1260*x-0.3516*x**2+0.2843*x**3-0.1015*x**4);
+  end function oord
 end program perch
