@@ -5,15 +5,17 @@ l = length(data$time)
 n = 2000
 j = round(seq(1,l,len=min(l,n)))
 data = data[j,]
-CFL = qplot(time,CFL,data=data,geom="line")
-t = 0.5*max(data$time)
+CFL = qplot(time,CFL,data=subset(data,CFL<1),geom="line")
+t = 0.75*max(data$time)
 late = subset(data,time>t)
 mdrag = mean(late$drag)
-plift = max(late$lift)
+mlift = mean(late$lift)
+adrag = sqrt(2*var(late$drag))
+alift = sqrt(2*var(late$lift))
 drag = qplot(time,drag,data=data,geom="line")
-drag = drag+annotate("text",x=t,y=mdrag,label=paste("mean",round(mdrag,2)))
+drag = drag+annotate("text",x=t,y=mdrag-2*adrag,label=paste("mean=",round(mdrag,3)," amp=",round(adrag,3)))
 lift = qplot(time,lift,data=data,geom="line")
-lift = lift+annotate("text",x=t,y=plift*0.95,label=paste("peak",round(plift,2)))
+lift = lift+annotate("text",x=t,y=mlift-2*alift,label=paste("mean=",round(mlift,3)," amp=",round(alift,3)))
 
 ppdf = function(plot,name){
      pdf(name,8,4)
@@ -24,8 +26,6 @@ ppdf = function(plot,name){
 ppdf(CFL,"CFL.pdf")
 ppdf(drag,"drag.pdf")
 ppdf(lift,"lift.pdf")
-print(mdrag)
-print(plift)
 
 data = read.table("mgs.txt", col.names = c("itr","res"))
 
