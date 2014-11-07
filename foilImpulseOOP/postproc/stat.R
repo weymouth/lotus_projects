@@ -6,7 +6,7 @@ n = 2000
 j = round(seq(1,l,len=min(l,n)))
 data = data[j,]
 CFL = qplot(time,CFL,data=subset(data,CFL<1),geom="line")
-t = 0.75*max(data$time)
+t = 0.75*max(data$time)+0.25*min(data$time)
 late = subset(data,time>t)
 mdrag = mean(late$drag)
 mlift = mean(late$lift)

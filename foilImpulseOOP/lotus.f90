@@ -8,18 +8,18 @@ program foil_impulse
   use geom_shape  ! to create geometry
   use gridMod,    only: xg
   implicit none
-  integer,parameter  :: f=3*2**6           ! resolution  
-  real,parameter     :: Re = 1.4e4         ! Reynolds number
-  real(8),parameter  :: alpha = 5          ! AOA
-  integer,parameter  :: b(3) = (/2,4,2/)   ! blocks
-  integer,parameter  :: d(3) = (/4,4,6/)   ! domain size
-  logical,parameter  :: yank=.false.       ! ramp or yank?
+  integer,parameter  :: f = 3*2**6         ! resolution  
+  real,parameter     :: Re =  1000         ! Reynolds number
+  real(8),parameter  :: alpha = 10         ! AOA
+  integer,parameter  :: b(3) = (/2,2,4/)   ! blocks
+  integer,parameter  :: d(3) = (/3,3,4/)   ! domain size
+  logical,parameter  :: yank=.true.        ! ramp or yank?
 !
-  integer,parameter  :: ndims = 2   ! dimensions
+  integer,parameter  :: ndims = 3   ! dimensions
   real(8),parameter  :: L = f       ! length
   integer,parameter  :: m(3) = f*d  ! points
   real,parameter     :: nu = L/Re   ! viscosity
-  real(8),parameter  :: yc = 2*L ! location
+  real(8),parameter  :: yc = 2*L    ! location
   real(8),parameter  :: zc = m(3)/2 ! location
   integer            :: n(3)
   real               :: force(3),area,u,t0,t1,dt
@@ -30,11 +30,11 @@ program foil_impulse
   type(model_info)   :: info
 !
 ! -- Set up run parameters
-  real    :: V(3)=0, tStop=30, dtPrint=3   ! ramp parameters
+  real    :: V(3)=0, tStop=8.5, dtPrint=0.5 ! ramp parameters
   real    :: T=10, Umax=1.0, Tend=5, tShift=0
   integer :: dim=1
   if(yank) then                            ! yank parameters
-     V = (/1,0,0/); tShift = tStop; tStop = 2; dtPrint = 0.02
+     V = (/1,0,0/); tShift = tStop+0.3; tStop = 0.6; dtPrint = 0.015
      Umax = -6; T = -pi*0.9/Umax; Tend = T
      dim=ndims
   end if
@@ -49,24 +49,28 @@ program foil_impulse
   n = m
 #endif
   if(ndims==2) n(3) = 1
-  call xg(1)%init(m(1),0.75*f,2.0*f,0.5,r=1.03)
-  call xg(2)%init(m(2),0.25*f,0.25*f,1.0,h=0.25,r=1.03,c=10.)
-  if(ndims==3) call xg(3)%init(m(3),2.0*f,1.0*f,1.0)
+  call xg(1)%init(m(1),0.75*f,1.0*f,0.5,h=1.0,r=1.03)
+  call xg(2)%init(m(2),0.5*f,0.5*f,1.0,h=0.5,r=1.03)
+  if(ndims==3) call xg(3)%init(m(3),2.0*f,1.*f,1.,h=1.0,r=1.03)
   if(mympi_rank()==0) print *, '-- Foil Impulse --'
   if(mympi_rank()==0) print '("   L=",i0," nu=",f0.4)', f,nu
+  if(mympi_rank()==0) print '("   points=",i0)',product(m)
   if(mympi_rank()==0) call xg(1)%write
   if(mympi_rank()==0) call xg(2)%write
   if(mympi_rank()==0) call xg(3)%write
+  if(mympi_rank()==0) call system('free -m')
 !
 ! -- Initialize the foil geometry
 !  surface_debug = .true.
-  model_fill = .false.
-  info%file = 'naca_square.IGS'
+  info%file = 'naca_half.IGS'
   info%x = (/-4.219,-10.271,-18.876/)
   info%s = 0.36626*L*(/1,1,-1/)
+  eps = 2
+  info%xmax(1) = L
+  info%n = 50
   geom = (model_init(info) &
        .map.(init_affn()**(/alpha,0.D0,0.D0/))) ! rotate by alpha
-  if(ndims==3) geom = geom.and.plane(4,1,(/0,0,-1/),0,0,0)
+  if(ndims==3 .and. info%file == 'naca_square.IGS' ) geom = geom.and.plane(4,1,(/0,0,-1/),0,0,0)
 !  call shape_write(100,geom)
   foil = geom
   area = L
@@ -74,7 +78,7 @@ program foil_impulse
 !
 ! -- Initialize fluid
   call flow%init(n,foil,V=V,nu=nu)
-  call flow%resume
+  if(mympi_rank()==0) call system('free -m')
   if(mympi_rank()==0) print *, '-- init complete --'
 !
 ! -- Time update loop
@@ -82,13 +86,16 @@ program foil_impulse
      dt = flow%dt/L
      t0 = flow%time/L-tShift ! for motion
      t1 = t0+dt
+     if(yank .and. t0>0.0) dtPrint = 0.003
+     if(yank .and. t0>0.3) dtPrint = 0.015
 !
 ! -- Accelerate the reference frame
      u = uref(t1)
+     if(t1<0)    u = uref(0.)
      if(t1>Tend) u = uref(Tend)
      flow%velocity%e(dim)%bound_val = u
      flow%g(dim) = (u-uref(t0))/(dt*L)
-     if(t0>Tend) flow%g(dim) = 0
+     if(t0<0. .or. t0>Tend) flow%g(dim) = 0
      t1 = t1+tShift ! for printing
      if(mympi_rank()==0) print 1,t1,flow%g(dim),u
 1    format("   t=",f0.4," g=",f0.4," u=",f0.4)
@@ -106,6 +113,7 @@ program foil_impulse
      write(9,'(f10.4,f8.4,3e16.8)') t1,dt*L,2.*force/area
      flush(9)
   end do
+  if(mympi_rank()==0) call system('free -m')
   if(mympi_rank()==0) write(6,*) '--- complete --- '
 !
 ! -- Finalize MPI
