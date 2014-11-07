@@ -5,63 +5,69 @@ program perch
   use fluidMod,   only: fluid
   use bodyMod,    only: body
   use mympiMod,   only: init_mympi,mympi_end,mympi_rank
-  use gridMod,    only: xg
+  use gridMod,    only: xg,composite
   use geom_shape  ! to define geom (set,eps,plane, etc)
   implicit none
-  integer,parameter  :: f=3*2**5           ! resolution  
+  real,parameter     :: f = 1              ! scaling factor
+  real,parameter     :: L = 200/f          ! length scale
   real,parameter     :: Re = 2e3           ! Reynolds number
-  real,parameter     :: Xi = 0.5           ! Shape change number
-  integer,parameter  :: b(3) = (/4,4,1/)   ! blocks
-  integer,parameter  :: d(3) = (/4,4,1/)   ! domain size
+  real,parameter     :: Xi = 1./2.         ! Shape change number
 !
-  integer,parameter  :: ndims = 2   ! dimensions
-  real,parameter     :: L = f       ! length
-  integer,parameter  :: m(3) = f*d  ! points
-  real,parameter     :: nu = L/Re   ! viscosity
-  real,parameter     :: T = L/Xi    ! motion period
-  integer            :: n(3)
+  integer,parameter  :: ndims = 2          ! dimensions
+  integer,parameter  :: d(3) = (/5,5,1/)   ! domain size
+  real,parameter     :: nu = L/Re          ! viscosity
+  real,parameter     :: T = L/Xi           ! motion period
+  logical,parameter  :: p(3) = (/.false.,.false.,.true./)  ! periodic BCs
+  integer            :: b(3) = (/4,4,1/)   ! blocks
+  integer            :: n(3),i
   real               :: t0,t1,dt,dtPrint=0.1
   real               :: area,u,u0,a,force(3)
+  real               :: Ufric,yp
 !
   type(fluid)        :: flow
   type(body)         :: foil
 !
 ! -- Initialize MPI (if MPI is ON)
 #if MPION
-  call init_mympi(ndims,set_blocks=b(:ndims))
-!
-! -- Get grid size
-  n = m/b
+  call init_mympi(ndims,set_blocks=b(:ndims),set_periodic=p(:ndims))
 #else
-  n = m
+  b=1
 #endif
+!
+! -- Get array size
+  n = composite(L*d/b)
   if(ndims==2) n(3) = 1
-  xg(1:2)%left = -m(1:2)/2.
-  call xg(1)%init(m(1),0.75*L,1.25*L,1.0,r=1.018)
-  call xg(2)%init(m(2),0.25*L,1.75*L,1.0,r=1.018)
+!
+! -- Get grid
+  call xg(1)%init(n(1)*b(1),1.0*L,1.75*L,1.0,c=2.6,f=f)
+  call xg(2)%init(n(2)*b(2),0.75*L,2.0*L,1.0,c=2.6,f=f)
+!!$  call xg(1)%init(n(1)*b(1),1.0*L,1.75*L,1.0,c=2.8,f=f)
+!!$  call xg(2)%init(n(2)*b(2),0.75*L,2.0*L,1.0,c=2.8,f=f)
   if(mympi_rank()==0) call xg(1)%write
   if(mympi_rank()==0) call xg(2)%write
   if(mympi_rank()==0) call xg(3)%write
 !
 ! -- Init
   if(mympi_rank()==0) print *, '-- Perch Test --'
-  if(mympi_rank()==0) print '("   L=",i0," nu=",f0.4)', f,nu
+  if(mympi_rank()==0) print '("   L=",f0.4,", points=",i0)', L,product(n*b)
+  
+  Ufric = sqrt(0.026/Re**(1./7.)/2.)
+  yp = Ufric/nu
+  if(mympi_rank()==0) print '("   nu=",f0.4,", y+=",f0.4)', nu,yp
+
 !
 ! -- Initialize the foil geometry
-  foil = naca(L,0.15).map.init_rigid(6,alpha,omega)
+  foil = naca(L,0.16).map.init_rigid(6,alpha,omega)
   area = L
-  if(ndims==3) area = L*m(3)
+  if(ndims==3) area = L*n(3)*b(3)*xg(3)%h
 !
-  ! -- Initialize fluid
+! -- Initialize fluid
   call flow%init(n,foil,V=(/1.,0.,0./),nu=nu)
-
-  flow%velocity%e%exit = .true.
-!  if(ndims==3) call flow%velocity%e(1)%perturb(0.05)
-  if(flow%time==0.) flow%time = -L*5
+  if(flow%time==0.) flow%time = -5*L
   if(mympi_rank()==0) print *, '-- init complete --'
-  !
+!
 ! -- Time update loop
-  do while (flow%time/T<2)
+  do while (flow%time/T<1.2)
      dt = flow%dt/T
      t0 = flow%time/T
      t1 = t0+dt
@@ -77,12 +83,13 @@ program perch
      if(t1>0 .and. t0<1) then
         call foil%update(t1)
      end if
-     if(mympi_rank()==0) print 1,t1,a,u,alpha(DBLE(t1)),omega(DBLE(t1))
+     if(mympi_rank()==0 .and. mod(abs(t1),dtPrint)<dt) &
+          print 1,t1,a,u,alpha(REAL(t1,8)),omega(REAL(t1,8))
 1    format("   t=",f0.4," g=",f0.4," u=",f0.4," alpha=",f0.4," omega=",f0.4)
 !
 !-- update and write fluid
      call flow%update(foil)
-     if(mod(t1,dtPrint)<dt .and. t1>0) call flow%write(foil)
+     if(mod(t1,dtPrint)<dt .and. t1>-dt) call flow%write(foil)
 !
 ! -- print force
      force = foil%pforce(flow%pressure)
@@ -106,9 +113,10 @@ contains
     info%file = 'naca_square.IGS'
     info%x = (/-4.219,-10.271,-18.876/)
     info%s = 0.36626*c*(/1,1,-1/)
+    info%xmax(1) = c
     info%n = (/c,c,1./)
-    shift = init_affn()+DBLE(c*(/0.5-o,0.,0./)) ! shift pivot to origin
-    surface_debug = .true.
+    shift = init_affn()+REAL(c*(/0.5-o,0.,0./),8) ! shift pivot to origin
+!    surface_debug = .true.
     eps = 2.0
     naca = model_init(info).map.shift
   end function naca
@@ -116,7 +124,9 @@ contains
 ! -- motion definitions
   real(8) pure function alpha(ts)  ! rotation angle
     real(8),intent(in) :: ts
-    if(ts>1) then
+    if(ts<0) then
+       alpha = 0.
+    else if(ts>1) then
        alpha = pi/2.
     else if(ts>0) then
        alpha = pi/2.*(ts-sin(2.*pi*ts)/(2.*pi))

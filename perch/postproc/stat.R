@@ -3,17 +3,19 @@ data = read.table("fort.9",col.names = c("time","CFL","thrust","lift","Fz"))
 data$drag = -data$thrust
 l = length(data$time)
 n = 2000
-j = round(seq(1,l,len=min(l,n)))
+j = round(seq(5,l,len=min(l,n)))
 data = data[j,]
 CFL = qplot(time,CFL,data=data,geom="line")
 t = 0.5*max(data$time)
-late = subset(data,time>t)
+late = subset(data,time>0 & time<1)
 mdrag = mean(late$drag)
+pdrag = max(late$drag)
+mlift = mean(late$lift)
 plift = max(late$lift)
 drag = qplot(time,drag,data=data,geom="line")
-drag = drag+annotate("text",x=t,y=mdrag,label=paste("mean",round(mdrag,2)))
+drag = drag+annotate("text",x=-1,y=1,label=paste("mean=",round(mdrag,3)," peak=",round(pdrag,3)))
 lift = qplot(time,lift,data=data,geom="line")
-lift = lift+annotate("text",x=t,y=plift*0.95,label=paste("peak",round(plift,2)))
+lift = lift+annotate("text",x=-1,y=1,label=paste("mean=",round(mlift,3)," peak=",round(plift,3)))
 
 ppdf = function(plot,name){
      pdf(name,8,4)
