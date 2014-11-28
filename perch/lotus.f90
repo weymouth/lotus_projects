@@ -8,18 +8,17 @@ program perch
   use gridMod,    only: xg,composite
   use geom_shape  ! to define geom (set,eps,plane, etc)
   implicit none
-  real,parameter     :: f = 1              ! scaling factor
+  real,parameter     :: f = 0.4            ! scaling factor
   real,parameter     :: L = 200/f          ! length scale
-  real,parameter     :: Re = 2e3           ! Reynolds number
-  real,parameter     :: Xi = 1./2.         ! Shape change number
+  real,parameter     :: Re = 22e3          ! Reynolds number
+  real,parameter     :: Xi = 1./4.         ! Shape change number
 !
-  integer,parameter  :: ndims = 2          ! dimensions
-  integer,parameter  :: d(3) = (/5,5,1/)   ! domain size
+  integer,parameter  :: ndims = 3          ! dimensions
   real,parameter     :: nu = L/Re          ! viscosity
   real,parameter     :: T = L/Xi           ! motion period
   logical,parameter  :: p(3) = (/.false.,.false.,.true./)  ! periodic BCs
   integer            :: b(3) = (/4,4,1/)   ! blocks
-  integer            :: n(3),i
+  integer            :: n(3)
   real               :: t0,t1,dt,dtPrint=0.1
   real               :: area,u,u0,a,force(3)
   real               :: Ufric,yp
@@ -34,32 +33,33 @@ program perch
   b=1
 #endif
 !
-! -- Get array size
-  n = composite(L*d/b)
-  if(ndims==2) n(3) = 1
-!
-! -- Get grid
-  call xg(1)%init(n(1)*b(1),1.0*L,1.75*L,1.0,c=2.6,f=f)
-  call xg(2)%init(n(2)*b(2),0.75*L,2.0*L,1.0,c=2.6,f=f)
-!!$  call xg(1)%init(n(1)*b(1),1.0*L,1.75*L,1.0,c=2.8,f=f)
-!!$  call xg(2)%init(n(2)*b(2),0.75*L,2.0*L,1.0,c=2.8,f=f)
-  if(mympi_rank()==0) call xg(1)%write
-  if(mympi_rank()==0) call xg(2)%write
-  if(mympi_rank()==0) call xg(3)%write
-!
-! -- Init
-  if(mympi_rank()==0) print *, '-- Perch Test --'
-  if(mympi_rank()==0) print '("   L=",f0.4,", points=",i0)', L,product(n*b)
-  
+! -- Print run info
   Ufric = sqrt(0.026/Re**(1./7.)/2.)
   yp = Ufric/nu
-  if(mympi_rank()==0) print '("   nu=",f0.4,", y+=",f0.4)', nu,yp
-
+  if(mympi_rank()==0) print *, '-- Perch Test --'
+  if(mympi_rank()==0) print '("   L=",f0.4,", nu=",f0.4,", y+=",f0.4)',L,nu,yp
+!
+! -- Initialize array size
+  n = composite(L*(/2.,2.,0.25/)/b)
+  if(ndims==2) n(3) = 1
+!
+! -- Initialize and print grid
+  call xg(1)%init(n(1)*b(1),0.3*L,1.3*L,1.0,c=25.,r=1.12,f=f)
+  call xg(2)%init(n(2)*b(2),0.3*L,1.3*L,1.0,c=25.,r=1.12,f=f)
+  if(ndims==3) xg(3)%h = 4
+  if(mympi_rank()==0) then
+     call xg(1)%write
+     call xg(2)%write
+     print '("points  ",i0)', n(3)
+     call xg(3)%write
+     print '("   total points=",i0)', product(n*b)
+  end if
+  call mympi_end()
+  stop
 !
 ! -- Initialize the foil geometry
   foil = naca(L,0.16).map.init_rigid(6,alpha,omega)
-  area = L
-  if(ndims==3) area = L*n(3)*b(3)*xg(3)%h
+  area = L*n(3)*b(3)*xg(3)%h
 !
 ! -- Initialize fluid
   call flow%init(n,foil,V=(/1.,0.,0./),nu=nu)
@@ -80,9 +80,7 @@ program perch
      flow%g(1) = a
 !
 ! -- rotate
-     if(t1>0 .and. t0<1) then
-        call foil%update(t1)
-     end if
+     if(t1>0 .and. t0<1) call foil%update(t1)
      if(mympi_rank()==0 .and. mod(abs(t1),dtPrint)<dt) &
           print 1,t1,a,u,alpha(REAL(t1,8)),omega(REAL(t1,8))
 1    format("   t=",f0.4," g=",f0.4," u=",f0.4," alpha=",f0.4," omega=",f0.4)
