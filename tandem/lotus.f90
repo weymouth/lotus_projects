@@ -8,7 +8,7 @@ program tandem
   use gridMod,    only: xg,composite
   use geom_shape  ! to define geom (set,eps,plane, etc)
   implicit none
-  real,parameter     :: f = 2              ! scaling factor
+  real,parameter     :: f = 4              ! scaling factor
   real,parameter     :: D = 100/f          ! length scale
   real,parameter     :: Re = 200           ! Reynolds number
   real,parameter     :: amp = D            ! amplitude
@@ -38,10 +38,10 @@ program tandem
   if(mympi_rank()==0) print '("   D=",f0.4,", nu=",f0.4,", y+=",f0.4)',D,nu,Ufric/nu
 !
 ! -- Initialize array size
-  n(:2) = composite(D*(/7,6/)/b); n(3) = 1
+  n(:2) = composite(D*(/10,6/)/b); n(3) = 1
 !
 ! -- Initialize and print grid
-  call xg(1)%init(n(1)*b(1),0.6*D,3.0*D,0.5,f=f,r=1.02,c=10.,d=4.)
+  call xg(1)%init(n(1)*b(1),4.6*D,2.6*D,0.9,f=f,r=1.02,c=10.,d=4.)
   call xg(2)%init(n(2)*b(2),1.8*D,1.8*D,1.0,f=f,r=1.03,c=25.)
   if(mympi_rank()==0) then
      call xg(1)%write
@@ -52,7 +52,9 @@ program tandem
 !!$  stop
 !
 ! -- Initialize the foil geometry
-  back = cylinder(1,1,3,D/2.,0.,0.,0.).map.init_velocity(circle)
+!!$  back = (cylinder(1,1,3,D/2.,0.,0.,0.).map.init_velocity(circle).map.init_rigid(2,height,zip)) &
+  back = (cylinder(1,1,3,D/2.,0.,0.,0.).map.init_rigid(2,height,velocity)) &
+       .or.cylinder(1,0,3,D/2.,(/-4*D,0.,0./),0.,0.)
 !
 ! -- Initialize fluid
   call flow%init(n,back,V=(/1.,0.,0./),nu=nu)
@@ -90,24 +92,45 @@ contains
 !
 ! -- motion definitions
   real(8) pure function velocity(ts)
+    implicit none
     real(8),intent(in) :: ts
     velocity = amp*omega*cos(omega*ts)
   end function velocity
   real(8) pure function height(ts)
+    implicit none
     real(8),intent(in) :: ts
     height = amp*sin(omega*ts)
   end function height
+  real(8) pure function zip(ts)
+    implicit none
+    real(8),intent(in) :: ts
+    zip = 0
+  end function zip
 !
 ! -- pflow definitions
-  pure function circle(u,x) result(v)
-    real(8),intent(in) :: u(3),x(3)
+  pure function dipole(x) result(v)
+    implicit none
+    real(8),intent(in) :: x(3)
     real(8)            :: v(3)
-    real(8)            :: r,theta
-    r = sqrt(sum(x**2))
+    real(8)            :: r2,theta,ur,ut
+    r2 = sum(x**2)/(0.5*D)**2
     theta = atan2(x(2),x(1))
-    ur = cos(theta)*(1-(0.5*D/r)**2)
-    ut = -sin(theta)*(r+(0.5*D/r)**2)
+    ur =  -cos(theta)/r2
+    ut =  -sin(theta)/r2
     v(1) = cos(theta)*ur-sin(theta)*ut
     v(2) = sin(theta)*ur+cos(theta)*ut
-  end function velocity
+    v(3) = 0.
+  end function dipole
+  pure function circle(x) result(v)
+    implicit none
+    real(8),intent(in) :: x(3)
+    real(8)            :: v(3),dip(3),vel,m
+    dip = dipole(x)
+    vel = velocity(REAL(t1,8))
+    v(1) = 1+dip(1)+vel*dip(2)
+    v(2) = 0+dip(2)-vel*dip(1)
+    v(3) = 0
+    m = sqrt(sum(v**2)/(1+vel**2))*(1-eps/D)**2/2.
+    if(m>1) v = v/m ! moderate the singularity
+  end function circle
 end program tandem
