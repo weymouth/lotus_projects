@@ -8,11 +8,13 @@ program tandem
   use gridMod,    only: xg,composite
   use geom_shape  ! to define geom (set,eps,plane, etc)
   implicit none
-  real,parameter     :: f = 4              ! scaling factor
+  real,parameter     :: f = 2              ! scaling factor
   real,parameter     :: D = 100/f          ! length scale
   real,parameter     :: Re = 200           ! Reynolds number
   real,parameter     :: amp = D            ! amplitude
   real,parameter     :: freq = 0.1         ! freqency
+  logical,parameter  :: pflow = .true.     ! use potential flow tangent velocity?
+  logical,parameter  :: upstream = .true.  ! place upstream body?
 !
   integer,parameter  :: ndims = 2                       ! dimensions
   logical,parameter  :: p(2) = .false.                  ! periodic BCs
@@ -24,7 +26,8 @@ program tandem
   real               :: t1,dt,dtPrint=1./freq/20,force(3)
 !
   type(fluid)        :: flow
-  type(body)         :: back
+  type(set)          :: back
+  type(body)         :: bodies
 !
 ! -- Initialize MPI (if MPI is ON)
 #if MPION
@@ -51,13 +54,20 @@ program tandem
 !!$  call mympi_end()
 !!$  stop
 !
-! -- Initialize the foil geometry
-!!$  back = (cylinder(1,1,3,D/2.,0.,0.,0.).map.init_velocity(circle).map.init_rigid(2,height,zip)) &
-  back = (cylinder(1,1,3,D/2.,0.,0.,0.).map.init_rigid(2,height,velocity)) &
-       .or.cylinder(1,0,3,D/2.,(/-4*D,0.,0./),0.,0.)
+! -- Initialize the tandem geometry
+  if(pflow) then
+     back = (cylinder(1,1,3,D/2.,0.,0.,0.).map.init_velocity(circle).map.init_rigid(2,height,zip))
+  else
+     back = (cylinder(1,1,3,D/2.,0.,0.,0.).map.init_rigid(2,height,velocity))
+  end if
+  if(upstream) then
+     bodies = back.or.cylinder(1,0,3,D/2.,(/-4*D,0.,0./),0.,0.) ! no force data
+  else
+     bodies = back
+  end if
 !
 ! -- Initialize fluid
-  call flow%init(n,back,V=(/1.,0.,0./),nu=nu)
+  call flow%init(n,bodies,V=(/1.,0.,0./),nu=nu)
   if(mympi_rank()==0) print *, '-- init complete --'
 !
 ! -- Time update loop
@@ -66,17 +76,17 @@ program tandem
 ! -- update body and fluid
      dt = flow%dt
      t1 = flow%time+dt
-     call back%update(t1)
-     call flow%update(back)
+     call bodies%update(t1)
+     call flow%update(bodies)
 !
 ! -- print force
-     force = back%pforce(flow%pressure)
+     force = bodies%pforce(flow%pressure)
      write(9,'(f10.4,f8.4,3e16.8)') t1/D,dt,2.*force/D
      flush(9)
 !
 ! -- full output
      if(mod(t1,dtPrint*D)<dt) then
-        call flow%write(back)
+        call flow%write(bodies)
         if(mympi_rank()==0) print 1,t1/D,height(REAL(t1,8))/D,velocity(REAL(t1,8))
 1       format("   t=",f0.4," height=",f7.4," velocity=",f7.4)
      end if
