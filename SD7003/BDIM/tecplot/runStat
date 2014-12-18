@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# check the status of the simulation
+function cfl
+{
+    tec360 -b cfl.lay png.mcr > junk
+    mv image.png cfl.png
+    open cfl.png
+}
+function mgs
+{
+    grep 'MG end' fort.8 | sed s/'MG end'// > mgs.txt
+    tec360 -b mgs.lay png.mcr > junk
+    mv image.png mgs.png
+    open mgs.png
+}
+function mot
+{
+    tec360 -b motion.lay png.mcr > junk
+    mv image.png motion.png
+    open motion.png
+}
+function force
+{
+    tec360 -b force.lay png.mcr > junk
+    mv image.png force.png
+    open force.png
+}
+cfl; mgs; mot; force 
+echo "runStat:complete"
+exit 0

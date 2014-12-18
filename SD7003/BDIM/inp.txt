@@ -1,0 +1,36 @@
+!! ---- Global info ---- !!
+2			 ! number of dimensions
+T			 ! restart switch
+.04			 ! print interval
+2			 ! simulation end time
+1.e-2			 ! dtMax
+5.e-4			 ! dtLow
+!! ----  MPI  info  ---- !!
+F,F	 		 ! parallel boundaries (x,y,z)
+2,3			 ! number of blocks (x,y,z)
+!! ---- Domain info ---- !!
+0,0,0,6,0   	 ! u,p boundary type (-dims:dims)
+1.0			 ! reference frame velocity
+5.0			 ! frame ramp-up time
+!! --- Velocity info --- !!
+1.e-4		 ! viscosity (dark fluid)
+T F F 200	   	 ! vector velocity print
+T F F 400	 	 ! scalar print (vort in 2D, lambda in 3D)
+T F F 500 	 ! cf value
+!! --- Apriori  info --- !!
+!! --- Probe  info --- !!
+F F F 800	         ! probe file print
+3*0.5
+F F F 300		 ! pressure probes defines in inp.prob print
+!! --- Pressure info --- !!
+T F F 600	   	 ! pressure print
+!! ----  Body info  ---- !!
+T			 ! immersed body present
+-2		 	 ! smoothing width
+T T F 100 		 ! distance function print
+F            	   	 ! body move
+F   	      	   	 ! body slip
+F   	      	   	 ! body correction
+F			! sharp corner
+!! ----  VOF  info  ---- !!
+!! ---- End of info ---- !!

@@ -1,0 +1,28 @@
+#!/bin/sh
+function archiveDIR
+{
+    pwd
+    zip -m log fort.1? fort.? 1>/dev/null
+    ls fort.[1-2]??? 2>/dev/null
+    zip -m restart fort.[1-2]??? 1>/dev/null
+
+    for i in 1 2 3 4 5 6 7 8 9; do
+	if  [ `ls -1p fort.$i??.plt | grep -vc "/$"` -ne 0 ]; then
+		tar -zcvf tec$i.plt.tgz fort.$i??.plt
+		rm fort.$i??.plt
+	fi
+	if  [ `ls -1p fort.$i?? | grep -vc "/$"` -ne 0 ]; then
+		tar -zcvf tec$i.tgz fort.$i??
+		rm fort.$i??
+	fi
+    done
+
+    ls -1 -d */ 2>/dev/null | while read LINE; do 
+	cd $LINE
+	archiveDIR
+	cd ../
+    done
+}
+archiveDIR
+echo "runZip:complete"
+exit 0
