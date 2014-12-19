@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# preplot all files
+tec360 -b eps.mcr $1.lay > /dev/null
+if  [ `grep Err batch.log -c` -ne 0 ]; then
+	echo runPDF: problem with macro
+	exit 3
+fi
+convert image.eps $1.pdf
+echo runPDF: made $1.pdf
+rm image.eps batch.log
+
+exit 0

@@ -1,0 +1,48 @@
+# run the post processing scripts and macros
+
+#!/bin/sh
+
+# check that a directory name was given
+if [ $# -le 1 ]; then
+  echo usage: runBDIM proc_num work_dir restart_dir
+  exit 1
+fi
+
+# make the dir
+mkdir $2
+rm $2/fort.?
+rm $2/fort.??
+rm $2/fort.???
+rm $2/fort.????
+
+# set up inputs
+cp $MGLHOME/bin/exec_BDIM $2/.
+cp inp.* $2/.
+cp *stl $2/.
+if [ $# -eq 3 ]; then
+    cp $3/restart.zip $2/initial.zip
+    unzip $3/restart.zip -d $2
+    cp $3/inp.geom $2/.
+    tail -n 2 $3/fort.10 > $2/inp.force
+fi
+
+# cd and move tecplot stuff
+cd $2
+cp ../tecplot/* .
+
+# run the code
+if [ $1 -eq 0 ]; then
+    ./exec_BDIM &
+else
+    mpiexec -n $1 ./exec_BDIM &
+fi
+
+wait 
+
+# run the post processing scripts and macros
+./runStat
+wait
+./runTec interp.mcr 'png.mcr cf.lay'; mv image.png cf.png
+./runZip 
+echo "runBDIM:complete"
+exit 0
