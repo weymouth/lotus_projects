@@ -3,7 +3,7 @@ data = read.table("fort.9",col.names = c("time","CFL","thrust","lift","Fz"))
 data$drag = -data$thrust
 l = length(data$time)
 n = 2000
-j = round(seq(1,l,len=min(l,n)))
+j = round(seq(10,l,len=min(l,n)))
 data = data[j,]
 CFL = qplot(time,CFL,data=subset(data,CFL<1),geom="line")
 t = 0.75*max(data$time)
