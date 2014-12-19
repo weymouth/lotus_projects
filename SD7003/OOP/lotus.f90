@@ -11,7 +11,7 @@ program SD7003Test
   integer,parameter  :: n = 9*2**6         ! number of points  
   real,parameter     :: Re = 1e4           ! Reynolds number
   logical,parameter  :: O2 = .false.       ! O(2) flag
-  real,parameter     :: tStop=30,dtPrint=1
+  real,parameter     :: tStop=100,dtPrint=1
 !
   integer            :: b = 4
   real               :: nu = c/Re,t=0,force(3)=0,dt
