@@ -1,8 +1,8 @@
 !! ---- Global info ---- !!
 2			 ! number of dimensions
-T			 ! restart switch
-.04			 ! print interval
-2			 ! simulation end time
+F			 ! restart switch
+1			 ! print interval
+30			 ! simulation end time
 1.e-2			 ! dtMax
 5.e-4			 ! dtLow
 !! ----  MPI  info  ---- !!
@@ -30,7 +30,7 @@ T			 ! immersed body present
 T T F 100 		 ! distance function print
 F            	   	 ! body move
 F   	      	   	 ! body slip
-F   	      	   	 ! body correction
-F			! sharp corner
+T   	      	   	 ! body correction
+T			! sharp corner
 !! ----  VOF  info  ---- !!
 !! ---- End of info ---- !!

@@ -42,6 +42,7 @@ wait
 # run the post processing scripts and macros
 ./runStat
 wait
+./runTec 'png.mcr vort.lay'; mv image.png vort.png
 ./runTec interp.mcr 'png.mcr cf.lay'; mv image.png cf.png
 ./runZip 
 echo "runBDIM:complete"

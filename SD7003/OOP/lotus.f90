@@ -7,14 +7,15 @@ program SD7003Test
   use gridMod,    only: xg
   use mympiMod
   implicit none
-  real, parameter    :: c = 100            ! resolution
-  integer,parameter  :: n = 9*2**6         ! number of points  
+  real,parameter     :: f = 2              ! resolution
+  real,parameter     :: c = 200/f          ! resolution
+  integer,parameter  :: n = 9*2**7/f       ! number of points  
   real,parameter     :: Re = 1e4           ! Reynolds number
-  logical,parameter  :: O2 = .false.       ! O(2) flag
-  real,parameter     :: tStop=100,dtPrint=1
+  logical,parameter  :: O2 = .true.       ! O(2) flag
+  real,parameter     :: tStop=30,dtPrint=1
 !
   integer            :: b = 4
-  real               :: nu = c/Re,t=0,force(3)=0,dt
+  real               :: nu = c/Re,t=0,force(3)=0,dt,u,u0
   type(fluid)        :: flow
   type(body)         :: foil
 #if MPION
@@ -24,8 +25,8 @@ program SD7003Test
 #endif
 !
 ! -- Initialize grid and print stats
-  call xg(1)%init(n,0.7*c,1.0*c,0.8,f=2.)
-  call xg(2)%init(n,0.2*c,0.2*c,1.0,f=2.)
+  call xg(1)%init(n,0.7*c,1.0*c,0.8,f=f)
+  call xg(2)%init(n,0.2*c,0.2*c,1.0,f=f)
   if(mympi_rank()==0) then
      print *, '-- Foil test case --'
      print '("    c/h=",i0,", nu=",f0.4,", y+=",f0.4)', int(c),nu,sqrt(0.026/Re**(1./7.)/2.)/nu
@@ -35,7 +36,7 @@ program SD7003Test
 !
 ! -- Initialize the foil and flow
   foil = SD(c,4.)
-  call flow%init((/n/b,n/b,1/),foil,V=(/1.,0.,0./),nu=nu)
+  call flow%init((/n/b,n/b,1/),foil,nu=nu)
   call flow%write(foil)
   if(mympi_rank()==0) print *, '-- init complete --'
 !
@@ -45,6 +46,11 @@ program SD7003Test
 ! -- Time update loop
   do while (t<tStop)
      dt = flow%dt
+     u  = min(1.,(t+dt/c)/5.)
+     u0 = min(1.,t/5.)
+     flow%velocity%e(1)%bound_val = u
+     flow%g(1) = (u-u0)/dt
+!
      call flow%update
 !
      t = flow%time/c
@@ -70,9 +76,9 @@ contains
     top%x = (/-0.5,0.,0./)
     top%r = (/-alpha,0.,0./)
     top%s = chord
-    top%n = (/1.5*chord,0.5*chord,10./)
-    top%xmax(1) = 1.2*chord
-    top%xmin(2) = -0.2*chord
+    top%n = (/256,64,1/)
+    top%xmax(1) = 2.0*chord
+    top%xmin(2) = -0.25*chord
     bot = top
     bot%file = 'SD7003_bottom.stl'
     eps = 2.0
