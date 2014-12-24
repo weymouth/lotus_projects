@@ -8,12 +8,12 @@ program perch
   use gridMod,    only: xg,composite
   use geom_shape  ! to define geom (set,eps,plane, etc)
   implicit none
-  real,parameter     :: f = 0.4            ! scaling factor
+  real,parameter     :: f = 2              ! scaling factor
   real,parameter     :: L = 200/f          ! length scale
-  real,parameter     :: Re = 22e3          ! Reynolds number
+  real,parameter     :: Re = 2e3           ! Reynolds number
   real,parameter     :: Xi = 1./4.         ! Shape change number
 !
-  integer,parameter  :: ndims = 3          ! dimensions
+  integer,parameter  :: ndims = 2          ! dimensions
   real,parameter     :: nu = L/Re          ! viscosity
   real,parameter     :: T = L/Xi           ! motion period
   logical,parameter  :: p(3) = (/.false.,.false.,.true./)  ! periodic BCs
@@ -48,14 +48,13 @@ program perch
   call xg(2)%init(n(2)*b(2),0.3*L,1.3*L,1.0,c=25.,r=1.12,f=f)
   if(ndims==3) xg(3)%h = 4
   if(mympi_rank()==0) then
-     call xg(1)%write
-     call xg(2)%write
+     call xg(1)%write(L)
+     call xg(2)%write(L)
      print '("points  ",i0)', n(3)
-     call xg(3)%write
      print '("   total points=",i0)', product(n*b)
   end if
-  call mympi_end()
-  stop
+!!$  call mympi_end()
+!!$  stop
 !
 ! -- Initialize the foil geometry
   foil = naca(L,0.16).map.init_rigid(6,alpha,omega)
