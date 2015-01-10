@@ -9,11 +9,11 @@ program thruster
   use geom_shape  ! to define geom (set,eps,plane, etc)
   implicit none
   real,parameter     :: f = 2              ! scaling factor
-  real,parameter     :: D = 320/f          ! length scale
+  real,parameter     :: D = 200/f          ! length scale
   real,parameter     :: dd = D/10          ! length scale
-  real,parameter     :: xi = -10           ! rotation rate
-  real(8),parameter  :: x = 0.45*D         ! x location
-  real,parameter     :: Re = 200           ! Reynolds number
+  real,parameter     :: xi = -4            ! rotation rate
+  real(8),parameter  :: x = 0.425*D        ! x location
+  real,parameter     :: Re = 500           ! Reynolds number
 !
   integer,parameter  :: ndims = 2                       ! dimensions
   logical,parameter  :: p(2) = .false.                  ! periodic BCs
@@ -22,7 +22,7 @@ program thruster
   real,parameter     :: omega = 2.*xi/dd                ! spin freq
   integer            :: b(2) = (/4,4/)                  ! blocks
   integer            :: n(3)
-  real               :: t1,dt,dtPrint=0.05,force(3)
+  real               :: t1,dt,dtPrint=0.25,force(3)
 !
   type(fluid)        :: flow
   type(set)          :: ring
@@ -40,7 +40,7 @@ program thruster
   if(mympi_rank()==0) print '("   D=",f0.4,", nu=",f0.4,", y+=",f0.4)',D,nu,Ufric/nu
 !
 ! -- Initialize array size
-  n(:2) = composite(D*(/6.4,3.2/)/b); n(3) = 1
+  n(:2) = composite(D*(/6.0,3.6/)/b); n(3) = 1
 !
 ! -- Initialize and print grid
   call xg(1)%init(n(1)*b(1),0.6*D,4.1*D,1.0,f=f,r=1.02,d=4.)
@@ -54,8 +54,8 @@ program thruster
 !!$  stop
 !
 ! -- Initialize the tandem geometry
-  ring =  ((cylinder(1,1,3,dd/2.,0.,0.,0.).map.init_rigid(6,zip, spin).map.(init_affn()+(/x, x,0.D0/))) &
-       .or.(cylinder(1,1,3,dd/2.,0.,0.,0.).map.init_rigid(6,zip,nspin).map.(init_affn()+(/x,-x,0.D0/))))
+  ring =  ((cylinder(1,2,3,dd/2.,0.,0.,0.).map.init_rigid(6,zip, spin).map.(init_affn()+(/x, x,0.D0/))) &
+       .or.(cylinder(1,2,3,dd/2.,0.,0.,0.).map.init_rigid(6,zip,nspin).map.(init_affn()+(/x,-x,0.D0/))))
   bodies = ring.or.cylinder(1,1,3,D/2.,0.,0.,0.)
 !
 ! -- Initialize fluid
@@ -65,7 +65,7 @@ program thruster
   if(mympi_rank()==0) print *, '-- init complete --'
 !
 ! -- Time update loop
-  do while (flow%time/D<3)
+  do while (flow%time/D<5)
 !
 ! -- update body and fluid
      dt = flow%dt
