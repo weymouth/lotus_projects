@@ -10,11 +10,12 @@ program tandem
   implicit none
   real,parameter     :: f = 2              ! scaling factor
   real,parameter     :: D = 100/f          ! length scale
-  real,parameter     :: Re = 200           ! Reynolds number
-  real,parameter     :: amp = D            ! amplitude
-  real,parameter     :: freq = 0.1         ! freqency
-  logical,parameter  :: pflow = .true.     ! use potential flow tangent velocity?
-  logical,parameter  :: upstream = .true.  ! place upstream body?
+  real,parameter     :: Re = 160           ! Reynolds number
+  real,parameter     :: amp = 0.2*D        ! amplitude
+  real,parameter     :: freq = 0.25        ! freqency
+  integer,parameter  :: periods = 40       ! number of periods
+  logical,parameter  :: pflow = .false.    ! use potential flow tangent velocity?
+  logical,parameter  :: upstream = .false. ! place upstream body?
 !
   integer,parameter  :: ndims = 2                       ! dimensions
   logical,parameter  :: p(2) = .false.                  ! periodic BCs
@@ -23,7 +24,7 @@ program tandem
   real,parameter     :: omega = 2*pi*freq/D             ! friction est.
   integer            :: b(2) = (/4,4/)                  ! blocks
   integer            :: n(3)
-  real               :: t1,dt,dtPrint=1./freq/20,force(3)
+  real               :: t1,dt,dtPrint=1./freq,pforce(3),vforce(3)
 !
   type(fluid)        :: flow
   type(set)          :: back
@@ -41,14 +42,14 @@ program tandem
   if(mympi_rank()==0) print '("   D=",f0.4,", nu=",f0.4,", y+=",f0.4)',D,nu,Ufric/nu
 !
 ! -- Initialize array size
-  n(:2) = composite(D*(/10,6/)/b); n(3) = 1
+  n(:2) = composite(D*(/20,10/)/b); n(3) = 1
 !
 ! -- Initialize and print grid
-  call xg(1)%init(n(1)*b(1),4.6*D,2.6*D,0.9,f=f,r=1.02,c=10.,d=4.)
-  call xg(2)%init(n(2)*b(2),1.8*D,1.8*D,1.0,f=f,r=1.03,c=25.)
+  call xg(1)%init(n(1)*b(1),2.7*D,12*D,1.0,f=f,r=1.02,d=4.)
+  call xg(2)%init(n(2)*b(2),3.2*D,3.2*D,1.0,f=f,r=1.02)
   if(mympi_rank()==0) then
-     call xg(1)%write
-     call xg(2)%write
+     call xg(1)%write(D)
+     call xg(2)%write(D)
      print '("   total points=",i0)', product(n(1:2)*b)
   end if
 !!$  call mympi_end()
@@ -61,17 +62,18 @@ program tandem
      back = (cylinder(1,1,3,D/2.,0.,0.,0.).map.init_rigid(2,height,velocity))
   end if
   if(upstream) then
-     bodies = back.or.cylinder(1,0,3,D/2.,(/-4*D,0.,0./),0.,0.) ! no force data
+     bodies = back.or.cylinder(1,0,3,D/2.,(/-5*D,0.,0./),0.,0.) ! no force data
   else
      bodies = back
   end if
 !
 ! -- Initialize fluid
   call flow%init(n,bodies,V=(/1.,0.,0./),nu=nu)
+  if(flow%time==0) call flow%write(bodies)
   if(mympi_rank()==0) print *, '-- init complete --'
 !
 ! -- Time update loop
-  do while (flow%time/D<20/freq)
+  do while (flow%time/D<periods/freq)
 !
 ! -- update body and fluid
      dt = flow%dt
@@ -80,8 +82,9 @@ program tandem
      call flow%update(bodies)
 !
 ! -- print force
-     force = bodies%pforce(flow%pressure)
-     write(9,'(f10.4,f8.4,3e16.8)') t1/D,dt,2.*force/D
+     pforce = -bodies%pforce(flow%pressure)
+     vforce = nu*bodies%vforce(flow%velocity)
+     write(9,'(f10.4,f8.4,6e16.8)') t1/D,dt,2.*pforce/D,2.*vforce/D
      flush(9)
 !
 ! -- full output

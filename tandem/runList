@@ -1,0 +1,8 @@
+while read amp freq
+do
+	echo 'caseAamp'$amp'freq'$freq
+	sed 's/AMP/'$amp'/
+	     s/FREQ/'$freq'/' runs.f90 > lotus.f90
+	time runLotus 16 'caseAamp'$amp'freq'$freq
+	wait
+done
