@@ -1,8 +1,13 @@
 source('analysis.R')
 source('GLS.R')
 
-dirs = list.dirs(recursive=FALSE)
-dirs = grep("caseA",dirs,value=TRUE)
+logit = function(x,k=10){2/(1+exp(-k*x))-1}
+qfill <- function(aesfill,data){
+	ggplot(data=data,aes(x=lambda,y=amp))+geom_tile(aesfill)+
+	scale_fill_gradient2()+labs(y='a',x=expression(lambda))+
+	theme_minimal()+
+	theme(title=element_text(size=15),axis.title.y=element_text(angle=0,size=12))
+}
 
 getPC = function(folder){
   p = params(folder)
@@ -15,10 +20,21 @@ getF = function(folder){
   freqA(forces(folder,p$amp,p$freq,10),p)
 }
 
-fData = data.frame(freq=NULL,amp=NULL,Lv=NULL,La=NULL,fs=NULL)
+
+dirs = list.dirs(recursive=FALSE)
+dirs = grep("caseA",dirs,value=TRUE)
+
+fData = data.frame(freq=NULL,amp=NULL,Rp=NULL,Ip=NULL,Rf=NULL,If=NULL,fs=NULL)
 for(folder in dirs){
   fData = rbind(fData,getF(folder))
 }
+
+fData$lambda = round(4/fData$freq)/4
+
+RFy = qfill(aes(fill=logit(Rp+Rf)),fData)+labs(fill=expression('\U211C'(hat(F)[y])))
+ggsave('RFy.png',width=6,height=4)
+IFy = qfill(aes(fill=Ip+If),fData)+labs(fill=expression('\U2111'(hat(F)[y])))
+ggsave('IFy.png',width=6,height=4)
 
 #pcData = data.frame(cycle=NULL,ca=NULL,cv=NULL,amp=NULL,freq=NULL)
 #sData = data.frame(meanCa=NULL,ampCa=NULL,meanCv=NULL,ampCv=NULL,amp=NULL,freq=NULL)

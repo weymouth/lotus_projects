@@ -11,8 +11,8 @@ program tandem
   real,parameter     :: f = 2              ! scaling factor
   real,parameter     :: D = 100/f          ! length scale
   real,parameter     :: Re = 160           ! Reynolds number
-  real,parameter     :: amp = 0.6*D        ! amplitude
-  real,parameter     :: freq = 0.125        ! freqency
+  real,parameter     :: amp = AMP*D        ! amplitude
+  real,parameter     :: freq = FREQ        ! freqency
   integer,parameter  :: periods = 40       ! number of periods
   logical,parameter  :: pflow = .false.    ! use potential flow tangent velocity?
   logical,parameter  :: upstream = .false. ! place upstream body?

@@ -9,17 +9,19 @@ params = function(folder){
 }
 
 forces = function(folder,amp,freq,first=1){
-  omega = 2*pi*freq
   data = read.table(paste(folder,'/fort.9',sep=''),
 	col.names = c("time","CFL","drag","lift","Fz","dragf","liftf","Fzf"))
+#  omega = 2*pi*freq
 #  data$y = amp*sin(omega*data$time)
 #  data$v = omega*amp*cos(omega*data$time)
 #  data$a = -omega^2*amp*sin(omega*data$time)
 #  data$La = (data$lift+data$liftf)*data$a
 #  data$Lv = (data$lift+data$liftf)*data$v
+  data$time = data$time-0.25/freq
   data$cycle = data$time*freq
   data$phase = data$cycle%%1
-  return(subset(data,cycle>=first))
+  last = floor(max(data$cycle))
+  return(subset(data,cycle>=first & cycle<last))
 }
 
 percycle = function(data,amp,freq){
@@ -52,19 +54,26 @@ myfft <- function(x,t){
 	x2 = spline(t,x,xout=t2)$y
 	dt <- t2[len]-t2[(len-1)]
 	coeffs <- fft(x2)/len*2
-	mag <- Mod(coeffs)^2
+	mag <- Mod(coeffs)
 	phase <- Arg(coeffs)
 	freq <- 0:(len-1)/dt/len
 	fourier <- data.frame(freq,mag,phase,coeffs)
 	return(fourier)
 }
 
-freqA <- function(tData,p){
-	fData = subset(myfft(tData$lift+tData$liftf,tData$time),freq<1)
+freqA <- function(tData,p,shed=0.188){
+	if(nrow(tData)==0) return(data.frame(freq=p$freq, amp=p$amp, 
+		Rp = NA, Ip = NA, Rf = NA, If = NA, fs=NA))
+	fData = subset(myfft(tData$lift,tData$time),freq<1)
+	ffData = subset(myfft(tData$liftf,tData$time),freq<1)
 	f = fData[which.min(abs(fData$freq-p$freq)),]
+	ff = ffData[which.min(abs(fData$freq-p$freq)),]
 	fs = fData[order(-fData$mag),]$freq
-	fs = fs[fs>p$freq/1.25 & fs<p$freq*1.25]
-	data.frame(freq=p$freq, amp=p$amp, Lv = f$mag*cos(f$phase),La = f$mag*sin(f$phase), fs=fs[1])
+	fs = fs[fs>shed/1.25 & fs<shed*1.25]
+	data.frame(freq=p$freq, amp=p$amp, 
+		Rp = Re(f$coeffs),Ip = Im(f$coeffs), 
+		Rf = Re(ff$coeffs),If = Im(ff$coeffs), 
+		fs=fs[1])
 }
 
 ppdf = function(plot,name,x=8,y=4){
@@ -73,8 +82,8 @@ ppdf = function(plot,name,x=8,y=4){
      dev.off()
 }
 
-ppng = function(plot,name){
-     png(name,8,4,units='in',res=210)
+ppng = function(plot,name,x=8,y=4){
+     png(name,x,y,units='in',res=210)
      print(plot)
      dev.off()
 }

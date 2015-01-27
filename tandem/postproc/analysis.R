@@ -1,23 +1,16 @@
 source('../analysis.R')
 p = params('./')
-omega = 2*pi*p$freq
-tData = subset(forces(p$folder,p$amp,p$freq),time>1)
-pcData = percycle(tData,p$amp,p$freq)
-s = stats(pcData)
+tData = forces(p$folder,p$amp,p$freq,3)
 
-q = qplot(phase,lift,data=tData,color=cycle,alpha=I(0.05))+ylab(expression(C[L]))
-ppng(q,"ClAll.png")
+x = seq(0,1,0.01); y = max(tData$lift)
+q = qplot(phase,lift,data=tData,alpha=I(0.05),color=I('blue'))+geom_point(aes(y=liftf),color='red',alpha=0.05)+geom_line(data=data.frame(phase=x,lift=y*cos(2*pi*x)),linetype=2)+ylab(expression(C[L]))
+ppng(q,"ClPhase.png")
 
-q = qplot(phase,La,data=tData,alpha=I(0.1))
-q = q+labs(y=expression(C[L]*a),title = paste("fluid mass coefficient =",round(s$meanCa,3)))
-ppng(q,"ClaLate.png")
-
-q = qplot(phase,Lv,data=tData,alpha=I(0.1))
-q = q+labs(y=expression(C[L]*v),title = paste("fluid excitation coefficient =",round(s$meanCv,3)))
-ppng(q,"ClvLate.png")
-
-q = qplot(cycle,ca,data=pcData,geom=c('line','point','smooth'),method='loess')
-ppng(q,'ClaCycle.png')
-q = qplot(cycle,cv,data=pcData,geom=c('line','point','smooth'),method='loess')
-ppng(q,'ClvCycle.png')
-
+fData = subset(myfft(tData$lift,tData$time),freq<1)
+ffData = subset(myfft(tData$liftf,tData$time),freq<1)
+q = qplot(freq,Mod(coeffs),data=fData,geom='line',color=I('blue'))+geom_line(data=ffData,color='red')
+ppdf(q,"ClMod.pdf")
+q = qplot(freq,Re(coeffs),data=fData,geom='line',color=I('blue'))+geom_line(data=ffData,color='red')
+ppdf(q,"ClRe.pdf")
+q = qplot(freq,Im(coeffs),data=fData,geom='line',color=I('blue'))+geom_line(data=ffData,color='red')
+ppdf(q,"ClIm.pdf")
