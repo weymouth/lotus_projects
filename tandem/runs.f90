@@ -15,7 +15,7 @@ program tandem
   real,parameter     :: freq = FREQ        ! freqency
   integer,parameter  :: periods = 40       ! number of periods
   logical,parameter  :: pflow = .false.    ! use potential flow tangent velocity?
-  logical,parameter  :: upstream = .false. ! place upstream body?
+  logical,parameter  :: upstream = .true.  ! place upstream body?
 !
   integer,parameter  :: ndims = 2                       ! dimensions
   logical,parameter  :: p(2) = .false.                  ! periodic BCs
@@ -25,6 +25,7 @@ program tandem
   integer            :: b(2) = (/4,4/)                  ! blocks
   integer            :: n(3)
   real               :: t1,dt,dtPrint=1./freq,pforce(3),vforce(3)
+  real               :: finish=REAL(floor(100*freq)+periods)/freq
 !
   type(fluid)        :: flow
   type(set)          :: back
@@ -45,7 +46,7 @@ program tandem
   n(:2) = composite(D*(/20,10/)/b); n(3) = 1
 !
 ! -- Initialize and print grid
-  call xg(1)%init(n(1)*b(1),2.7*D,12*D,1.0,f=f,r=1.02,d=4.)
+  call xg(1)%init(n(1)*b(1),5.6*D,8.5*D,1.0,f=f,r=1.02,d=4.)
   call xg(2)%init(n(2)*b(2),3.2*D,3.2*D,1.0,f=f,r=1.02)
   if(mympi_rank()==0) then
      call xg(1)%write(D)
@@ -62,7 +63,7 @@ program tandem
      back = (cylinder(1,1,3,D/2.,0.,0.,0.).map.init_rigid(2,height,velocity))
   end if
   if(upstream) then
-     bodies = back.or.cylinder(1,0,3,D/2.,(/-5*D,0.,0./),0.,0.) ! no force data
+     bodies = back.or.cylinder(1,2,3,D/2.,(/-5*D,0.,0./),0.,0.) ! no force data
   else
      bodies = back
   end if
@@ -73,7 +74,7 @@ program tandem
   if(mympi_rank()==0) print *, '-- init complete --'
 !
 ! -- Time update loop
-  do while (flow%time/D<periods/freq)
+  do while (flow%time/D<finish)
 !
 ! -- update body and fluid
      dt = flow%dt

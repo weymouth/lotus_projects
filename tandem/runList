@@ -1,8 +1,8 @@
-while read amp freq
+while read amp freq dir
 do
-	echo 'caseAamp'$amp'freq'$freq
+	echo 'amp='$amp', freq='$freq', resume from '$dir
 	sed 's/AMP/'$amp'/
 	     s/FREQ/'$freq'/' runs.f90 > lotus.f90
-	time runLotus 16 'caseAamp'$amp'freq'$freq
+	time runLotus 16 'caseCamp'$amp'freq'$freq $dir
 	wait
 done
