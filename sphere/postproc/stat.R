@@ -1,6 +1,6 @@
 require(ggplot2)
 data = read.table("fort.9",col.names = c("time","CFL","thrust","lift","Fz"))
-data$drag = -data$thrust
+data$drag = -4.*data$Fz
 l = length(data$time)
 n = 2000
 j = round(seq(5,l,len=min(l,n)))
