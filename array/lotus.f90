@@ -9,27 +9,29 @@ program array
   use geom_shape
   implicit none
 
-  integer,parameter :: rows = 2, finish = 1000, dtPrint = 100
-  real,parameter    :: D = 16, Re = 100, DG = 11*D, nu = D/Re
-  integer,parameter :: b(3) = (/1,1,1/), uni = 0.6*DG
+  integer,parameter :: rows = 4, finish = 1021, dtPrint = 100
+  real,parameter    :: D = 16, DG = 21*D, Re_D = 100, nu = D/Re_D
+  integer,parameter :: b(3) = (/4,4,1/)
 
   type(fluid) :: flow
   type(body)  :: bodies
   integer     :: n(3)
   real        :: dt, t1, pforce(2), vforce(2)
+  logical     :: root
 !
 ! -- Initialize simulation
   call init_mympi(2,set_blocks=b(:2))
+  root = mympi_rank()==0
 
-  n = composite(DG*(/4,2,0/), mympi_rank()==0)
-  call xg(1)%stretch(n(1), -10*DG, -uni, uni, 25*DG, h_max=15., prnt=mympi_rank()==0)
-  call xg(2)%stretch(n(2), -10*DG, -uni, uni, 10*DG, prnt=mympi_rank()==0)
+  n = composite(DG*(/4,2,0/), root)
+  call xg(1)%stretch(n(1), -10*DG, -0.6*DG, 0.6*DG, 25*DG, h_max=15., prnt=root)
+  call xg(2)%stretch(n(2), -10*DG, -0.6*DG, 0.6*DG, 10*DG, prnt=root)
 
   bodies = make_array()
   call flow%init(n/b, bodies, nu=nu)
-  call flow%write(bodies)
+  if(flow%time==0.) call flow%write(bodies)
 
-  if(mympi_rank()==0) print *, '-- init complete --'
+  if(root) print *, '-- init complete --'
 !
 ! -- Time update loop
   do while (flow%time/D<finish)
@@ -69,7 +71,7 @@ contains
     real,parameter    :: R = 0.5*DG-0.5*D
     real    :: theta,xc,yc
     integer :: i,j
-    make_array = place_cyl(0.,0.).map.init_affn()
+    make_array = place_cyl(0.,0.)
     do j=1,rows
        do i=1,n(j)
           theta = 2.*3.14159*(i-1.)/real(n(j))
