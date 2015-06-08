@@ -1,6 +1,5 @@
 require(ggplot2)
-data = read.table("fort.9",col.names = c("time","CFL","thrust","lift","Fz"))
-data$drag = -data$thrust
+data = read.table("fort.9",col.names = c("time","CFL","drag","lift"))
 l = length(data$time)
 n = 2000
 j = round(seq(1,l,len=min(l,n)))
@@ -10,8 +9,8 @@ t = 0.75*max(data$time)+0.25*min(data$time)
 late = subset(data,time>t)
 mdrag = mean(late$drag)
 mlift = mean(late$lift)
-adrag = sqrt(2*var(late$drag))
-alift = sqrt(2*var(late$lift))
+adrag = mad(late$drag)
+alift = mad(late$lift)
 drag = qplot(time,drag,data=data,geom="line")
 drag = drag+annotate("text",x=t,y=mdrag-2*adrag,label=paste("mean=",round(mdrag,3)," amp=",round(adrag,3)))
 lift = qplot(time,lift,data=data,geom="line")

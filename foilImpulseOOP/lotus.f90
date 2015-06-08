@@ -6,28 +6,24 @@ program foil_impulse
   use bodyMod,    only: body
   use mympiMod,   only: init_mympi,mympi_end,mympi_rank
   use geom_shape  ! to create geometry
-  use gridMod,    only: xg
+  use gridMod,    only: xg,composite
+
+  use ioMod 
+
   implicit none
-  integer,parameter  :: f = 3*2**6         ! resolution  
+  real,parameter     :: L = 100            ! length
   real,parameter     :: Re =  1000         ! Reynolds number
-  real(8),parameter  :: alpha = 10         ! AOA
   integer,parameter  :: b(3) = (/2,2,4/)   ! blocks
-  integer,parameter  :: d(3) = (/3,3,4/)   ! domain size
+  real,parameter     :: d(3) = (/3,3,4/)   ! domain size
   logical,parameter  :: yank=.true.        ! ramp or yank?
-!
   integer,parameter  :: ndims = 3   ! dimensions
-  real(8),parameter  :: L = f       ! length
-  integer,parameter  :: m(3) = f*d  ! points
   real,parameter     :: nu = L/Re   ! viscosity
-  real(8),parameter  :: yc = 2*L    ! location
-  real(8),parameter  :: zc = m(3)/2 ! location
-  integer            :: n(3)
-  real               :: force(3),area,u,t0,t1,dt
 !
   type(fluid)        :: flow
   type(body)         :: foil
-  type(set)          :: geom
-  type(model_info)   :: info
+  integer            :: n(3)
+  real               :: force(3),area,t0,t1,dt,u
+  logical            :: root
 !
 ! -- Set up run parameters
   real    :: V(3)=0, tStop=8.5, dtPrint=0.5 ! ramp parameters
@@ -39,47 +35,24 @@ program foil_impulse
      dim=ndims
   end if
 !
-! -- Initialize MPI (if MPI is ON)
-#if MPION
+! -- Initialize
   call init_mympi(ndims,set_blocks=b(:ndims))
-!
-! -- Get grid size
-  n = m/b
-#else
-  n = m
-#endif
+  root = mympi_rank()==0
+
+  n = composite(L*(/3.1,2.6,4./), prnt=root)
   if(ndims==2) n(3) = 1
-  call xg(1)%init(m(1),0.75*f,1.0*f,0.5,h=1.0,r=1.03)
-  call xg(2)%init(m(2),0.5*f,0.5*f,1.0,h=0.5,r=1.03)
-  if(ndims==3) call xg(3)%init(m(3),2.0*f,1.*f,1.,h=1.0,r=1.03)
-  if(mympi_rank()==0) print *, '-- Foil Impulse --'
-  if(mympi_rank()==0) print '("   L=",i0," nu=",f0.4)', f,nu
-  if(mympi_rank()==0) print '("   points=",i0)',product(m)
-  if(mympi_rank()==0) call xg(1)%write
-  if(mympi_rank()==0) call xg(2)%write
-  if(mympi_rank()==0) call xg(3)%write
-  if(mympi_rank()==0) call system('free -m')
-!
-! -- Initialize the foil geometry
-!  surface_debug = .true.
-  info%file = 'naca_half.IGS'
-  info%x = (/-4.219,-10.271,-18.876/)
-  info%s = 0.36626*L*(/1,1,-1/)
-  eps = 2
-  info%xmax(1) = L
-  info%n = 50
-  geom = (model_init(info) &
-       .map.(init_affn()**(/alpha,0.D0,0.D0/))) ! rotate by alpha
-  if(ndims==3 .and. info%file == 'naca_square.IGS' ) geom = geom.and.plane(4,1,(/0,0,-1/),0,0,0)
-!  call shape_write(100,geom)
-  foil = geom
+
+  call xg(1)%stretch(n(1),-2*L, -0.6*L, L, 5*L, h_max=5., prnt=root)
+  call xg(2)%stretch(n(2),-2*L, -0.5*L, 0.5*L, 2*L, h_min=0.5, prnt=root)
+  if(ndims==3) call xg(3)%stretch(n(3),-4*L, -2*L, L, 5*L, prnt=root)
+
+  foil = geom('naca_square.IGS')
   area = L
-  if(ndims==3) area = L*zc
+  if(ndims==3) area = L*xg(3)%right
 !
 ! -- Initialize fluid
-  call flow%init(n,foil,V=V,nu=nu)
-  if(mympi_rank()==0) call system('free -m')
-  if(mympi_rank()==0) print *, '-- init complete --'
+  call flow%init(n/b, foil, V=V, nu=nu)
+  if(root) print *, '-- init complete --'
 !
 ! -- Time update loop
   do while (flow%time/L<tStop+tShift)
@@ -109,18 +82,34 @@ program foil_impulse
      if(mod(t1,dtPrint)<dt) call flow%write
 !
 ! -- print force
-     force = foil%pforce(flow%pressure)
-     write(9,'(f10.4,f8.4,3e16.8)') t1,dt*L,2.*force/area
+     force = -foil%pforce(flow%pressure)
+     write(9,'(f10.4,f8.4,2e16.8)') t1,dt*L,2.*force(:2)/area
      flush(9)
   end do
-  if(mympi_rank()==0) call system('free -m')
-  if(mympi_rank()==0) write(6,*) '--- complete --- '
-!
-! -- Finalize MPI
-#if MPION
+
+  if(root) write(6,*) '--- complete --- '
   call mympi_end
-#endif
 contains
+!
+! -- Initialize the foil geometry
+  type(set) function geom(name)
+    character(*)       :: name
+    type(model_info)   :: info
+    real(8),parameter  :: alpha = 10         ! AOA
+!  surface_debug = .true.
+    info%file = name
+    info%x = (/-4.219,-10.271,-18.876/)
+    info%s = 0.36626*L*(/1,1,-1/)
+    eps = 2
+    info%xmax(1) = L
+    info%n = 50
+    geom = (model_init(info) &
+         .map.(init_affn()**(/alpha,0.D0,0.D0/))) ! rotate by alpha
+    if(ndims==3 .and. info%file == 'naca_square.IGS' ) &
+         geom = geom.and.plane(4,1,(/0,0,-1/),0,0,0)
+!  call shape_write(100,geom)
+  end function geom
+
   real function uref(time)
     real,intent(in) :: time
     if(time/T*10<0.5) then
