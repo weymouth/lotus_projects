@@ -11,7 +11,7 @@ program foil_impulse
   real,parameter     :: L = 100            ! length
   real,parameter     :: Re =  1000         ! Reynolds number
   integer,parameter  :: b(3) = (/2,2,4/)   ! blocks
-  logical,parameter  :: yank=.false.       ! ramp or yank?
+  logical,parameter  :: yank=.true.        ! ramp or yank?
   logical,parameter  :: hollow=.false.     ! internal slug flow?
   integer,parameter  :: ndims = 3          ! dimensions
   real,parameter     :: nu = L/Re          ! viscosity
@@ -20,7 +20,7 @@ program foil_impulse
   type(body)         :: foil
   type(set)          :: core
   integer            :: n(3)
-  real               :: force(3),area,t0,t1,dt,u=0
+  real               :: force(3),area,t0,t1,dt,u=0,dprnt
   logical            :: root
 !
 ! -- Set up run parameters
@@ -57,8 +57,6 @@ program foil_impulse
      dt = flow%dt/L
      t0 = flow%time/L-tShift ! for motion
      t1 = t0+dt
-     if(yank .and. t0>0.0) dtPrint = 0.003
-     if(yank .and. t0>0.3) dtPrint = 0.015
 !
 ! -- Accelerate the reference frame
      u = uref(t1)
@@ -74,7 +72,9 @@ program foil_impulse
 !-- update and write fluid
      if(hollow.and.yank.and.u.ne.0) call foil%update(t1)
      call flow%update(foil)
-     if(mod(t1,dtPrint)<dt) call flow%write
+
+     dprnt = merge(0.003, dtPrint, yank.and.t0>0.and.t0<0.3)
+     if(mod(t1,dprnt)<dt) call flow%write(lambda=mod(t1,dtPrint)<dt)
 !
 ! -- print force
      force = -foil%pforce(flow%pressure)
