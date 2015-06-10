@@ -7,22 +7,20 @@ program foil_impulse
   use mympiMod,   only: init_mympi,mympi_end,mympi_rank
   use geom_shape  ! to create geometry
   use gridMod,    only: xg,composite
-
-  use ioMod 
-
   implicit none
   real,parameter     :: L = 100            ! length
   real,parameter     :: Re =  1000         ! Reynolds number
   integer,parameter  :: b(3) = (/2,2,4/)   ! blocks
-  real,parameter     :: d(3) = (/3,3,4/)   ! domain size
-  logical,parameter  :: yank=.true.        ! ramp or yank?
-  integer,parameter  :: ndims = 3   ! dimensions
-  real,parameter     :: nu = L/Re   ! viscosity
+  logical,parameter  :: yank=.false.       ! ramp or yank?
+  logical,parameter  :: hollow=.false.     ! internal slug flow?
+  integer,parameter  :: ndims = 3          ! dimensions
+  real,parameter     :: nu = L/Re          ! viscosity
 !
   type(fluid)        :: flow
   type(body)         :: foil
+  type(set)          :: core
   integer            :: n(3)
-  real               :: force(3),area,t0,t1,dt,u
+  real               :: force(3),area,t0,t1,dt,u=0
   logical            :: root
 !
 ! -- Set up run parameters
@@ -70,15 +68,12 @@ program foil_impulse
      flow%g(dim) = (u-uref(t0))/(dt*L)
      if(t0<0. .or. t0>Tend) flow%g(dim) = 0
      t1 = t1+tShift ! for printing
-     if(mympi_rank()==0) print 1,t1,flow%g(dim),u
+     if(root) print 1,t1,flow%g(dim),u
 1    format("   t=",f0.4," g=",f0.4," u=",f0.4)
 !
-! -- shift grid
-     if(V(1)>0) call xg(1)%shift(-V(1)*flow%dt)
-     call xg(dim)%shift(-u*flow%dt)
-!
 !-- update and write fluid
-     call flow%update
+     if(hollow.and.yank.and.u.ne.0) call foil%update(t1)
+     call flow%update(foil)
      if(mod(t1,dtPrint)<dt) call flow%write
 !
 ! -- print force
@@ -105,10 +100,20 @@ contains
     info%n = 50
     geom = (model_init(info) &
          .map.(init_affn()**(/alpha,0.D0,0.D0/))) ! rotate by alpha
+    core = geom
     if(ndims==3 .and. info%file == 'naca_square.IGS' ) &
          geom = geom.and.plane(4,1,(/0,0,-1/),0,0,0)
+    if(hollow) geom = geom.map.init_velocity(slug)
 !  call shape_write(100,geom)
   end function geom
+
+  pure function slug(x) result(v)
+    real(8),intent(in) :: x(3)
+    real(8) :: v(3)
+    type(prop) :: p
+    p = core%at(x)
+    v = 0; v(dim) = u*max(0.,min(-p%distance,1.))
+  end function slug
 
   real function uref(time)
     real,intent(in) :: time
