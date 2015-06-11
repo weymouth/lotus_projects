@@ -11,10 +11,12 @@ program foil_impulse
   real,parameter     :: L = 100            ! length
   real,parameter     :: Re =  1000         ! Reynolds number
   integer,parameter  :: b(3) = (/2,2,4/)   ! blocks
-  logical,parameter  :: yank=.true.        ! ramp or yank?
+  logical,parameter  :: yank=.false.       ! ramp or yank?
   logical,parameter  :: hollow=.false.     ! internal slug flow?
   integer,parameter  :: ndims = 3          ! dimensions
   real,parameter     :: nu = L/Re          ! viscosity
+  real,parameter     :: alpha = 10         ! AOA
+  character(*),parameter :: name='naca_half.IGS'
 !
   type(fluid)        :: flow
   type(body)         :: foil
@@ -44,7 +46,7 @@ program foil_impulse
   call xg(2)%stretch(n(2),-2*L, -0.5*L, 0.5*L, 2*L, h_min=0.5, prnt=root)
   if(ndims==3) call xg(3)%stretch(n(3),-4*L, -2*L, L, 5*L, prnt=root)
 
-  foil = geom('naca_square.IGS')
+  foil = geom()
   area = L
   if(ndims==3) area = L*xg(3)%right
 !
@@ -87,10 +89,8 @@ program foil_impulse
 contains
 !
 ! -- Initialize the foil geometry
-  type(set) function geom(name)
-    character(*)       :: name
+  type(set) function geom()
     type(model_info)   :: info
-    real(8),parameter  :: alpha = 10         ! AOA
 !  surface_debug = .true.
     info%file = name
     info%x = (/-4.219,-10.271,-18.876/)
@@ -99,9 +99,9 @@ contains
     info%xmax(1) = L
     info%n = 50
     geom = (model_init(info) &
-         .map.(init_affn()**(/alpha,0.D0,0.D0/))) ! rotate by alpha
+         .map.(init_affn()**real((/alpha,0.,0./),8))) ! rotate by alpha
     core = geom
-    if(ndims==3 .and. info%file == 'naca_square.IGS' ) &
+    if(ndims==3 .and. name == 'naca_square.IGS' ) &
          geom = geom.and.plane(4,1,(/0,0,-1/),0,0,0)
     if(hollow) geom = geom.map.init_velocity(slug)
 !  call shape_write(100,geom)
