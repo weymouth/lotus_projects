@@ -94,12 +94,13 @@ contains
 !  surface_debug = .true.
     info%file = name
     info%x = (/-4.219,-10.271,-18.876/)
+    info%r = (/alpha,0.,0./)
     info%s = 0.36626*L*(/1,1,-1/)
     eps = 2
     info%xmax(1) = L
-    info%n = 50
-    geom = (model_init(info) &
-         .map.(init_affn()**real((/alpha,0.,0./),8))) ! rotate by alpha
+    info%n = 256
+    if(name == 'naca_square.IGS') info%n(3) = 1
+    geom = model_init(info)
     core = geom
     if(ndims==3 .and. name == 'naca_square.IGS' ) &
          geom = geom.and.plane(4,1,(/0,0,-1/),0,0,0)
