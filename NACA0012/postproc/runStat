@@ -1,8 +1,0 @@
-#!/bin/sh
-grep 'final:' fort.8 | sed s/'final:'// > mgs.txt
-R CMD BATCH --slave stat.R
-gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=report.pdf lift.pdf drag.pdf CFL.pdf res.pdf itr.pdf > /dev/null
-open report.pdf
-rm mgs.txt lift.pdf drag.pdf CFL.pdf res.pdf itr.pdf 
-echo "runStat:complete"
-exit 0

@@ -1,43 +1,52 @@
 #### import the simple module from the paraview
 from paraview.simple import *
-#### disable automatic camera reset on 'Show'
-paraview.simple._DisableFirstRenderCameraReset()
 
 # read in fluid data
-fluid = PVDReader( FileName='fluid.vti.pvd' )
-
+import os.path
+if os.path.exists('flu2d.vtr.pvd'):
+  fluid = PVDReader( FileName='flu2d.vtr.pvd' )
+  print "read flu2d.vtr"
+else:
+  fluid = PVDReader( FileName='fluid.vtr.pvd' )
+  print "read fluid.vtr"
+	
 # get animation scene
 animationScene1 = GetAnimationScene()
+animationScene1.UpdateAnimationUsingDataTimeSteps()
 animationScene1.GoToLast()
 
 # get vorticity
 calc1 = PythonCalculator()
-calc1.Expression = 'curl(Velocity)[:,2]*325'
+calc1.Expression = 'curl(Velocity)[:,2]*164'
 calc1.ArrayName = 'Omega'
 
 # get fluid display
 fluidDisplay = Show()
 ColorBy(fluidDisplay, ('POINTS', 'Omega'))
 omegaLUT = GetColorTransferFunction('Omega')
-omegaLUT.RescaleTransferFunction(-50.0, 50.0)
+omegaLUT.RGBPoints= [-25, 0, 0, 1, 0, 1, 1, 1, 25, 1, 0, 0]
+fluidDisplay.Ambient = 0.3
 
 # read in body data
-body = PVDReader( FileName='bodyF.vti.pvd' )
+#body = PVDReader( FileName='bodyF.vtr.pvd' )
+#bodyDisplay = Show()
+#ColorBy(bodyDisplay, ('POINTS', 'Pressure'))
 
-# get contours
-Contour1 = Contour()
-Contour1.ContourBy = ['POINTS', 'Pressure']
-Contour1.Isosurfaces = [-2.0, -1.0, 0.0, 1.0, 2.0]
-contourRep = GetDisplayProperties(Contour1)
-contourRep.LineWidth = 3
-Show()
+# Modify transfer functions
+pressureLUT = GetColorTransferFunction('Pressure')
+pressureLUT.RGBPoints= [-2, 0, 0, 0, 2, 0, 0, 0]
+pressureLUT.EnableOpacityMapping = 1
+
+pressurePWF = GetOpacityTransferFunction('Pressure')
+pressurePWF.Points = [-2, 1, 0.5, 0, 2, 0, 0.5, 0]
 
 # get view
 view = GetRenderView()
 view.ViewSize = [1280,640]
-#view.ResetCamera()
-view.CameraFocalPoint = [175, 20, 0]
-view.CameraPosition = [175, 20, 175]
+view.ResetCamera()
+camera = GetActiveCamera()
+camera.Dolly(4)
 
-ExportView('out.pdf')
+SaveScreenshot('out.png')
+#WriteAnimation('temp.avi', FrameRate=15.0, Compression=True)
 
