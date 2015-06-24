@@ -27,19 +27,6 @@ omegaLUT = GetColorTransferFunction('Omega')
 omegaLUT.RGBPoints= [-25, 0, 0, 1, 0, 1, 1, 1, 25, 1, 0, 0]
 fluidDisplay.Ambient = 0.3
 
-# read in body data
-#body = PVDReader( FileName='bodyF.vtr.pvd' )
-#bodyDisplay = Show()
-#ColorBy(bodyDisplay, ('POINTS', 'Pressure'))
-
-# Modify transfer functions
-pressureLUT = GetColorTransferFunction('Pressure')
-pressureLUT.RGBPoints= [-2, 0, 0, 0, 2, 0, 0, 0]
-pressureLUT.EnableOpacityMapping = 1
-
-pressurePWF = GetOpacityTransferFunction('Pressure')
-pressurePWF.Points = [-2, 1, 0.5, 0, 2, 0, 0.5, 0]
-
 # get view
 view = GetRenderView()
 view.ViewSize = [1280,640]
@@ -47,6 +34,20 @@ view.ResetCamera()
 camera = GetActiveCamera()
 camera.Dolly(4)
 
-SaveScreenshot('out.png')
-#WriteAnimation('temp.avi', FrameRate=15.0, Compression=True)
+# get image
+SaveScreenshot('out1.png')
 
+# read in mixing data
+if os.path.exists('fkepr.vtr.pvd'):
+  mix = PVDReader( FileName='fkepr.vtr.pvd' )
+  print "read fkepr.vtr"
+
+  # get mix kinetic energy display
+  mixDisplay = Show()
+  ColorBy(mixDisplay, ('POINTS', 'Pressure'))
+  pressureLUT = GetColorTransferFunction('Pressure')
+  pressureLUT.RGBPoints= [0, 0, 0, 0, 0.33, 1, 0, 0, 0.66, 1, 1, 0, 1, 1, 1, 1]
+  mixDisplay.RescaleTransferFunctionToDataRange()
+
+  # get image
+  SaveScreenshot('out2.png')
