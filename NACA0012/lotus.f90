@@ -11,8 +11,10 @@ program foilTest
   type(body)         :: foil
   integer,parameter  :: ndims = 3
   real,parameter     :: c = 164
+  real,parameter     :: w = 8*3.14159
   real,parameter     :: alpha = -10
   real,parameter     :: Re = 5.3e3
+!  real,parameter     :: tStop = 30+20./7., dtPrint = 10./7./32.
   real,parameter     :: tStop = 80, dtPrint = 1
   real,parameter     :: nu = c/Re
   logical,parameter  :: per(3) = (/.false.,.false.,.true./)
@@ -35,10 +37,12 @@ program foilTest
   call xg(1)%stretch(n(1),-2.5*c,-0.6*c,3*c,5*c,h_min=2.,h_max=10.,prnt=root)
   call xg(2)%stretch(n(2),-5*c,-0.3*c,0.6*c,5*c,prnt=root)
   if(ndims==3) then
-     xg(3)%h = 2
+     xg(3)%h = w*c/real(n(3))
   else
      n(3) = 1
   end if
+  if(root) print *,'n(3),xg(3)%h',n(3),xg(3)%h
+
   foil = naca(c,alpha)
   call flow%init(n/b,foil,V=(/1.,0.,0./),nu=nu)
 
@@ -51,7 +55,8 @@ program foilTest
           -2.*foil%pforce(flow%pressure)/(c*xg(3)%h*n(3))
      flush(9)
      if(mod(flow%time/c,dtPrint)<flow%dt/c) then
-        call flow%write(lambda=.true.,average=.true.)
+        call flow%write(average=.true.)
+        call line()
         if(root) print *,flow%time/c,flow%dt
      end if
   end do
@@ -74,4 +79,29 @@ contains
     eps = 2.0
     naca = model_init(info)
   end function naca
+
+  subroutine line()
+    use fieldMod
+    use vectorMod
+    type(vfield) :: u2,up
+    type(field) :: ef
+    real,pointer :: p(:,:,:),p2(:,:,:)
+    real :: e(n(3))
+    integer :: d,k
+    
+    u2 = flow%velocity%average()
+    up = flow%velocity
+    do d=1,3
+       p => up%e(d)%point()
+       p2 => u2%e(d)%point()
+       forall(k=1:n(3)) p(:,:,k) = p(:,:,k)-p2(:,:,1)
+    end do
+
+    ef = up%ke()
+    e = ef%xy_ave()
+    
+    write(10,'(2e16.8,e20.12)') (flow%time/c,(k-0.5)*xg(3)%h/c,e(k),k=1,n(3))
+    flush(10)
+
+  end subroutine line
 end program foilTest

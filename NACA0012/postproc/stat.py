@@ -36,6 +36,7 @@ camera.Dolly(4)
 
 # get image
 SaveScreenshot('out1.png')
+#WriteAnimation('omega.avi', FrameRate=15.0, Compression=True)
 
 # read in mixing data
 if os.path.exists('fkepr.vtr.pvd'):
@@ -47,7 +48,12 @@ if os.path.exists('fkepr.vtr.pvd'):
   ColorBy(mixDisplay, ('POINTS', 'Pressure'))
   pressureLUT = GetColorTransferFunction('Pressure')
   pressureLUT.RGBPoints= [0, 0, 0, 0, 0.33, 1, 0, 0, 0.66, 1, 1, 0, 1, 1, 1, 1]
-  mixDisplay.RescaleTransferFunctionToDataRange()
+#  mixDisplay.RescaleTransferFunctionToDataRange()
+#  mixDisplay.SetScalarBarVisibility ( view , True)
+  pressureLUT.RescaleTransferFunction(0, 0.138)
+#  pressureLUT.MapControlPointsToLogSpace()
+#  pressureLUT.UseLogScale = 1
 
   # get image
   SaveScreenshot('out2.png')
+#  WriteAnimation('fke.avi', FrameRate=15.0, Compression=True)
