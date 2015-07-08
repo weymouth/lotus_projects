@@ -43,6 +43,9 @@ program foilTest
   if(root) print *,'n(3),xg(3)%h',n(3),xg(3)%h
 
   foil = naca(c,alpha)
+  
+!  call readloop(n/b,V=(/1.,0.,0./))
+  
   call flow%init(n/b,foil,V=(/1.,0.,0./),nu=nu)
 
   if(root) print *, '-- init complete --'
@@ -92,4 +95,23 @@ contains
     end if
 
   end subroutine sample
+
+  subroutine readloop(m,V)
+    use ioMod
+    implicit none
+    integer,intent(in) :: m(3)
+    real,intent(in) :: V(3)
+    integer :: i
+    call flow%velocity%init(m,V)
+    call flow%pressure%init(m)
+    call read_vtk(flow%velocity,flow%pressure,flow%time)
+    i = NN_vtk()
+    do
+       call sample()
+       i = i-1
+       call read_vtk(flow%velocity,flow%pressure,flow%time,i)
+    end do
+    call mympi_end
+    stop
+  end subroutine readloop
 end program foilTest
