@@ -13,7 +13,7 @@ program tandem
   real,parameter     :: Re = 160           ! Reynolds number
   real,parameter     :: amp = AMP*D        ! amplitude
   real,parameter     :: freq = FREQ        ! freqency
-  integer,parameter  :: periods = 40       ! number of periods
+  integer,parameter  :: periods = 41       ! number of periods
   logical,parameter  :: pflow = .false.    ! use potential flow tangent velocity?
   logical,parameter  :: upstream = .true.  ! place upstream body?
 !
@@ -25,7 +25,7 @@ program tandem
   integer            :: b(2) = (/4,4/)                  ! blocks
   integer            :: n(3)
   real               :: t1,dt,dtPrint=1./freq,pforce(3),vforce(3)
-  real               :: finish=REAL(floor(100*freq)+periods)/freq
+  real               :: finish=(periods-0.74)/freq
 !
   type(fluid)        :: flow
   type(set)          :: back

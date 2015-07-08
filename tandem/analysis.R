@@ -21,7 +21,7 @@ forces = function(p,first=1){
   data$cycle = data$time*p$freq
   data$phase = data$cycle%%1
   last = floor(max(data$cycle))
-  if(first<0) first <- last+first
+  first = ceiling(100*p$freq)
   return(subset(data,cycle>=first & cycle<last))
 }
 
@@ -38,15 +38,27 @@ myfft <- function(x,t){
 	return(fourier)
 }
 
-freqA <- function(tData,p,fs=0.188){
-	if(nrow(tData)==0) return(data.frame(freq=p$freq, amp=p$amp, 
-		Rp = NA, Ip = NA, Rf = NA, If = NA, fs=NA))
-	fData = subset(myfft(tData$lift,tData$time),freq<1)
-	ffData = subset(myfft(tData$liftf,tData$time),freq<1)
-	f = fData[which.min(abs(fData$freq-p$freq)),]
-	ff = ffData[which.min(abs(fData$freq-p$freq)),]
-	fData$prob = -fData$mag*exp(-(fData$freq-fs)^2*1e3)
-	fs = fData$freq[which.min(fData$prob)]
-	data.frame(Rp = Re(f$coeffs),Ip = Im(f$coeffs), 
-		   Rf = Re(ff$coeffs),If = Im(ff$coeffs),fs=fs)
+zetaA <- function(tData){
+	pres = subset(myfft(tData$lift,tData$time),freq<1)
+	fric = subset(myfft(tData$liftf,tData$time),freq<1)
+	return(data.frame(zeta=pres$freq,pres=pres$coeffs,fric=fric$coeffs))
+}
+
+peaks <- function(data,x){
+	i = which(diff(sign(diff(x)))==-2)+1
+	data[i,]
+}
+
+extrema <- function(data,x){
+	i = which(abs(diff(sign(diff(x))))==2)+1
+	data[i,]
+}
+
+freqA <- function(zData,p,fs=0.188){
+	if(nrow(zData)==0) return(data.frame(pres=NA,fric=NA,fs=NA))
+	f = zData[which.min(abs(zData$zeta-p$freq)),]
+	zp = peaks(zData,Mod(zData$pres))
+	zp$mag = Mod(zp$pres)*exp(-(zp$zeta-fs)^2*1e3)
+	fs = zp$zeta[which.min(-zp$mag)]
+	data.frame(pres = f$pres, fric = f$fric, fs=fs)
 }
