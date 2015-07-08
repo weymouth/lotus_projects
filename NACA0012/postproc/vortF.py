@@ -20,10 +20,18 @@ fluidDisplay.SetRepresentationType('Volume')
 ColorBy(fluidDisplay, ('POINTS', 'Lam2'))
 
 lam2LUT = GetColorTransferFunction('Lam2')
-lam2LUT.RGBPoints = [0.0, 0.0, 0.0, 0.0, 0.12, 0.9, 0.0, 0.0, 0.24, 0.9, 0.9, 0.0, 0.36, 1.0, 1.0, 1.0]
+lam2LUT.RGBPoints = [0, 0, 0, 0, 
+                     0.33, 1, 0, 0, 
+                     0.66, 1, 1, 0, 
+                     1, 1, 1, 1]
 
 lam2PWF = GetOpacityTransferFunction('Lam2')
-lam2PWF.Points = [0.0, 0.0, 0.5, 0.0, 0.036, 0.0, 0.5, 0.0, 0.36, 1.0, 0.5, 0.0]
+lam2PWF.Points = [0, 0, 0.5, 0, 
+                  0.1, 0, 0.5, 0, 
+                  1, 1, 0.5, 0]
+
+lam2LUT.RescaleTransferFunction(0.0, 0.25)
+lam2PWF.RescaleTransferFunction(0.0, 0.25)
 
 # create a new 'PVD Reader'
 body = PVDReader(FileName='bodyF.vti.pvd')

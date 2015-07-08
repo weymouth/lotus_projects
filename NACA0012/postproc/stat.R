@@ -1,5 +1,4 @@
 library(dplyr);library(ggplot2)
-source('analysis.R')
 
 data = read.table("fort.9",col.names = c("time","CFL","drag","lift","Fz"))
 l = length(data$time)
@@ -41,3 +40,5 @@ itr = qplot(i,log(itr,2),data=data)+ylab(expression(log[2](iteration)))
 res = qplot(i,log(res,10),data=data)+ylab(expression(log[10](residual)))
 ppdf(itr,"13itr.pdf")
 ppdf(res,"12res.pdf")
+
+try(source('analysis.R'))

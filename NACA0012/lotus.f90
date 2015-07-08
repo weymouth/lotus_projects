@@ -14,7 +14,6 @@ program foilTest
   real,parameter     :: w = 8*3.14159
   real,parameter     :: alpha = -10
   real,parameter     :: Re = 5.3e3
-!  real,parameter     :: tStop = 30+20./7., dtPrint = 10./7./32.
   real,parameter     :: tStop = 80, dtPrint = 1
   real,parameter     :: nu = c/Re
   logical,parameter  :: per(3) = (/.false.,.false.,.true./)
@@ -56,7 +55,7 @@ program foilTest
      flush(9)
      if(mod(flow%time/c,dtPrint)<flow%dt/c) then
         call flow%write(average=.true.)
-        call line()
+        if(ndims==3) call sample()
         if(root) print *,flow%time/c,flow%dt
      end if
   end do
@@ -80,28 +79,17 @@ contains
     naca = model_init(info)
   end function naca
 
-  subroutine line()
-    use fieldMod
-    use vectorMod
-    type(vfield) :: u2,up
-    type(field) :: ef
-    real,pointer :: p(:,:,:),p2(:,:,:)
-    real :: e(n(3))
-    integer :: d,k
+  subroutine sample()
+    integer :: d,i,j,k
     
-    u2 = flow%velocity%average()
-    up = flow%velocity
-    do d=1,3
-       p => up%e(d)%point()
-       p2 => u2%e(d)%point()
-       forall(k=1:n(3)) p(:,:,k) = p(:,:,k)-p2(:,:,1)
-    end do
+    if(mympi_coords(1)==1.and.mympi_coords(2)==1.and.mympi_coords(3)==0) then
+       i = 32
+       do j=3,2+64,8
+          write(11,'(7e16.8)') (flow%time/c,flow%pressure%pos(i,j,k)/c, &
+               (flow%velocity%e(d)%p(i,j,k),d=1,3),k=3,2+n(3))
+       end do
+       flush(11)
+    end if
 
-    ef = up%ke()
-    e = ef%xy_ave()
-    
-    write(10,'(2e16.8,e20.12)') (flow%time/c,(k-0.5)*xg(3)%h/c,e(k),k=1,n(3))
-    flush(10)
-
-  end subroutine line
+  end subroutine sample
 end program foilTest
