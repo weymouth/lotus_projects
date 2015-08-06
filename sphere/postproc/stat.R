@@ -1,21 +1,21 @@
-require(ggplot2)
-data = read.table("fort.9",col.names = c("time","CFL","thrust","lift","Fz"))
-data$drag = -4.*data$Fz
+library(dplyr);library(ggplot2)
+
+data = read.table("fort.9",col.names = c("time","CFL","drag","lift","Fz"))
 l = length(data$time)
 n = 2000
-j = round(seq(5,l,len=min(l,n)))
+j = round(seq(1,l,len=min(l,n)))
 data = data[j,]
-CFL = qplot(time,CFL,data=data,geom="line")
-t = 0.5*max(data$time)
-late = subset(data,time>t)
-mdrag = mean(late$drag)
-adrag = sqrt(2*sd(late$drag))
-mlift = mean(late$lift)
-alift = sqrt(2*sd(late$lift))
+CFL = qplot(time,CFL,data=subset(data,CFL<1),geom="line")
+
+stats = data %>% filter(time>mean(time)) %>%
+	summarize(t = min(time), mdrag = mean(drag), mlift = mean(lift),
+		  adrag = mad(drag), alift = mad(lift), ndrag = min(drag), nlift=min(lift))
+attach(stats)
+
 drag = qplot(time,drag,data=data,geom="line")
-drag = drag+annotate("text",x=t,y=mdrag+0.1,label=paste("mean=",round(mdrag,3)," amp=",round(adrag,3)))
+drag = drag+annotate("text",x=t,y=ndrag,label=paste("mean=",round(mdrag,3)," amp=",round(adrag,3)))
 lift = qplot(time,lift,data=data,geom="line")
-lift = lift+annotate("text",x=t,y=mlift+0.1,label=paste("mean=",round(mlift,3)," amp=",round(alift,3)))
+lift = lift+annotate("text",x=t,y=nlift,label=paste("mean=",round(mlift,3)," amp=",round(alift,3)))
 
 ppdf = function(plot,name){
      pdf(name,8,4)
@@ -23,9 +23,9 @@ ppdf = function(plot,name){
      dev.off()
 }
 
-ppdf(CFL,"CFL.pdf")
-ppdf(drag,"drag.pdf")
-ppdf(lift,"lift.pdf")
+ppdf(CFL,"11CFL.pdf")
+ppdf(drag,"01drag.pdf")
+ppdf(lift,"02lift.pdf")
 
 data = read.table("mgs.txt", col.names = c("itr","res"))
 
@@ -38,5 +38,7 @@ data = data[j,]
 
 itr = qplot(i,log(itr,2),data=data)+ylab(expression(log[2](iteration)))
 res = qplot(i,log(res,10),data=data)+ylab(expression(log[10](residual)))
-ppdf(itr,"itr.pdf")
-ppdf(res,"res.pdf")
+ppdf(itr,"13itr.pdf")
+ppdf(res,"12res.pdf")
+
+try(source('analysis.R'))
