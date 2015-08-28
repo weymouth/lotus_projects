@@ -12,8 +12,8 @@ program square_cyl
   use fieldMod
   use vectorMod
   implicit none
-  real,parameter     :: L = 100            ! length scale
-  real,parameter     :: Re = 5e3           ! Reynolds number
+  real,parameter     :: L = 32             ! length scale
+  real,parameter     :: Re = 16e2          ! Reynolds number
 !
   integer,parameter  :: ndims = 2          ! dimensions
   real,parameter     :: nu = L/Re          ! viscosity
@@ -43,7 +43,8 @@ program square_cyl
   if(root) print '("   L=",f0.4,", nu=",f0.4,", y+=",f0.4)',L,nu,yp
 !
 ! -- Initialize array size
-  n = composite((/4*L,2.5*L,2.5*L/),prnt=root)
+!  n = composite((/4*L,2.5*L,2.5*L/),prnt=root)
+  n = composite((/6*L,4*L,2.5*L/),prnt=root)
   if(ndims==2) n(3) = 1
 !
 ! -- Initialize and print grid
@@ -64,7 +65,7 @@ program square_cyl
   if(root) print *, '-- init complete --',t0
 !
 ! -- Time update loop
-  do while (flow%time<t0+250*L)
+  do while (flow%time<t0+25*L)
      call flow%update
 !
 ! -- Print fields and force
@@ -72,9 +73,11 @@ program square_cyl
      write(9,'(f10.4,f8.4,3e16.8)') flow%time/L,flow%dt,2.*force/area
      flush(9)
      if(mod(flow%time,0.05*L)<flow%dt) then
-       img = flow%velocity%vortZrender(0.15)
-       img = img%resample((/-300,-320,1280,640/),smooth=.true.)
+       img = flow%velocity%vortZrender(15./L)
+       call img%resample((/-300,-320,1280,640/),smooth=.true.)
        call img%write('vortZ',flow%time)
+!       call mympi_end
+!       stop
      end if
      if(mod(flow%time,5*L)<flow%dt) then
         call flow%write(average=.true.)
