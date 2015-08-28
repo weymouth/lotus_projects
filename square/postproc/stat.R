@@ -5,6 +5,8 @@ l = length(data$time)
 n = 2000
 j = round(seq(5,l,len=min(l,n)))
 data = data[j,]
+data$drag = -data$drag
+data$lift = -data$lift
 CFL = qplot(time,CFL,data=subset(data,CFL<1),geom="line")
 
 stats = data %>% filter(time>mean(time)) %>%
