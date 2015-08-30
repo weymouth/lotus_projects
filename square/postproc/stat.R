@@ -7,13 +7,19 @@ j = round(seq(5,l,len=min(l,n)))
 data = data[j,]
 CFL = qplot(time,CFL,data=subset(data,CFL<1),geom="line")
 
-stats = data %>% filter(time>mean(time)) %>%
-	summarize(t = min(time),
+easy = data %>% filter(time>mean(time)) %>%
+  summarize(t = min(time),
 			mdrag = mean(drag), mlift = mean(lift), mpos = mean(y),
 		  adrag = mad(drag), alift = mad(lift), apos = mad(y),
-			ndrag = min(drag), nlift=min(lift), npos = min(y)
+			ndrag = 1.05*min(drag), nlift=1.05*min(lift), npos = 1.05*min(y)
 			)
-attach(stats)
+attach(easy)
+
+harder = data %>% filter( (y>lead(y) & y>lag(y)) | (y<lead(y) & y<lag(y)), time>mean(time)) %>%
+    transmute(amp = abs(y-lag(y))/2) %>%
+    filter(cume_dist(desc(amp))<0.1) %>%
+    summarise(As=max(amp), As10=mean(amp))
+attach(harder)
 
 data$drag[data$time<1] = mdrag
 drag = qplot(time,drag,data=data,geom="line")
@@ -21,7 +27,8 @@ drag = drag+annotate("text",x=t,y=ndrag,label=paste("mean=",round(mdrag,3)," amp
 lift = qplot(time,lift,data=data,geom="line")
 lift = lift+annotate("text",x=t,y=nlift,label=paste("mean=",round(mlift,3)," amp=",round(alift,3)))
 pos = qplot(time,y,data=data,geom="line")
-pos = pos+annotate("text",x=t,y=npos,label=paste("mean=",round(mpos,3)," amp=",round(apos,3)))
+pos = pos+annotate("text",x=t,y=npos,label=paste("mean=",round(mpos,3)," A*=",round(As,3),
+                                                 " A*[10]=",round(As10,3)))
 
 ppdf = function(plot,name){
      pdf(name,8,4)
