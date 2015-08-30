@@ -1,17 +1,18 @@
 library(dplyr);library(ggplot2)
 
-data = read.table("fort.9",col.names = c("time","CFL","drag","lift","Fz"))
+data = read.table("fort.9",col.names = c("time","CFL","drag","lift","Fz","y","v"))
 l = length(data$time)
 n = 2000
 j = round(seq(5,l,len=min(l,n)))
 data = data[j,]
-data$drag = -data$drag
-data$lift = -data$lift
 CFL = qplot(time,CFL,data=subset(data,CFL<1),geom="line")
 
 stats = data %>% filter(time>mean(time)) %>%
-	summarize(t = min(time), mdrag = mean(drag), mlift = mean(lift),
-		  adrag = mad(drag), alift = mad(lift), ndrag = min(drag), nlift=min(lift))
+	summarize(t = min(time),
+			mdrag = mean(drag), mlift = mean(lift), mpos = mean(y),
+		  adrag = mad(drag), alift = mad(lift), apos = mad(y),
+			ndrag = min(drag), nlift=min(lift), npos = min(y)
+			)
 attach(stats)
 
 data$drag[data$time<1] = mdrag
@@ -19,6 +20,8 @@ drag = qplot(time,drag,data=data,geom="line")
 drag = drag+annotate("text",x=t,y=ndrag,label=paste("mean=",round(mdrag,3)," amp=",round(adrag,3)))
 lift = qplot(time,lift,data=data,geom="line")
 lift = lift+annotate("text",x=t,y=nlift,label=paste("mean=",round(mlift,3)," amp=",round(alift,3)))
+pos = qplot(time,y,data=data,geom="line")
+pos = pos+annotate("text",x=t,y=npos,label=paste("mean=",round(mpos,3)," amp=",round(apos,3)))
 
 ppdf = function(plot,name){
      pdf(name,8,4)
@@ -29,6 +32,7 @@ ppdf = function(plot,name){
 ppdf(CFL,"11CFL.pdf")
 ppdf(drag,"01drag.pdf")
 ppdf(lift,"02lift.pdf")
+ppdf(pos,"03pos.pdf")
 
 data = read.table("mgs.txt", col.names = c("itr","res"))
 
