@@ -15,6 +15,9 @@ easy = data %>% filter(time>mean(time)) %>%
 			)
 attach(easy)
 
+medium = data %>% filter( y>lead(y) & y>lag(y) ) %>%
+    mutate(period = time-lag(time))
+
 harder = data %>% filter( (y>lead(y) & y>lag(y)) | (y<lead(y) & y<lag(y)), time>mean(time)) %>%
     transmute(amp = abs(y-lag(y))/2) %>%
     filter(cume_dist(desc(amp))<0.1) %>%
@@ -22,6 +25,7 @@ harder = data %>% filter( (y>lead(y) & y>lag(y)) | (y<lead(y) & y<lag(y)), time>
 attach(harder)
 
 data$drag[data$time<1] = mdrag
+data$lift[data$time<1] = mlift
 drag = qplot(time,drag,data=data,geom="line")
 drag = drag+annotate("text",x=t,y=ndrag,label=paste("mean=",round(mdrag,3)," amp=",round(adrag,3)))
 lift = qplot(time,lift,data=data,geom="line")
