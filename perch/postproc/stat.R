@@ -1,21 +1,24 @@
-require(ggplot2)
-data = read.table("fort.9",col.names = c("time","CFL","thrust","lift","Fz"))
-data$drag = -data$thrust
+library(dplyr);library(ggplot2)
+
+data = read.table("fort.9",col.names = c("time","CFL","drag","lift","Fz"))
 l = length(data$time)
 n = 2000
-j = round(seq(5,l,len=min(l,n)))
+j = round(seq(25,l,len=min(l,n)))
 data = data[j,]
-CFL = qplot(time,CFL,data=data,geom="line")
-t = 0.5*max(data$time)
-late = subset(data,time>0 & time<1)
-mdrag = mean(late$drag)
-pdrag = max(late$drag)
-mlift = mean(late$lift)
-plift = max(late$lift)
+CFL = qplot(time,CFL,data=subset(data,CFL<1),geom="line")
+
+easy = data %>% filter(time>mean(time)) %>%
+  summarize(t = min(time),
+			mdrag = mean(drag), mlift = mean(lift),
+		  adrag = max(drag), alift = max(lift),
+			ndrag = 1.05*min(drag), nlift=1.05*min(lift)
+			)
+attach(easy)
+
 drag = qplot(time,drag,data=data,geom="line")
-drag = drag+annotate("text",x=-1,y=1,label=paste("mean=",round(mdrag,3)," peak=",round(pdrag,3)))
+drag = drag+annotate("text",x=t,y=ndrag,label=paste("mean=",round(mdrag,3)," peak=",round(adrag,3)))
 lift = qplot(time,lift,data=data,geom="line")
-lift = lift+annotate("text",x=-1,y=1,label=paste("mean=",round(mlift,3)," peak=",round(plift,3)))
+lift = lift+annotate("text",x=t,y=nlift,label=paste("mean=",round(mlift,3)," peak=",round(alift,3)))
 
 ppdf = function(plot,name){
      pdf(name,8,4)
@@ -23,11 +26,20 @@ ppdf = function(plot,name){
      dev.off()
 }
 
-ppdf(CFL,"CFL.pdf")
-ppdf(drag,"drag.pdf")
-ppdf(lift,"lift.pdf")
-print(mdrag)
-print(plift)
+ppdf(CFL,"11CFL.pdf")
+ppdf(drag,"01drag.pdf")
+ppdf(lift,"02lift.pdf")
+
+data = read.table("fort.13",col.names = c("time","position","velocity"))
+l = length(data$time)
+n = 2000
+j = round(seq(1,l,len=min(l,n)))
+data = data[j,]
+
+s = qplot(time,position,data=data,geom="line")
+u = qplot(time,velocity,data=data,geom="line")
+ppdf(s,"03position.pdf")
+ppdf(u,"04velocity.pdf")
 
 data = read.table("mgs.txt", col.names = c("itr","res"))
 
@@ -40,5 +52,7 @@ data = data[j,]
 
 itr = qplot(i,log(itr,2),data=data)+ylab(expression(log[2](iteration)))
 res = qplot(i,log(res,10),data=data)+ylab(expression(log[10](residual)))
-ppdf(itr,"itr.pdf")
-ppdf(res,"res.pdf")
+ppdf(itr,"13itr.pdf")
+ppdf(res,"12res.pdf")
+
+try(source('analysis.R'))
