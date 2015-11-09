@@ -1,5 +1,5 @@
 program sphere_flow
-  use mympiMod,   only: init_mympi
+  use mympiMod,   only: init_mympi,mympi_end
   use gridMod,    only: xg
   use geom_shape, only: sphere,operator(.map.),init_scale,pi
   use bodyMod,    only: body
@@ -14,7 +14,6 @@ program sphere_flow
   integer           :: b(3) = (/2,1,1/)                 ! MPI domain cuts in ijk
   real,parameter    :: lim = 10./D                      ! vorticity level in image
   real,parameter    :: dprnt = 0.05                     ! how often to print
-  integer,parameter :: box(4) = D*(/-1,-1,4,2/)         ! image size in pixels
   logical     :: there = .false.                        ! flag for stopping
   type(fluid) :: flow
   type(body)  :: geom
@@ -34,13 +33,12 @@ program sphere_flow
     write(9,'(f10.4,f8.4,3e16.8)') &
         flow%time/D,flow%dt,-2.*geom%pforce(flow%pressure)/(3.14159*D**2/4)
     flush(9)
-    if(mod(flow%time, D*dprnt)<flow%dt) then
-      call display(flow%velocity%vorticity_Z(), 'out_vort', lim=lim, box=box)
-    end if
+    if(mod(flow%time, D*dprnt)<flow%dt) &
+      call display(flow%velocity%vorticity_Z(), 'out_vort', lim=lim)
     inquire(file='.kill', exist=there)
   end do
   call flow%write()
-
+  call mympi_end()
 contains
   real(8) pure function length(ts)  ! length scale
     real(8),intent(in) :: ts
