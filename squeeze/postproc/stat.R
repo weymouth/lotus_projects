@@ -31,15 +31,23 @@ ppdf(drag,"01drag.pdf")
 ppdf(lift,"02lift.pdf")
 
 data = read.table("fort.13",col.names = c("time","position","velocity"))
+hold = data[c(TRUE,FALSE),]
+data = data[c(FALSE,TRUE),]
 l = length(data$time)
 n = 2000
 j = round(seq(1,l,len=min(l,n)))
-data = data[j,]
 
-s = qplot(time,position,data=data,geom="line")
-u = qplot(time,velocity,data=data,geom="line")
+data = data[j,]
+s = qplot(time,position,data=data,geom="line")+ylab("length")
+u = qplot(time,velocity,data=data,geom="line")+ylab("rate")
 ppdf(s,"03position.pdf")
 ppdf(u,"04velocity.pdf")
+
+data = hold[j,]
+s = qplot(time,position,data=data,geom="line")
+u = qplot(time,velocity,data=data,geom="line")
+ppdf(s,"05length.pdf")
+ppdf(u,"06rate.pdf")
 
 data = read.table("mgs.txt", col.names = c("itr","res"))
 
