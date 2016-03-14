@@ -1,0 +1,9 @@
+# ./runList < list
+while read amp pos flag dir
+do
+	sed 's/AMP/'$amp'/
+			 s/FLAG/'$flag'/
+			 s/POS0/'$pos'/' runs.f90 > lotus.f90
+	runLotus 16 $dir
+	wait
+done

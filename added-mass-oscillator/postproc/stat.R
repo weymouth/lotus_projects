@@ -1,24 +1,20 @@
 library(dplyr);library(ggplot2)
 
-data = read.table("fort.9",col.names = c("time","CFL","drag","lift","Fz"))
+data = read.table("fort.9",col.names = c("time","CFL","drag","Fy","Fz"))
 l = length(data$time)
 n = 2000
-j = round(seq(25,l,len=min(l,n)))
+j = round(seq(3,l,len=min(l,n)))
 data = data[j,]
 CFL = qplot(time,CFL,data=subset(data,CFL<1),geom="line")
 
 easy = data %>% filter(time>mean(time)) %>%
   summarize(t = min(time),
-			mdrag = mean(drag), mlift = mean(lift),
-		  adrag = max(drag), alift = max(lift),
-			ndrag = 1.05*min(drag), nlift=1.05*min(lift)
+			mdrag = mean(drag), adrag = mad(drag), ndrag = 1.05*min(drag)
 			)
 attach(easy)
 
 drag = qplot(time,drag,data=data,geom="line")
-drag = drag+annotate("text",x=t,y=ndrag,label=paste("mean=",round(mdrag,3)," peak=",round(adrag,3)))
-lift = qplot(time,lift,data=data,geom="line")
-lift = lift+annotate("text",x=t,y=nlift,label=paste("mean=",round(mlift,3)," peak=",round(alift,3)))
+drag = drag+annotate("text",x=t,y=ndrag,label=paste("mean=",round(mdrag,3)," amp=",round(adrag,3)))
 
 ppdf = function(plot,name){
      pdf(name,8,4)
@@ -28,7 +24,6 @@ ppdf = function(plot,name){
 
 ppdf(CFL,"11CFL.pdf")
 ppdf(drag,"01drag.pdf")
-ppdf(lift,"02lift.pdf")
 
 data = read.table("fort.13",col.names = c("time","position","velocity"))
 hold = data[c(TRUE,FALSE),]
