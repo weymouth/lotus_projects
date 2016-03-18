@@ -23,7 +23,7 @@ program squeeze
 						   ! 5 L/s with L = 0.03m and nu = 1*10^-6 m^2/s
   real,parameter    :: T = 2*L	       ! size-change timescale
                ! in 1*T the squid swims 1 L and oscillates once
-  real,parameter    :: g = 10.0         ! center-to-center gap
+  real,parameter    :: g = GAP         ! center-to-center gap
 
   integer           :: b(3) = (/4,1,4/)            ! MPI domain cuts in ijk
   real,parameter    :: lim = 10./D                 ! vorticity level in image

@@ -1,0 +1,7 @@
+# ./runList < list
+while read gap dir res
+do
+	sed 's/GAP/'$gap'/' runs.f90 > lotus.f90
+	runLotus 16 $dir ../$res/
+	wait
+done
