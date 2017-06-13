@@ -13,29 +13,27 @@ program gust_model
   real,parameter     :: k = 0.25, f = k/(pi*c)
   real,parameter     :: v = tan(15.*pi/180.)
   integer,parameter  :: n(3) = (/8.*c,8.*c,1./)
-  real,parameter     :: cen(3) = (/0.,0.,0./) ! sets the pivot point
-  real               :: y0 = 0, p0 = 0, doty, dotp, force(3), moment(3)
+  real               :: y0=0, p0=0, doty=0, dotp=0, force(3), moment(3)
   logical            :: there = .FALSE., wall_flag(-3:3) = .FALSE.
 !
 ! -- Set up geom
-  xg(1)%left = -n(1)/3.+cen(1)
+  xg(1)%left = -n(1)/3.;
   xg(2)%left = -4*c; xg(2)%right = 4*c
-  foil = cylinder(3,c/2.,cen).map.init_scale(2,w) !&
+  foil = cylinder(3,c/2.,center=0.).map.init_scale(2,w)! &
         ! .map.init_rigid(6,p,dp).map.init_rigid(2,y,dy)
   call geom%add(foil)
-  walls = (plane(norm=(/0,1,0/),center=(/0.,xg(2)%left,0./)).or. &
-           plane(norm=(/0,-1,0/),center=(/0.,xg(2)%right,0./)).or. &
-           plane(norm=(/1,0,0/),center=(/xg(1)%left,0.,0./))) &
+  walls = (plane(norm=(/0,1,0/),center=(/0.,xg(2)%left+2,0./)).or. &
+           plane(norm=(/0,-1,0/),center=(/0.,xg(2)%right-2,0./)).or. &
+           plane(norm=(/1,0,0/),center=(/xg(1)%left+2,0.,0./))) &
            .map.init_velocity(gust_velo)
   call geom%add(walls)
-  wall_flag(-2) = .TRUE.; wall_flag(2) = .TRUE.; wall_flag(-1) = .TRUE.
-  geom%bodies(2)%dis_wall = wall_flag
+  wall_flag((/-2,-1,2/)) = .TRUE.
   call flow%init(n,geom,V=(/1.,0.,0./),nu=c/Re,external=.not.wall_flag)
 !
 ! -- Initialize the velocity
   flow%time = -2.*c
-  ! call flow%velocity%eval(gust_velo)
-  ! call flow%reset_u0()
+  call flow%velocity%eval(gust_velo)
+  call flow%reset_u0()
 !
 ! -- Time update loop
   do while (flow%time<1./f+c.and..not.there)  ! run 3 cycles
