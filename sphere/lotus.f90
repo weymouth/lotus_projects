@@ -25,7 +25,7 @@ program sphere_flow
   call xg(2)%stretch(n(2), -2*D, -0.5*D, 0.5*D, 2*D, h_min=2.,prnt=root)
   call xg(3)%stretch(n(3), -2*D, -0.5*D, 0.5*D, 2*D, h_min=2.,prnt=root)
   geom = sphere(2, 1, radius=0.5*D, center=0)
-  call flow%init(n/b,geom,V=(/1.,0.,0./),nu=D/Re)
+  call flow%init(n,geom,V=(/1.,0.,0./),nu=D/Re)
 !
   if(root) print *,'Starting time update loop'
   if(root) print *,'-----------------------------------'
