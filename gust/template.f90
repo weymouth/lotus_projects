@@ -6,38 +6,43 @@ program gust_model
   use gridMod
   implicit none
   type(fluid)        :: flow
-  type(body)         :: foil,walls
+  type(set)          :: foil,walls
   type(bodyUnion)    :: geom
   real,parameter     :: c = 64
   real,parameter     :: Re = 1e4
+  integer,parameter  :: kinematic = KINEMATIC_FLAG
+  real,parameter     :: delay = DELAY_VAL
   real,parameter     :: k = 0.25, f = k/(pi*c)
   real,parameter     :: v = tan(15.*pi/180.)
-  integer,parameter  :: n(3) = (/8.*c,8.*c,1./)
+  integer,parameter  :: n(3) = (/12.*c,8.*c,1./)
   real               :: y0=0, p0=0, doty=0, dotp=0, force(3), moment(3)
-  logical            :: there = .FALSE., wall_flag(-3:3) = .FALSE.
+  logical            :: there = .true., ext(-3:3) = .true.
 !
-! -- Set up geom
-  xg(1)%left = -n(1)/3.;
+! -- Set up grid geom and flow
+  xg(1)%left = -(8/3.+4)*c
   xg(2)%left = -4*c; xg(2)%right = 4*c
-  foil = cylinder(3,c/2.,center=0.).map.init_scale(2,w)! &
-        ! .map.init_rigid(6,p,dp).map.init_rigid(2,y,dy)
+
+  foil = cylinder(3,c/2.,center=0.).map.init_scale(2,w)
+  if(kinematic==1) foil = foil.map.init_rigid(6,p,dp).map.init_rigid(2,y,dy)
   call geom%add(foil)
+
   walls = (plane(norm=(/0,1,0/),center=(/0.,xg(2)%left+2,0./)).or. &
            plane(norm=(/0,-1,0/),center=(/0.,xg(2)%right-2,0./)).or. &
            plane(norm=(/1,0,0/),center=(/xg(1)%left+2,0.,0./))) &
            .map.init_velocity(gust_velo)
-  call geom%add(walls)
-  wall_flag((/-2,-1,2/)) = .TRUE.
-  call flow%init(n,geom,V=(/1.,0.,0./),nu=c/Re,external=.not.wall_flag)
+  if(kinematic==0) call geom%add(walls)
+
+  ext((/-2,-1,2/)) = (kinematic==1)
+  call flow%init(n,geom,V=(/1.,0.,0./),nu=c/Re,external=ext)
 !
 ! -- Initialize the velocity
-  flow%time = -2.*c
+  flow%time = -delay*c
   call flow%velocity%eval(gust_velo)
   call flow%reset_u0()
 !
 ! -- Time update loop
   do while (flow%time<1./f+c.and..not.there)  ! run 3 cycles
-    !  call gust_kinematics(flow%time+flow%dt)
+     if(kinematic==1) call gust_kinematics(flow%time+flow%dt)
      call geom%update(flow%time+flow%dt)
      call flow%update(geom)
      force = -2.*geom%bodies(1)%pforce(flow%pressure)/c
