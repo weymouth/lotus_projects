@@ -6,49 +6,60 @@ program gust_model
   use gridMod
   implicit none
   type(fluid)        :: flow
-  type(body)         :: foil,walls
+  type(set)          :: foil,walls
   type(bodyUnion)    :: geom
   real,parameter     :: c = 64
   real,parameter     :: Re = 1e4
-  real,parameter     :: k = 0.25, f = k/(pi*c)
+  logical,parameter  :: kinematic = .KINEMATIC_FLAG.
+  real,parameter     :: delay = 2
+  real,parameter     :: k = K_VAL, f = k/(pi*c)
   real,parameter     :: v = tan(15.*pi/180.)
   integer,parameter  :: n(3) = (/8.*c,8.*c,1./)
   real               :: y0=0, p0=0, doty=0, dotp=0, force(3), moment(3)
-  logical            :: there = .FALSE., wall_flag(-3:3) = .FALSE.
+  logical            :: there = .false., ext(-3:3) = .true.
 !
-! -- Set up geom
-  xg(1)%left = -n(1)/3.;
-  xg(2)%left = -4*c; xg(2)%right = 4*c
-  foil = cylinder(3,c/2.,center=0.).map.init_scale(2,w)! &
-        ! .map.init_rigid(6,p,dp).map.init_rigid(2,y,dy)
+! -- Set up grid geom and flow
+  xg(1)%left = -n(1)/3.
+  xg(2)%left = -n(2)/2.; xg(2)%right = xg(2)%left+n(2)
+
+  foil = circle(axis=3, radius=c/2, center=0.).map.init_scale(2,w)
+  ! foil = plane(norm=(/0,1,0/),center=(/0.,2.,0./)).and. &
+  !        plane(norm=(/0,-1,0/),center=(/0.,-2.,0./)).and. &
+  !        plane(norm=(/1,0,0/),center=(/c/2.,0.,0./)).and. &
+  !        plane(norm=(/-1,0,0/),center=(/-c/2.,0.,0./))
+  if(kinematic) foil = foil.map.init_rigid(6,p,dp)
   call geom%add(foil)
+
   walls = (plane(norm=(/0,1,0/),center=(/0.,xg(2)%left+2,0./)).or. &
            plane(norm=(/0,-1,0/),center=(/0.,xg(2)%right-2,0./)).or. &
            plane(norm=(/1,0,0/),center=(/xg(1)%left+2,0.,0./))) &
            .map.init_velocity(gust_velo)
-  call geom%add(walls)
-  wall_flag((/-2,-1,2/)) = .TRUE.
-  call flow%init(n,geom,V=(/1.,0.,0./),nu=c/Re,external=.not.wall_flag)
+  if(.not.kinematic) call geom%add(walls)
+
+  ext((/-2,-1,2/)) = kinematic
+  call flow%init(n,geom,V=(/1.,0.,0./),nu=c/Re,external=ext)
 !
 ! -- Initialize the velocity
-  flow%time = -2.*c
-  call flow%velocity%eval(gust_velo)
-  call flow%reset_u0()
+  flow%time = -delay*c
+  if(.not.kinematic) then
+    call flow%velocity%eval(gust_velo)
+    call flow%reset_u0()
+  end if
 !
 ! -- Time update loop
   do while (flow%time<1./f+c.and..not.there)  ! run 3 cycles
-    !  call gust_kinematics(flow%time+flow%dt)
+     if(kinematic) call gust_kinematics(flow%time+flow%dt)
      call geom%update(flow%time+flow%dt)
-     call flow%update(geom)
+     call flow%update(geom,V=(/1.0,-doty,0./))
      force = -2.*geom%bodies(1)%pforce(flow%pressure)/c
      moment = -2.*geom%bodies(1)%pmoment(flow%pressure)/c**2
      write(9,'(f10.4,f8.4,5e16.8)') flow%time*f,flow%dt,&
         force(:2),moment(3),y0/c,p0
      flush(9)
-     if(flow%time>0 .and. mod(flow%time,0.25*c)<flow%dt) then
+     if(mod(abs(flow%time),0.25*c)<flow%dt) &
         print *,flow%time/c,flow%time*f
+     if(flow%time>0 .and. mod(flow%time,0.125/f)<flow%dt) &
         call display(flow%velocity%vorticity_Z(),'flow',lim=0.25)
-     end if
      inquire(file='.kill', exist=there)
   end do
   call flow%write()
