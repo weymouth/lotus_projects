@@ -26,11 +26,13 @@ def replace_all(text, dic):
     return text
 
 # Set up the keys and values
-keys = ['K_VAL','KINEMATIC_FLAG']
-k_vals = [0.0625,0.125]
+keys = ['K_VAL','KINEMATIC_FLAG','ALPHA_VAL']
+k_vals = [0.125,0.25,0.5,1.0]
 kinematic_flags = ['true','false']
+alpha_vals = [15]
 
 # Sweep through the simulations
 for k in k_vals:
     for kin in kinematic_flags:
-        run_lotus(keys,values=[str(k),kin])
+        for alpha in alpha_vals:
+            run_lotus(keys,values=[str(k),kin,str(alpha)])
