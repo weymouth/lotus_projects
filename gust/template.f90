@@ -8,7 +8,7 @@ program gust_model
   type(fluid)        :: flow
   type(set)          :: foil,walls
   type(bodyUnion)    :: geom
-  real,parameter     :: c = 64
+  real,parameter     :: c = 90
   real,parameter     :: Re = 1e3
   logical,parameter  :: kinematic = .KINEMATIC_FLAG.
   real,parameter     :: delay = 2
@@ -17,18 +17,19 @@ program gust_model
   integer,parameter  :: n(3) = (/8.*c,8.*c,1./)
   real               :: x0=0, y0=0, p0=0, dotx=1, doty=0, dotp=0, force(3), moment(3)
   logical            :: there = .false., ext(-3:3) = .true.
+  integer            :: box(4) = (/-2.67*c,-4*c,8*c,8*c/)
 !
 ! -- Set up grid geom and flow
-  xg(1)%left = -n(1)/3.
-  xg(2)%left = -n(2)/2.; xg(2)%right = xg(2)%left+n(2)
+  call xg(1)%stretch(n(1),-2.67*c,-0.6*c,5.3*c,10*c)
+  call xg(2)%stretch(n(2),-10*c,-3*c,3*c,10*c)
 
   foil = cylinder(axis=3, radius=c/2, center=0.).map.init_scale(2,w)
   if(kinematic) foil = foil.map.init_rigid(6,p,dp)
   call geom%add(foil)
 
-  walls = (plane(norm=(/0,1,0/),center=(/0.,xg(2)%left+2,0./)).or. &
-           plane(norm=(/0,-1,0/),center=(/0.,xg(2)%right-2,0./)).or. &
-           plane(norm=(/1,0,0/),center=(/xg(1)%left+2,0.,0./))) &
+  walls = (plane(norm=(/0,1,0/),center=(/0.,xg(2)%x(2),0./)).or. &
+           plane(norm=(/0,-1,0/),center=(/0.,xg(2)%x(n(2)),0./)).or. &
+           plane(norm=(/1,0,0/),center=(/xg(1)%x(2),0.,0./))) &
            .map.init_velocity(gust_velo)
   if(.not.kinematic) call geom%add(walls)
 
@@ -52,12 +53,13 @@ program gust_model
      write(9,'(f10.4,f8.4,6e16.8)') flow%time*f,flow%dt,&
         force(:2),moment(3),x0/c,y0/c,p0
      flush(9)
-     if(mod(abs(flow%time),0.25*c)<flow%dt) &
-        print *,flow%time/c,flow%time*f,x0/c,y0/c,p0
+     if(mod(abs(flow%time),c)<flow%dt) &
+        print *,kinematic,k,v,':',flow%time/c,flow%time*f
      if(flow%time>0 .and. mod(flow%time,0.125/f)<flow%dt) &
-        call display(flow%velocity%vorticity_Z(),'flow',lim=0.25)
+        call display(flow%velocity%vorticity_Z(),'flow',lim=0.25,box=box)
      inquire(file='.kill', exist=there)
   end do
+  call display(flow%velocity%vorticity_Z(),'flow',lim=0.25,box=box)
   call flow%write()
 contains
 
@@ -70,7 +72,7 @@ contains
      real,intent(in) :: t
      real :: up,vp
      dotp = (gust(flow%time-c)-gust(flow%time))/c  ! average dv/dx
-     up = 1+dotp; vp = gust(flow%time-c/2.)-dotp
+     up = 1; vp = (gust(flow%time-c)+gust(flow%time))/2.
      dotx = cos(p0)*up+sin(p0)*vp
      doty = cos(p0)*vp-sin(p0)*up
      x0 = x0+flow%dt*dotx

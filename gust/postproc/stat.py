@@ -23,7 +23,7 @@ except FileNotFoundError:
     exit('stat: fort.8 not found')
 #
 # -- plot PDF pages
-figSize = (10,4)
+figSize = (8,4)
 with PdfPages('history.pdf') as pdf:
     df.plot(x='time',y=["drag","lift","moment"],figsize=figSize)
     plt.xlabel(r'$t/T$', fontsize=12)

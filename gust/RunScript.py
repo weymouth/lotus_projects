@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import subprocess
+from time import sleep
 
 def run_lotus(keys,values):
     "Write a lotus.f90 file and run in a folder using a set of keys and values"
     changes = dict(zip(keys,values))                         # make the dictionary
     write_lotus(changes)                                     # make the lotus file
-    folder = '_'.join([i+'_'+j for i,j in changes.items()])  # name the folder
-    subprocess.check_call('runLotus 0 '+folder, shell=True)  # run the simulation
+    folder = '_'.join([i+'_'+j for i,j in zip(keys,values)]) # name the folder
+    subprocess.Popen('runLotus 0 '+folder, shell=True)       # run without blocking
+    sleep(5)                                                 # wait until set up
+    # subprocess.check_call('runLotus 0 '+folder, shell=True)  # run the simulation
 
 def write_lotus(dic):
     "Write the lotus file by replacing from the template"
