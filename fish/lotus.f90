@@ -47,6 +47,7 @@ program fish
     if(mod(flow%time,0.125*c/f)<flow%dt) then
       if(root) print '(f7.3,",",f6.3)',flow%time*f/c,flow%dt
       call display(flow%velocity%vorticity_Z(), 'out_vort', lim = 0.25, box=box)
+      call write_line()
     end if
     inquire(file='.kill', exist=there)
   end do
@@ -113,4 +114,15 @@ contains
     naca = model_init(info)
   end function naca
 
+  subroutine write_line
+      real,allocatable :: fp(:,:)
+      real :: x
+      integer :: i
+      fp = -2./c*geom%pforce_plane(flow%pressure)
+      do i=1,n(1)
+        x = xg(1)%x(i)+xg(1)%dx(i)/2
+        if(x>=-4 .and. x<=c+4) write(10,'(3e16.8)') flow%time*f/c,x/c,fp(i,1)
+      end do
+      flush(10)
+  end subroutine write_line
 end program fish
