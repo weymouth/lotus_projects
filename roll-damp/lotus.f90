@@ -62,7 +62,7 @@ program square_cyl
 ! -- Time update loop
   do while (flow%time*freq<Per.and..not.there)
      call square%update(flow%time+flow%dt)
-     call flow%update(square,f=smagorinski(flow%velocity,C=0.2))
+     call flow%update(square,f=smagorinsky(flow%velocity,C=0.2))
 !
 ! -- Print fields and force
      moment = -square%pmoment(flow%pressure)/(0.5*rho*Um**2*B**2)
@@ -98,8 +98,8 @@ contains
          .and.plane(norm=(/0,1,0/),center=(/0.5*B,D,0./))
   end function
 !
-! -- Smagorinski LES model
-  type(vfield) function smagorinski(u,C) result(force)
+! -- Smagorinsky LES model
+  type(vfield) function smagorinsky(u,C) result(force)
     use gridMod, only: dxi,dxi2
     use fieldMod, only: field
     use vectorMod, only: vfield
@@ -131,7 +131,7 @@ contains
     end do
 !
 ! -- get Smagorinski eddy viscosity and SGS stress
-    mu_e%p = 2.*C*sqrt(2.*mu_e%p)                           ! Smagorinski
+    mu_e%p = 2.*C**2*sqrt(2.*mu_e%p)                        ! Smagorinsky
     do d1=1,ndims
       do d2=1,ndims
         S(d1)%e(d2)%p = mu_e%p*S(d1)%e(d2)%p                ! SGS stress
@@ -161,5 +161,5 @@ contains
         end if
        end do faces
     end do components
-  end function smagorinski
+  end function smagorinsky
 end program square_cyl
