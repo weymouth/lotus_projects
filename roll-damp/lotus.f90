@@ -56,13 +56,13 @@ program square_cyl
 !
 ! -- Initialize fluid
   call flow%init(n/bl,square,nu=nu)
-  flow%dt = min(1.,flow%dt) ! limit time step (only needed initially)
   if(root) print *, '-- init complete --'
 !
 ! -- Time update loop
   do while (flow%time*freq<Per.and..not.there)
+     flow%dt = min(0.5,flow%dt) ! limit time step (only needed initially)
      call square%update(flow%time+flow%dt)
-     call flow%update(square,f=smagorinsky(flow%velocity,C=0.2))
+     call flow%update(square,f=SGS(flow%velocity,C=0.2))
 !
 ! -- Print fields and force
      moment = -square%pmoment(flow%pressure)/(0.5*rho*Um**2*B**2)
@@ -98,8 +98,8 @@ contains
          .and.plane(norm=(/0,1,0/),center=(/0.5*B,D,0./))
   end function
 !
-! -- Smagorinsky LES model
-  type(vfield) function smagorinsky(u,C) result(force)
+! -- LES SGS model
+  type(vfield) function SGS(u,C) result(force)
     use gridMod, only: dxi,dxi2
     use fieldMod, only: field
     use vectorMod, only: vfield
@@ -107,35 +107,28 @@ contains
     type(vfield),intent(in) :: u
     real,intent(in)         :: C !! literature suggests 0.1-0.25
     type(vfield) :: S(u%ndims)
-    type(field)  :: mu_e
+    real,dimension(3,3) :: g,tau
+    real :: limout
     integer      :: ndims,is,ie,js,je,ks,ke,d1,d2,i,j,k,o(3),o2(3),ijk(3),id
 
     call u%e(1)%limits(is,ie,js,je,ks,ke)
     call force%init(n=u%e(1)%size())
-    call mu_e%init(n=u%e(1)%size())
     ndims = force%ndims
 !
-! -- get strain tensor and its inner product
+! -- get SGS stress at each point
     call u%gradTensor(S)
-    do d1=1,ndims
-      do d2=1,ndims
-        if(d1<d2) then
-          S(d1)%e(d2)%p = 0.5*(S(d1)%e(d2)%p+S(d2)%e(d1)%p) ! symmetric part
-          call S(d1)%e(d2)%applyBC                          ! set BCs
-          S(d2)%e(d1)%p = S(d1)%e(d2)%p                     ! copy to transpose
-        else if(d1==d2) then
-          call S(d1)%e(d2)%applyBC                          ! set BCs
-        end if
-        mu_e%p = mu_e%p+S(d1)%e(d2)%p**2                    ! inner product
+    do concurrent (i=is:ie,j=js:je,k=ks:ke)
+      g = 0
+      do concurrent(d1=1:ndims,d2=1:ndims)
+        g(d1,d2) = S(d1)%e(d2)%p(i,j,k)
+      end do
+      tau = 2.*C**2*gabe(g)
+      do concurrent(d1=1:ndims,d2=1:ndims)
+        S(d1)%e(d2)%p(i,j,k) = tau(d1,d2)
       end do
     end do
-!
-! -- get Smagorinski eddy viscosity and SGS stress
-    mu_e%p = 2.*C**2*sqrt(2.*mu_e%p)                        ! Smagorinsky
     do d1=1,ndims
-      do d2=1,ndims
-        S(d1)%e(d2)%p = mu_e%p*S(d1)%e(d2)%p                ! SGS stress
-      end do
+      call S(d1)%applyBC
     end do
 !
 ! -- compute SGS force
@@ -161,5 +154,35 @@ contains
         end if
        end do faces
     end do components
+  end function SGS
+  pure function gabe(g) result(tau)
+    real,dimension(3,3),intent(in) :: g
+    real,dimension(3,3) :: S,O,tau
+    S = 0.5*(g+transpose(g))
+    O = 0.5*(g-transpose(g))
+    tau = (sum(2.*S**2)+sum(2.*O**2))*S
+  end function gabe
+  pure function smagorinsky(g) result(tau)
+    real,dimension(3,3),intent(in) :: g
+    real,dimension(3,3) :: S,tau
+    real :: S2
+    S = 0.5*(g+transpose(g))
+    S2 = sum(2.*S**2)
+    tau = S2**(0.5)*S
   end function smagorinsky
+  pure function WALE(g) result(tau) ! not working...
+    real,dimension(3,3),intent(in) :: g
+    real,dimension(3,3) :: S,g2,Sd,tau
+    real :: g2kk,S2,Sd2
+    integer :: i
+    S = 0.5*(g+transpose(g))
+    S2 = sum(S**2)
+    g2 = matmul(g,g)
+    g2kk = g2(1,1)+g2(2,2)+g2(3,3)
+    Sd = 0.5*(g2+transpose(g2))
+    forall(i=1:3) Sd(i,i) = Sd(i,i)-g2kk/3.
+    Sd2 = sum(Sd**2)
+    tau = Sd2**(1.5)/(S2**(2.5)+Sd2**(1.25))*S
+    if(Sd2<1e-8) tau = 0
+  end function WALE
 end program square_cyl
