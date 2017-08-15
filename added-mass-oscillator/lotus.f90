@@ -14,13 +14,13 @@ program squeeze
   integer           :: n(3) = D*(/6.,1.5,1.5/)     ! number of cells in ijk
   integer           :: b(3) = (/4,2,2/)            ! MPI domain cuts in ijk
 
-  real,parameter    :: T = 4*D, amp = 0.0          ! size-change length/time scale
-  logical,parameter :: sharp = .TRUE.              ! sharp growth flag
-  real,parameter    :: m = 5.*pi/6.*D**3, ma = m/10.   ! mass and added mass guess
+  real,parameter    :: T = 4*D, amp = 0.354          ! size-change length/time scale
+  logical,parameter :: sharp = .FALSE.              ! sharp growth flag
+  real,parameter    :: m = pi/6.*D**3, ma = m/2.   ! mass and added mass guess
   real,parameter    :: kn = (2.*pi/T)**2*(m+ma)    ! spring constant for T
   real,parameter    :: k = kn                      ! spring constant
-  real              :: pos=-2.*D,vel=0             ! force and motion variables
-  real              :: force(3)=0,a0 = 0
+  real              :: pos=-2*amp*D,vel=0        ! force and motion variables
+  real              :: force(3)=0,power=0,a0=0
 
   real,parameter    :: lim = 10./D                 ! vorticity level in image
   real,parameter    :: dprnt = 0.04                ! how often to print
@@ -45,24 +45,26 @@ program squeeze
   flow%dt = min(flow%dt,1.)                     ! limit the time step
 !
 ! -- Time update loop
-  do while(flow%time<20*T .and. .not.there)
+  do while(flow%time<50*T .and. .not.there)
     ts = (flow%time+flow%dt)/T                  ! get non-dimensional time
     call rigid_update(force(1))                 ! update rigid motion
     call geom%update(real(ts))                  ! apply mapping to geom
     call flow%update(geom)                      ! update the flow
     flow%dt = min(flow%dt,2.)                   ! limit the time step
     force = -4.*geom%pforce(flow%pressure)      ! compute the force
+    power = -4.*geom%ppower(flow%pressure)      ! compute the power
 !
 ! -- write to file
-    if(root) write(9,'(f10.4,f8.4,3e16.8)') ts,flow%dt,force
+    if(root) write(9,'(f10.4,f8.4,4e16.8)') ts,flow%dt,force,power
     if(mod(ts,dprnt)<flow%dt/T) then
+      call display(flow%velocity%vorticity_Z(),'out_vort', lim=lim)
       if(root) print '(f10.4,5f9.4)',ts,flow%dt, &
             length(ts),rate(ts),position(ts),velocity(ts)
     end if
     inquire(file='.kill', exist=there)
   end do
-  call display(flow%velocity%vorticity_Z(),'out_vort', lim=lim)
-  call flow%write()
+  call flow%write(geom,lambda=.TRUE.)
+  call mympi_end
 contains
  real(8) pure function length(ts)  ! length scale
     real(8),intent(in) :: ts
@@ -73,7 +75,7 @@ contains
       c = 40                               ! growth rate
       t = t+(tanh((0.5-t)*c)-tanh(t*c))/4. ! add sharp growth phase
     end if
-    length = 1+amp*cos(2.*pi*t)
+    length = 1!+amp*cos(2.*pi*t)
   end function length
   real(8) pure function rate(ts)  ! rate of change of length
     real(8),intent(in) :: ts
@@ -81,11 +83,13 @@ contains
   end function rate
   subroutine rigid_update(force)
     real :: force,accel,ma_t
-    ma_t = 0!ma*length(ts)**3
-    accel = (force-k*pos+ma_t*a0)/(m+ma_t)
-    pos = pos+flow%dt*(vel+flow%dt*accel/2.)  ! second order
-    vel = vel+flow%dt*accel                   ! first order :(
-    a0 = accel
+!    ma_t = ma*length(ts)**3
+!    accel = (force-k*pos+ma_t*a0)/(m+ma_t)
+!    pos = pos+flow%dt*(vel+flow%dt*accel/2.)  ! second order
+!    vel = vel+flow%dt*accel                   ! first order :(
+!    a0 = accel
+    pos = -(10+ts)*cos(2.*pi*ts)
+    vel =  (10+ts)*sin(2.*pi*ts)*2.*pi/T-cos(2.*pi*ts)/T
   end subroutine rigid_update
   real(8) pure function position(ts)
     real(8),intent(in) :: ts

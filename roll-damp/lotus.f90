@@ -12,26 +12,26 @@ program square_cyl
   ! physical parameters
   real,parameter     :: STK = sqrt(2.4e5)     !Stokes No.= sqrt(B^2*omega/(2*nu))
   real,parameter     :: BoD = 0.28/0.112      !Aspect ratio
-  real,parameter     :: phizero = 0.232       !Roll amplitude
+  real,parameter     :: phizero = 0.143       !Roll amplitude
   real,parameter     :: Per = 10              !# periods
   ! numerical parameters
-  real,parameter     :: D = 64                !depth as a function of cell size h
+  real,parameter     :: D = 140               !depth as a function of cell size h
   real,parameter     :: rho = 1               !density
   real,parameter     :: Um = 1                !max veloctiy
   integer,parameter  :: ndims = 2             !dimensions
-  integer            :: bl(3) = (/2,2,1/)     !blocks
+  integer            :: bl(3) = (/4,4,1/)     !blocks
   ! resultant parameters
   real,parameter     :: B = BoD*D             !beam in cells
   real,parameter     :: Omegam = Um*(2/B)     !angular velocity
   real,parameter     :: omega = Omegam/phizero!angular freq (rad)
   real,parameter     :: freq = omega/(2*pi)   !angular freq (Hz)
   real,parameter     :: nu = (B/STK)**2*omega/2.  ! viscosity
-  real               :: m = 4*B               !approximate # points
-  integer            :: window(4) = int((/-2*B,-4*D,4*B,8*D/))
+  real               :: m = 3*B               !approximate # points
+  integer            :: window(4) = int((/-1.5*B,-3*D,3*B,6*D/))
   ! variables
   integer            :: n(3)                  !# points
   real               :: moment(3)             !moment coefficient
-  logical            :: root,there=.false.    !logical flags
+  logical            :: root,there=.false.     !logical flags
   type(fluid)        :: flow                  !fluid
   type(body)         :: square                !solid
 !
@@ -44,14 +44,15 @@ program square_cyl
   root = mympi_rank()==0
 !
 ! -- Initialize array size
-  n = composite((/m,m,1./),prnt=root)
+  n = composite((/m,m,128./),prnt=root)
+  if(ndims==2) n(3) = 1
 !
 ! -- Initialize and print grid
   call xg(1)%stretch(n(1),-10*B,-B,B,10*B,prnt=root)
   call xg(2)%stretch(n(2),-10*B,-B,B,10*B,prnt=root)
 !
 ! -- Initialize the square geometry
-  square = make_bildge_geom().map.init_rigid(6,phi)
+  square = make_geom().map.init_rigid(6,phi)
   if(root) print *,'omega=',omega,', nu=',nu
 !
 ! -- Initialize fluid
@@ -65,16 +66,17 @@ program square_cyl
      call flow%update(square,f=SGS(flow%velocity,C=0.2))
 !
 ! -- Print fields and force
-     moment = -square%pmoment(flow%pressure)/(0.5*rho*Um**2*B**2)
+     moment = -square%pmoment(flow%pressure)/(rho*phizero*Omega**2*B**3*D)
      write(9,1) flow%time*freq,flow%dt,moment(3),phi(real(flow%time,8))
      flush(9)
      if(mod(flow%time,0.125/freq)<flow%dt) then ! print every 1/8 cycle
-       call display(flow%velocity%vorticity_Z(),'vort',lim=0.25,box=window)
+       call display(flow%velocity%vorticity_Z(),'vort',lim=0.5,box=window)
        if(root) print 1,flow%time*freq,flow%dt,moment(3),phi(real(flow%time,8))
      end if
      inquire(file='.kill', exist=there)
 1    format(f10.4,f8.4,2e14.6)
   end do
+  call display(flow%velocity%vorticity_Z(),'vort',lim=0.5,box=window)
   call flow%write(square)
   if(root) print *, '--- complete ---'
 !
@@ -87,15 +89,33 @@ contains
 ! -- motion definition
   real(8) pure function phi(t)
     real(8),intent(in) :: t
-    phi = phizero*sin(omega*t)
+    phi = phizero*cos(omega*t)
   end function phi
 !
 ! -- shape definition
-  type(set) function make_bildge_geom() result(geom)
-    geom = plane(norm=(/-1,0,0/),center=(/-0.5*B,-D,0./)) &
-         .and.plane(norm=(/1,0,0/),center=(/0.5*B,D,0./)) &
-         .and.plane(norm=(/0,-1,0/),center=(/-0.5*B,-D,0./)) &
-         .and.plane(norm=(/0,1,0/),center=(/0.5*B,D,0./))
+  type(set) function make_geom() result(geom)
+    geom = rect(-0.5*B,0.,B,2*D,0.) !&
+!          .or.bilges(0.5*B-0.1*D,D-0.1*D,0.1*B,2.,0.5*pi)
+  end function
+
+  type(set) function bilges(x,y,a,b,alpha)
+    real,intent(in) :: x,y,a,b,alpha
+    bilges = rect(x,y,a,b,alpha) &
+        .or.rect(-x,y,a,b,pi-alpha) &
+        .or.rect(x,-y,a,b,-alpha) &
+        .or.rect(-x,-y,a,b,pi+alpha)
+  end function bilges
+
+  type(set) function rect(x,y,a,b,alpha)
+    real,intent(in) :: x,y,a,b,alpha
+    real :: sa,ca,xp,yp,xc,yc
+    sa = sin(alpha); ca = cos(alpha)
+    xc = x+sa*b/2.; yc = y-ca*b/2.
+    xp = x+ca*a-sa*b/2.; yp = y+sa*a+ca*b/2.
+    rect = plane(norm=(/sa,-ca,0./),center=(/xc,yc,0./)) &
+         .and.plane(norm=(/-ca,-sa,0./),center=(/xc,yc,0./)) &
+         .and.plane(norm=(/-sa, ca,0./),center=(/xp,yp,0./)) &
+         .and.plane(norm=(/ ca, sa,0./),center=(/xp,yp,0./))
   end function
 !
 ! -- LES SGS model
@@ -107,8 +127,7 @@ contains
     type(vfield),intent(in) :: u
     real,intent(in)         :: C !! literature suggests 0.1-0.25
     type(vfield) :: S(u%ndims)
-    real,dimension(3,3) :: g,tau
-    real :: limout
+    real         :: g(3,3),nu_t,tau(3,3)
     integer      :: ndims,is,ie,js,je,ks,ke,d1,d2,i,j,k,o(3),o2(3),ijk(3),id
 
     call u%e(1)%limits(is,ie,js,je,ks,ke)
@@ -122,10 +141,15 @@ contains
       do concurrent(d1=1:ndims,d2=1:ndims)
         g(d1,d2) = S(d1)%e(d2)%p(i,j,k)
       end do
-      tau = 2.*C**2*gabe(g)
+      nu_t = C**2*smagorinsky(g)
       do concurrent(d1=1:ndims,d2=1:ndims)
-        S(d1)%e(d2)%p(i,j,k) = tau(d1,d2)
+        S(d1)%e(d2)%p(i,j,k) = nu_t*(g(d1,d2)+g(d2,d1))
       end do
+      ! tau = 0.5*(g-transpose(g))
+      ! tau = C**2*g**2
+      ! do concurrent(d1=1:ndims,d2=1:ndims)
+      !   S(d1)%e(d2)%p(i,j,k) = tau(d1,d2)
+      ! end do
     end do
     do d1=1,ndims
       call S(d1)%applyBC
@@ -155,34 +179,10 @@ contains
        end do faces
     end do components
   end function SGS
-  pure function gabe(g) result(tau)
+  real pure function smagorinsky(g) result(nu)
     real,dimension(3,3),intent(in) :: g
-    real,dimension(3,3) :: S,O,tau
+    real,dimension(3,3) :: S
     S = 0.5*(g+transpose(g))
-    O = 0.5*(g-transpose(g))
-    tau = (sum(2.*S**2)+sum(2.*O**2))*S
-  end function gabe
-  pure function smagorinsky(g) result(tau)
-    real,dimension(3,3),intent(in) :: g
-    real,dimension(3,3) :: S,tau
-    real :: S2
-    S = 0.5*(g+transpose(g))
-    S2 = sum(2.*S**2)
-    tau = S2**(0.5)*S
+    nu = sqrt(sum(2.*S**2))
   end function smagorinsky
-  pure function WALE(g) result(tau) ! not working...
-    real,dimension(3,3),intent(in) :: g
-    real,dimension(3,3) :: S,g2,Sd,tau
-    real :: g2kk,S2,Sd2
-    integer :: i
-    S = 0.5*(g+transpose(g))
-    S2 = sum(S**2)
-    g2 = matmul(g,g)
-    g2kk = g2(1,1)+g2(2,2)+g2(3,3)
-    Sd = 0.5*(g2+transpose(g2))
-    forall(i=1:3) Sd(i,i) = Sd(i,i)-g2kk/3.
-    Sd2 = sum(Sd**2)
-    tau = Sd2**(1.5)/(S2**(2.5)+Sd2**(1.25))*S
-    if(Sd2<1e-8) tau = 0
-  end function WALE
 end program square_cyl

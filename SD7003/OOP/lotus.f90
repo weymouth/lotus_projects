@@ -9,7 +9,7 @@ program SD7003Test
   implicit none
   real,parameter     :: f = 2              ! resolution
   real,parameter     :: c = 200/f          ! resolution
-  integer,parameter  :: n = 9*2**7/f       ! number of points  
+  integer,parameter  :: n = 9*2**7/f       ! number of points
   real,parameter     :: Re = 1e4           ! Reynolds number
   logical,parameter  :: O2 = .true.       ! O(2) flag
   real,parameter     :: tStop=30,dtPrint=1
@@ -81,6 +81,7 @@ contains
     top%xmin(2) = -0.25*chord
     bot = top
     bot%file = 'SD7003_bottom.stl'
+    ! model_fill = .false.
     eps = 2.0
     SD = model_init(top).and.model_init(bot)
   end function SD

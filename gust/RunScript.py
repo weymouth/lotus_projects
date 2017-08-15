@@ -2,15 +2,16 @@
 # -*- coding: utf-8 -*-
 import subprocess
 from time import sleep
+from itertools import product
+import os
 
 def run_lotus(keys,values):
     "Write a lotus.f90 file and run in a folder using a set of keys and values"
-    changes = dict(zip(keys,values))                         # make the dictionary
-    write_lotus(changes)                                     # make the lotus file
     folder = '_'.join([i+'_'+j for i,j in zip(keys,values)]) # name the folder
-    subprocess.Popen('runLotus 0 '+folder, shell=True)       # run without blocking
-    sleep(5)                                                 # wait until set up
-    # subprocess.check_call('runLotus 0 '+folder, shell=True)  # run the simulation
+    if(not os.path.isdir(folder)):
+        print('Going to run: '+folder)
+        write_lotus(dict(zip(keys,values)))                      # make the lotus file
+        subprocess.check_call('runLotus 16 '+folder, shell=True)  # run the simulation
 
 def write_lotus(dic):
     "Write the lotus file by replacing from the template"
@@ -29,13 +30,10 @@ def replace_all(text, dic):
     return text
 
 # Set up the keys and values
-keys = ['K_VAL','KINEMATIC_FLAG','ALPHA_VAL']
-k_vals = [0.125,0.25,0.5,1.0]
-kinematic_flags = ['true','false']
-alpha_vals = [15]
-
+keys = ['RUN_FLAG','K_VAL','ALPHA_VAL']
+run_flags = ['gust','edges','center','heave']
+k_vals = [0.25,0.5,0.75,1.0]
+alpha_vals = [15,30]
 # Sweep through the simulations
-for k in k_vals:
-    for kin in kinematic_flags:
-        for alpha in alpha_vals:
-            run_lotus(keys,values=[str(k),kin,str(alpha)])
+for k,alpha,run in product(k_vals,alpha_vals,run_flags):
+    run_lotus(keys,[run,str(k),str(alpha)])
