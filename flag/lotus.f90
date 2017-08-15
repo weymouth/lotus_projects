@@ -8,17 +8,17 @@ program fish
   implicit none
 !
 ! -- Physical parameters
-  real,parameter     :: Re = 5e3, f = 1, m_star = 1E-2, lam = 1
+  real,parameter     :: Re = 5e3, f = 1, m_star = 1E-2, lam = 1, zeta = 0.005
+  logical,parameter  :: flowing = .true., clamped = .true., free = .true.
 !
 ! -- Numerical parameters
-  real,parameter     :: c = 256, m(3) = (/2.,1.6,0./), h_min = 2
+  real,parameter     :: c = 128, m(3) = (/2.,1.6,0./), h_min = 2
   integer            :: b(3) = (/4,4,1/), box(4) = (/-0.5*c,-0.4*c,3*c,0.8*c/)
-  logical,parameter  :: flowing = .false.
 !
 ! -- resultant parameters
   real,parameter     :: mu = m_star*c, mu_a = lam*c, k=2*pi/(lam*c)
-  real,parameter     :: omega = 2*pi*f/c, EI=(mu+mu_a)*omega**2/k**4
-  integer,parameter  :: s = 6!c/h_min
+  real,parameter     :: omega = 2*pi*f/c, EI=(mu+mu_a)*omega**2/k**4, damp = (mu+mu_a)*zeta
+  integer,parameter  :: s = c/h_min
 !
 ! -- Variables
   real :: y(s)=0,y0(s)=0,y00(s)=0,doty(s)=0,ddoty(s)=0
@@ -96,17 +96,7 @@ contains
     y_w = 5*sin(-2*pi*f*(flow%time+flow%dt)/c)
 
     !! update variables
-    if(root) then
-      new = EulerBernoulli(y_w,q)
-      ! yn = new
-      ! call SOR(y_w,q,yn)
-      ! print *,y_w
-      ! print '(6f8.4)',yn(1:6)
-      ! print '(6f8.4)',new(1:6)
-      ! print *,sqrt(sum((yn-new)**2))
-    end if
-    call mympi_end
-    stop
+    yn = EulerBernoulli(y_w,q)
     ddoty = (2*yn-5*y+4*y0-y00)/flow%dt**2
     doty = (3*yn-4*y+y0)/(2.*flow%dt)
     y00 = y0; y0 = y; y = yn
@@ -118,65 +108,17 @@ contains
       flush(10)
     end if
   end subroutine update_line
-
-  subroutine SOR(y_w,q,yn)
-    real,intent(in) :: y_w,q(s)
-    real,intent(inout) :: yn(s)
-    real :: b(s),resid,d4y,aii,r,omega=1.5
-    integer :: it,i
-    !! source
-    b = 5*y-4*y0+y00+flow%dt**2*(0*q/(mu+mu_a)-0.01*doty)
-    !! iterate to solve
-    loop: do it = 1,2*s
-      resid = 0
-      !! sweep along the diagonal
-      sweep: do i=1,s
-        !! bending derivative with end conditions
-        if(i==1) then !clamped
-          d4y = 1.92*yn(i+2)-10.67*yn(i+1)+48.*yn(i)-39.25*y_w
-          aii = 48.0
-        else if(i==2) then !clamped
-          d4y = yn(i+2)-3.96*yn(i+1)+5.67*yn(i)-yn(i-1)-1.71*y_w
-          aii = 5.67
-        ! if(i==1) then !pinned
-        !   d4y = 1.67*yn(i+2)-8.35*yn(i+1)+16.70*yn(i)-10.02*y_w
-        !   aii = 16.70
-        ! else if(i==2) then !pinned
-        !   d4y = yn(i+2)-3.991*yn(i+1)+5.956*yn(i)-4.913*yn(i-1)+1.948*y_w
-        !   aii = 5.956
-        else if(i==s-1) then ! free
-          d4y = -1.828*yn(i+1)+4.656*yn(i)-3.828*yn(i-1)+yn(i-2)
-          aii = 4.656
-        else if(i==s) then ! free
-          d4y = 0.828*yn(i-2)-1.656*yn(i-1)+0.828*yn(i)
-          aii = 0.828
-        else ! non-boundary
-          d4y = yn(i+2)-4*yn(i+1)+6*yn(i)-4*yn(i-1)+yn(i-2)
-          aii = 6
-        end if
-        !! residual and new value
-        aii = 2+flow%dt**2*EI*aii/h_min**4/(mu+mu_a)
-        r = b(i)-2*yn(i)-flow%dt**2*EI*d4y/h_min**4/(mu+mu_a)
-        yn(i) = yn(i)+omega*r/aii
-        resid = resid+r**2
-      end do sweep
-      resid = sqrt(resid/s)
-      if(resid<1e-6) exit
-    end do loop
-    if(resid>1e-4.and.root) print *,'structural residual:',resid
-  end subroutine SOR
 !
 ! -- set up and solve implicit dynamic Euler-Bernoulli beam equation
   function EulerBernoulli(y_w,q) result(yn)
     real,intent(in) :: y_w,q(s)
     real :: b(s),A(5,s),yn(s)
-    logical :: clamped = .true., free = .true.
     !! form bending matrix
     A = spread((/1,-4,6,-4,1/),2,s); b = 0
     !! apply boundary conditions
     if(clamped) then
       A(:,1) = (/0.,0.,48.,-10.67,1.92/); b(1) = 39.25*y_w
-      A(:,2) = (/0.,1.,5.67,-3.96,1./); b(2) = 1.71*y_w
+      A(:,2) = (/0.,-1.,5.67,-3.96,1./); b(2) = 1.71*y_w
     else ! pinned
       A(:,1) = (/0.,0.,16.70,-8.35,1.67/); b(1) = 10.02*y_w
       A(:,2) = (/0.,-4.913,5.956,-3.991,1./); b(2) = -1.948*y_w
@@ -188,14 +130,9 @@ contains
     A = A*EI/h_min**4; b = b*EI/h_min**4
     !! add inertia, damping, and forcing
     A(3,:) = A(3,:)+2*(mu+mu_a)/flow%dt**2
-    b = b-(mu+mu_a)*(-5*y+4*y0-y00)/flow%dt**2-0.01*doty+0*q
+    b = b-(mu+mu_a)*(-5*y+4*y0-y00)/flow%dt**2-damp*doty+0*q
     !! solve
-
-    A = spread((/1,-4,6,-4,1/),2,s)
-    A(1:2,1) = 0; A(1,2) = 0; A(5,5) = 0; A(4:5,6) = 0
-    b = (/3,-1,0,0,-1,3/)
     yn = penta(s,A,b)
-    print '(6f8.4)',yn
   end function EulerBernoulli
 !
 ! -- Solve pentadiagonal linear system
@@ -211,15 +148,9 @@ contains
       mu = A(3,i)-alp(2,i-2)*A(1,i)-alp(1,i-1)*gam
       alp(1,i) = (A(4,i)-alp(2,i-1)*gam)/mu
       alp(2,i) = A(5,i)/mu
-      if(i<n-1) then
-        bet(i) = (b(i)-bet(i-2)*A(1,i)-bet(i-1)*gam)/mu
-      else
-        bet(i) = (b(i)-bet(i-1)*A(1,i)-bet(i-1)*gam)/mu
-      end if
-      print '(i3,8f8.4)',i,A(:,i),b(i)
-      ! print '(i3,8f8.4)',i,gam,mu,alp(:,i),bet(i),1+sum(alp(:,i))-bet(i)
+      bet(i) = (b(i)-bet(i-2)*A(1,i)-bet(i-1)*gam)/mu
     end do
-    do i=n-2,1,-1
+    do i=n,1,-1
       bet(i) = bet(i)-alp(1,i)*bet(i+1)-alp(2,i)*bet(i+2)
     end do
     x = bet(1:n)

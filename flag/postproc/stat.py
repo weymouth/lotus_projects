@@ -21,7 +21,7 @@ except FileNotFoundError:
     exit('stat: fort.8 not found')
 try:
     ln = pd.read_csv('fort.10',delim_whitespace = True,
-        names=["time","x","doty","y"])
+        names=["time","x","fa","fp","y"])
 except FileNotFoundError:
     exit('stat: fort.10 not found')
 #
@@ -49,57 +49,25 @@ def plot_hist(pdf,name,label):
     plt.text(0.5,0.01,txt,transform=ax.transAxes)
     pdf.savefig()
 
+def plot_phase(pdf,dat,name,label):
+    fig, ax = plt.subplots(figsize=(8,4))
+    for phase, group in dat:
+        arg = 2.*np.pi*phase/8.
+        cols = (1/2-np.cos(arg)/2,0.125,1/2-np.sin(arg)/2)
+        group.plot(x='x',y=name,ax=ax,label=r'$\phi=$'+'{}/8'.format(int(phase)),c=cols)
+    plt.xlabel(r'$x/c$', fontsize=12)
+    plt.ylabel(label, fontsize=12)
+    ax.legend(ncol=2)
+    pdf.savefig()
+
 with PdfPages('history.pdf') as pdf:
     plot_hist(pdf,name='x',label=r'$C_D$')
     plot_hist(pdf,name='y',label=r'$C_L$')
     plot_hist(pdf,name='p',label=r'$C_P$')
-    # plot_hist(pdf,name='fx',label=r'$C_{Df}$')
-    # plot_hist(pdf,name='fy',label=r'$C_{Lf}$')
-    # plot_hist(pdf,name='fp',label=r'$C_{Pf}$')
-    # plot_hist(pdf,name='px',label=r'$C_{Dp}$')
-    # plot_hist(pdf,name='py',label=r'$C_{Lp}$')
-    # plot_hist(pdf,name='pp',label=r'$C_{Pp}$')
-    # plot_hist(pdf,name='CFL',label='CFL')
 
-    fig, ax = plt.subplots(figsize=(8,4))
-    for name, group in averaged:
-        arg = 2.*np.pi*name/8.
-        cols = (1/2-np.cos(arg)/2,0.125,1/2-np.sin(arg)/2)
-        group.plot(x='x',y='y',ax=ax,label=r'$\phi=$'+'{}/8'.format(int(name)),c=cols)
-    plt.xlabel(r'$x/c$', fontsize=12)
-    plt.ylabel(r'$\widetilde y/c$', fontsize=12)
-    ax.legend(ncol=2)
-    pdf.savefig()
-
-    fig, ax = plt.subplots(figsize=(8,4))
-    for name, group in averaged:
-        arg = 2.*np.pi*name/8.
-        cols = (1/2-np.cos(arg)/2,0.125,1/2-np.sin(arg)/2)
-        group.plot(x='x',y='doty',ax=ax,label=r'$\phi=$'+'{}/8'.format(int(name)),c=cols)
-    plt.xlabel(r'$x/c$', fontsize=12)
-    plt.ylabel(r'$\widetilde q$', fontsize=12)
-    ax.legend(ncol=2)
-    pdf.savefig()
-
-    fig, ax = plt.subplots(figsize=(8,4))
-    for name, group in last:
-        arg = 2.*np.pi*name/8.
-        cols = (1/2-np.cos(arg)/2,0.125,1/2-np.sin(arg)/2)
-        group.plot(x='x',y='y',ax=ax,label=r'$\phi=$'+'{}/8'.format(int(name)),c=cols)
-    plt.xlabel(r'$x/c$', fontsize=12)
-    plt.ylabel(r'$y/c$', fontsize=12)
-    ax.legend(ncol=2)
-    pdf.savefig()
-
-    fig, ax = plt.subplots(figsize=(8,4))
-    for name, group in last:
-        arg = 2.*np.pi*name/8.
-        cols = (1/2-np.cos(arg)/2,0.125,1/2-np.sin(arg)/2)
-        group.plot(x='x',y='doty',ax=ax,label=r'$\phi=$'+'{}/8'.format(int(name)),c=cols)
-    plt.xlabel(r'$x/c$', fontsize=12)
-    plt.ylabel(r'$q$', fontsize=12)
-    ax.legend(ncol=2)
-    pdf.savefig()
+    plot_phase(pdf,averaged,name='y',label=r'$\widetilde y$')
+    plot_phase(pdf,averaged,name='fa',label=r'$\widetilde f_a$')
+    plot_phase(pdf,averaged,name='fp',label=r'$\widetilde f_p$')
 
     mg.plot(y=['res0','res','inf'],figsize=(8,4))
     plt.yscale('log')
