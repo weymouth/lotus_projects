@@ -8,20 +8,20 @@ program fish
   implicit none
 !
 ! -- Physical parameters
-  real,parameter     :: Re = 5e3, f = 1, m_star = 1E-2, lam = 1, zeta = 0.005
+  real,parameter     :: Re = 5e3, f = 1, m_star = .5, lam = 1, zeta = 0.005, a_star = 0.1
   logical,parameter  :: flowing = .true., clamped = .true., free = .true.
 !
 ! -- Numerical parameters
-  real,parameter     :: c = 128, m(3) = (/2.,1.6,0./), h_min = 2
+  real,parameter     :: c = 128, m(3) = (/2.,1.6,0./), h_min = 2, mu_a = 0*c
   integer            :: b(3) = (/4,4,1/), box(4) = (/-0.5*c,-0.4*c,3*c,0.8*c/)
 !
 ! -- resultant parameters
-  real,parameter     :: mu = m_star*c, mu_a = lam*c, k=2*pi/(lam*c)
-  real,parameter     :: omega = 2*pi*f/c, EI=(mu+mu_a)*omega**2/k**4, damp = (mu+mu_a)*zeta
+  real,parameter     :: amp = a_star*c, mu = m_star*c, damp = (mu+mu_a)*zeta
+  real,parameter     :: omega = 2*pi*f/c, k=2*pi/(lam*c), EI=(mu+mu_a)*omega**2/k**4
   integer,parameter  :: s = c/h_min
 !
 ! -- Variables
-  real :: y(s)=0,y0(s)=0,y00(s)=0,doty(s)=0,ddoty(s)=0
+  real :: y(s)=0,y0(s)=0,y00(s)=0,doty(s)=0,ddoty(s)=0,U=0
   integer :: n(3)
   logical :: root, there = .false.
   type(fluid) :: flow
@@ -36,7 +36,7 @@ program fish
   call xg(1)%stretch(n(1), -6*c, -0.2*c, 1.2*c, 7*c, h_min=h_min, h_max=16.,prnt=root)
   call xg(2)%stretch(n(2), -2.4*c, -0.2*c, 0.2*c, 2.4*c, prnt=root)
   geom = rect().map.init_warp(2,h,doth,dh)
-  call flow%init(n/b,geom,V=(/1.,0.,0./),nu=c/Re,exit=.true.)
+  call flow%init(n/b,geom,V=(/U,0.,0./),nu=c/Re,exit=.true.)
   flow%dt = 0.5
   call display(flow%velocity%vorticity_Z(), 'out_vort', lim = 0.25, box=box)
 !
@@ -47,7 +47,8 @@ program fish
     call update_line()
     if(flowing) then
       call geom%update(flow%time+flow%dt) ! just sets a flag
-      call flow%update(geom)
+      U = tanh((flow%time+flow%dt)*f/c)
+      call flow%update(geom,V=(/U,0.,0./))
       flow%dt = min(flow%dt,0.5)
       write(9,'(f10.4,f8.4,8e16.8)') flow%time*f/c,flow%dt, &
          2./Re*geom%vforce(flow%velocity), &
@@ -88,12 +89,12 @@ contains
     fp = -geom%pforce_plane(flow%pressure)/h_min
       do i=1,s
         j = xg(1)%hash(int(h_min*(i-0.5)))
-        q(i) = fp(j,1)!+mu_a*ddoty(i)
+        q(i) = fp(j,1)+mu_a*ddoty(i)
       end do
     else
       q = 0
     end if
-    y_w = 5*sin(-2*pi*f*(flow%time+flow%dt)/c)
+    y_w = amp*sin(-2*pi*f*(flow%time+flow%dt)/c)*U
 
     !! update variables
     yn = EulerBernoulli(y_w,q)
@@ -103,19 +104,20 @@ contains
 
     !! print
     if(mod(flow%time+flow%dt,0.125*c/f)<flow%dt) then
-      write(10,1) (flow%time*f/c,h_min/c*(i-0.5),mu_a*ddoty(i),q(i),y(i),i=1,s)
-1     format(5e12.4)
+      write(10,1) (flow%time*f/c,h_min/c*(i-0.5),q(i),y(i),i=1,s)
+1     format(2e12.4,2e16.8)
       flush(10)
     end if
   end subroutine update_line
 !
-! -- set up and solve implicit dynamic Euler-Bernoulli beam equation
+! -- implicit dynamic Euler-Bernoulli beam equation
   function EulerBernoulli(y_w,q) result(yn)
     real,intent(in) :: y_w,q(s)
     real :: b(s),A(5,s),yn(s)
     !! form bending matrix
     A = spread((/1,-4,6,-4,1/),2,s); b = 0
-    !! apply boundary conditions
+
+    !! apply boundary conditions (coefficients from stencil.py)
     if(clamped) then
       A(:,1) = (/0.,0.,48.,-10.67,1.92/); b(1) = 39.25*y_w
       A(:,2) = (/0.,-1.,5.67,-3.96,1./); b(2) = 1.71*y_w
@@ -128,9 +130,11 @@ contains
       A(:,s) = (/0.828,-1.656,0.828,0.,0./)
     end if
     A = A*EI/h_min**4; b = b*EI/h_min**4
+
     !! add inertia, damping, and forcing
     A(3,:) = A(3,:)+2*(mu+mu_a)/flow%dt**2
-    b = b-(mu+mu_a)*(-5*y+4*y0-y00)/flow%dt**2-damp*doty+0*q
+    b = b-(mu+mu_a)*(-5*y+4*y0-y00)/flow%dt**2-damp*doty+q
+
     !! solve
     yn = penta(s,A,b)
   end function EulerBernoulli

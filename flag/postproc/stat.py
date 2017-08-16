@@ -21,7 +21,7 @@ except FileNotFoundError:
     exit('stat: fort.8 not found')
 try:
     ln = pd.read_csv('fort.10',delim_whitespace = True,
-        names=["time","x","fa","fp","y"])
+        names=["time","x","q","y"])
 except FileNotFoundError:
     exit('stat: fort.10 not found')
 #
@@ -32,6 +32,7 @@ df['p'] = df['fp']+df['pp']
 df.query('time > 0.1', inplace=True)
 late = df.query('time > 5')
 
+early = ln.query('time <2 ').groupby('time')
 ln['cycle'] = np.floor(ln.time)
 ln['phase'] = np.rint((ln.time-ln.cycle)*8)
 ln.query('time > 7', inplace=True)
@@ -60,14 +61,24 @@ def plot_phase(pdf,dat,name,label):
     ax.legend(ncol=2)
     pdf.savefig()
 
+def plot_time(pdf,name,label):
+    fig, ax = plt.subplots(figsize=(8,4))
+    for time, group in early:
+        group.plot(x='x',y=name,ax=ax,legend=False)
+    plt.xlabel(r'$x/c$', fontsize=12)
+    plt.ylabel(label, fontsize=12)
+    pdf.savefig()
+
 with PdfPages('history.pdf') as pdf:
-    plot_hist(pdf,name='x',label=r'$C_D$')
-    plot_hist(pdf,name='y',label=r'$C_L$')
+    plot_hist(pdf,name='fx',label=r'$C_D$')
+    plot_hist(pdf,name='fy',label=r'$C_L$')
     plot_hist(pdf,name='p',label=r'$C_P$')
 
+    plot_time(pdf,name='q',label=r'early $q$')
+    plot_time(pdf,name='y',label=r'early $y$')
+
+    plot_phase(pdf,averaged,name='q',label=r'$\widetilde q$')
     plot_phase(pdf,averaged,name='y',label=r'$\widetilde y$')
-    plot_phase(pdf,averaged,name='fa',label=r'$\widetilde f_a$')
-    plot_phase(pdf,averaged,name='fp',label=r'$\widetilde f_p$')
 
     mg.plot(y=['res0','res','inf'],figsize=(8,4))
     plt.yscale('log')
