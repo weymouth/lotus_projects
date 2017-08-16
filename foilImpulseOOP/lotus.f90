@@ -10,7 +10,7 @@ program foil_impulse
   implicit none
   real,parameter     :: L = 100            ! length
   real,parameter     :: Re =  1000         ! Reynolds number
-  integer,parameter  :: b(3) = (/2,2,4/)   ! blocks
+  integer            :: b(3) = (/2,2,4/)   ! blocks
   logical,parameter  :: yank=.false.       ! ramp or yank?
   logical,parameter  :: hollow=.false.     ! internal slug flow?
   integer,parameter  :: ndims = 3          ! dimensions
@@ -91,26 +91,28 @@ contains
 ! -- Initialize the foil geometry
   type(set) function geom()
     type(model_info)   :: info
-!  surface_debug = .true.
+    ! surface_debug = .true.
     info%file = name
     info%x = (/-4.219,-10.271,-18.876/)
-    info%r = (/alpha,0.,0./)
+    info%r = (/alpha*pi/180.,0.,0./)
     info%s = 0.36626*L*(/1,1,-1/)
     eps = 2
-    info%xmax(1) = L
-    info%n = 256
-    if(name == 'naca_square.IGS') info%n(3) = 1
+    if(name == 'naca_square.IGS') then
+      info%xmax(1) = L
+      info%n = (/256,256,1/)
+    else
+      model_fill = .false.
+    end if
     geom = model_init(info)
     core = geom
     if(ndims==3 .and. name == 'naca_square.IGS' ) &
-         geom = geom.and.plane(4,1,(/0,0,-1/),0,0,0)
+         geom = geom.and.plane(norm=(/0,0,-1/),center=0)
     if(hollow) geom = geom.map.init_velocity(slug)
-!  call shape_write(100,geom)
   end function geom
 
   pure function slug(x) result(v)
-    real(8),intent(in) :: x(3)
-    real(8) :: v(3)
+    real,intent(in) :: x(3)
+    real :: v(3)
     type(prop) :: p
     p = core%at(x)
     v = 0; v(dim) = u*max(0.,min(-p%distance,1.))

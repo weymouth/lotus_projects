@@ -15,10 +15,10 @@ program square_abreast
   real,parameter :: g = 4                    ! gap
 !
   real,parameter :: nu = L/Re                ! viscosity
-  real,parameter :: xf = 152, yf = g+1
-  real,parameter :: m(3) = (/(xf+3)*L,2*(yf+2)*L,1./)  ! points (approx)
-  integer        :: b(3) = (/8,2,1/)         ! blocks
-  real           :: t0=0,Tau=5E3,g_var
+  real,parameter :: xf = 4, yf = g+1
+  real,parameter :: m(3) = (/(xf+6)*L,(yf+2)*L,1./)  ! points (approx)
+  integer        :: b(3) = (/1,1,1/),box(4)=(/-L,1.5*L,2*L,2*L/)         ! blocks
+  real           :: t0=0,Tau=5E2,g_var=2*L
 !
   integer        :: n(3)
   logical        :: root,there=.false.,process
@@ -38,37 +38,49 @@ program square_abreast
   n = composite(m,prnt=root)
 !
 ! -- Initialize and print grid
-  call xg(1)%stretch(n(1),-15*L,-L,xf*L,xf*L,prnt=root)
-  call xg(2)%stretch(n(2),-(yf+15)*L,-yf*L,yf*L,(yf+15)*L,prnt=root)
+  call xg(1)%stretch(n(1),-15*L,-L,xf*L,15*L,h_max=5.,prnt=root)
+  call xg(2)%stretch(n(2),0.,0.,yf*L,(yf+15)*L,prnt=root)
 !
 ! -- Initialize the square geometry and maps
-  square = plane(4,1,(/0,1,0/),(/0.,0.5*L,0./),0,0) &
-       .and.plane(4,1,(/0,-1,0/),(/0.,-0.5*L,0./),0,0) &
-       .and.plane(4,1,(/-1,0,0/),(/-0.5*L,0.,0./),0,0) &
-       .and.plane(4,1,(/1,0,0/),(/0.5*L,0.,0./),0,0)
+  ! square = plane(4,1,(/0,1,0/),(/0.,0.5*L,0./),0,0) &
+  !      .and.plane(4,1,(/0,-1,0/),(/0.,-0.5*L,0./),0,0) &
+  !      .and.plane(4,1,(/-1,0,0/),(/-0.5*L,0.,0./),0,0) &
+  !      .and.plane(4,1,(/1,0,0/),(/0.5*L,0.,0./),0,0)
+  square = cylinder(1,1,3,L/2.,0,0,0)
   bodies = (square.map.init_rigid(2,top,zip)) &
        .or.(square.map.init_rigid(2,bot,zip))
+
+  ! print *,square%at(real((/0,0,0/),8))
+  ! print *,square%at(real((/0.5*L,0.,0./),8))
+  ! print *,square%at(real((/0.5*L,0.5*L,0./),8))
+  ! print *,square%at(real((/-0.5*L,0.5*L,0./),8))
+  ! print *,square%at(real((/L,0.,0./),8))
 !
 ! -- Initialize fluid
   call flow%init(n/b,bodies,V=(/1.,0.,0./),nu=nu)
-  g_var = 2*L
   if(root) print *,'gap=',2*g_var/L
   if(root) print *,'time=',flow%time/L,': resetting to zero'
   flow%time = 0
+
+  ! call display(flow%mu0%e(1),'02xmu0',box=box)
+  ! call display(flow%mu0%e(2),'03ymu0',box=box)
+  ! call display(flow%mu1(1)%e(1),'04xmu1',box=box)
+  ! call display(flow%mu1(2)%e(2),'05ymu1',box=box)
+  ! call flow%write(bodies)
 !
 ! -- Time update loop
   if(root) print *, '-- Init complete  --'
-  do while (.not.there .and. flow%time<1.2*Tau*L)
+  do while (.not.there .and. flow%time<100*L+flow%dt)
 !
 ! -- measure stuff
-     write(9,'(f10.4,f8.4,3e14.6)') flow%time/L,flow%dt, &
-                                    -2./L*bodies%pforce(flow%pressure)
-     if(mod(flow%time,10*L)<flow%dt) then
-       omega = flow%velocity%vorticity_Z()
-       call measure(omega)
+     if(mod(flow%time,0.1*L)<flow%dt) then
+       write(9,'(f10.4,f8.4,3e14.6)') flow%time/L,flow%dt,-2./L*bodies%pforce(flow%pressure)
        flush(9)
+      !  omega = flow%velocity%vorticity_Z()
+      !  call measure(omega)
        if(mod(flow%time,50*L)<flow%dt) then
          call flow%write()
+       omega = flow%velocity%vorticity_Z()
          call display(omega,'03vort',lim=4./L)
        end if
 !

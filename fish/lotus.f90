@@ -57,7 +57,7 @@ program fish
   call mympi_end
 contains
 !
-! -- fully prescirbed carangiform motion (Maertens 2016 eq A1)
+! -- fully prescribed carangiform motion (Maertens 2016 eq A1)
   real pure function h(x)
     real,intent(in) :: x(3)
     h = env(x(1))*sin(arg(x(1)))
