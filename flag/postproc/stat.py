@@ -32,13 +32,15 @@ df['p'] = df['fp']+df['pp']
 df.query('time > 0.1', inplace=True)
 late = df.query('time > 5')
 
-early = ln.query('time <2 ').groupby('time')
 ln['cycle'] = np.floor(ln.time)
-ln['phase'] = np.rint((ln.time-ln.cycle)*8)
-ln.query('time > 7', inplace=True)
-averaged = (ln.groupby(['phase','x'], as_index=False).mean() # take mean for each phase and x
+ln['phase'] = ((np.rint((ln.time-ln.cycle)*8)-1) % 8) +1
+maxcycle = ln.cycle.max()
+
+first = ln.query('cycle == 0').groupby('phase')
+last = ln.query('cycle == @maxcycle-1').groupby('phase')
+averaged = (ln.query('cycle > @maxcycle/2')
+            .groupby(['phase','x'], as_index=False).mean() # take mean for each phase and x
             .groupby('phase')) # regroup by phase
-last = ln.query('time > 14').groupby('phase')
 #
 # -- plot PDF pages
 def plot_hist(pdf,name,label):
@@ -61,21 +63,16 @@ def plot_phase(pdf,dat,name,label):
     ax.legend(ncol=2)
     pdf.savefig()
 
-def plot_time(pdf,name,label):
-    fig, ax = plt.subplots(figsize=(8,4))
-    for time, group in early:
-        group.plot(x='x',y=name,ax=ax,legend=False)
-    plt.xlabel(r'$x/c$', fontsize=12)
-    plt.ylabel(label, fontsize=12)
-    pdf.savefig()
-
 with PdfPages('history.pdf') as pdf:
     plot_hist(pdf,name='fx',label=r'$C_D$')
     plot_hist(pdf,name='fy',label=r'$C_L$')
     plot_hist(pdf,name='p',label=r'$C_P$')
 
-    plot_time(pdf,name='q',label=r'early $q$')
-    plot_time(pdf,name='y',label=r'early $y$')
+    plot_phase(pdf,first,name='q',label=r'first $ q$')
+    plot_phase(pdf,first,name='y',label=r'first $y/c$')
+
+    plot_phase(pdf,last,name='q',label=r'last $ q$')
+    plot_phase(pdf,last,name='y',label=r'last $y/c$')
 
     plot_phase(pdf,averaged,name='q',label=r'$\widetilde q$')
     plot_phase(pdf,averaged,name='y',label=r'$\widetilde y$')

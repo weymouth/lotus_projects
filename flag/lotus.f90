@@ -8,16 +8,16 @@ program fish
   implicit none
 !
 ! -- Physical parameters
-  real,parameter     :: Re = 5e3, f = 1, m_star = .5, lam = 1, zeta = 0.005, a_star = 0.1
-  logical,parameter  :: flowing = .true., clamped = .true., free = .true.
+  real,parameter     :: Re = 5e3, f = 1, m_star = 1., lam = 1, zeta = 1e-3, a_star = 3e-2
+  logical,parameter  :: flowing = .false., clamped = .true., free = .true.
 !
 ! -- Numerical parameters
-  real,parameter     :: c = 128, m(3) = (/2.,1.6,0./), h_min = 2, mu_a = 0*c
+  real,parameter     :: c = 128, m(3) = (/3.,1.5,0./), h_min = 1, mu_a = 0*c
   integer            :: b(3) = (/4,4,1/), box(4) = (/-0.5*c,-0.4*c,3*c,0.8*c/)
 !
 ! -- resultant parameters
-  real,parameter     :: amp = a_star*c, mu = m_star*c, damp = (mu+mu_a)*zeta
-  real,parameter     :: omega = 2*pi*f/c, k=2*pi/(lam*c), EI=(mu+mu_a)*omega**2/k**4
+  real,parameter     :: amp = a_star*c, mu = m_star*c, k=2*pi/(lam*c)
+  real,parameter     :: omega = 2*pi*f/c, EI=(mu+mu_a)*omega**2/k**4
   integer,parameter  :: s = c/h_min
 !
 ! -- Variables
@@ -34,7 +34,7 @@ program fish
   if(root) print *,'-----------------------------------'
   n = composite(c*m,prnt=root)
   call xg(1)%stretch(n(1), -6*c, -0.2*c, 1.2*c, 7*c, h_min=h_min, h_max=16.,prnt=root)
-  call xg(2)%stretch(n(2), -2.4*c, -0.2*c, 0.2*c, 2.4*c, prnt=root)
+  call xg(2)%stretch(n(2), -2.4*c, -0.5*c, 0.5*c, 2.4*c, prnt=root)
   geom = rect().map.init_warp(2,h,doth,dh)
   call flow%init(n/b,geom,V=(/U,0.,0./),nu=c/Re,exit=.true.)
   flow%dt = 0.5
@@ -45,9 +45,9 @@ program fish
   if(root) print *,' -t- , -dt- '
   do while(flow%time*f/c<15 .and..not.there)
     call update_line()
+    U = tanh((flow%time+flow%dt)*f/c)
     if(flowing) then
       call geom%update(flow%time+flow%dt) ! just sets a flag
-      U = tanh((flow%time+flow%dt)*f/c)
       call flow%update(geom,V=(/U,0.,0./))
       flow%dt = min(flow%dt,0.5)
       write(9,'(f10.4,f8.4,8e16.8)') flow%time*f/c,flow%dt, &
@@ -59,10 +59,13 @@ program fish
       if(mod(flow%time,0.125*c/f)<flow%dt) then
         if(root) print '(f7.3,",",f6.3)',flow%time*f/c,flow%dt
         call display(flow%velocity%vorticity_Z(), 'out_vort', lim = 0.25, box=box)
+        call flow%write(geom)
       end if
     else
       flow%time = flow%time+flow%dt
       if(mod(flow%time,c/f)<flow%dt.and.root) print *,flow%time*f/c
+      write(9,'(f10.4,f8.4,8e16.8)') flow%time*f/c,flow%dt,0.,0.,0.,0.,0.,0.,0.,0.
+      flush(9)
     end if
     inquire(file='.kill', exist=there)
   end do
@@ -72,10 +75,11 @@ program fish
   call mympi_end
 contains
   type(set) function rect() result(geom)
-    geom = plane(norm=(/-1,0,0/),center=(/0,-3,0/)) &
-         .and.plane(norm=(/0,-1,0/),center=(/0,-3,0/)) &
-         .and.plane(norm=(/1,0,0/),center=(/c,3.,0./)) &
-         .and.plane(norm=(/0,1,0/),center=(/c,3.,0./))
+    real :: thk = 2.5
+    geom = plane(norm=(/-1,0,0/),center=(/0.,-thk,0./)) &
+         .and.plane(norm=(/0,-1,0/),center=(/0.,-thk,0./)) &
+         .and.plane(norm=(/1,0,0/),center=(/c,thk,0./)) &
+         .and.plane(norm=(/0,1,0/),center=(/c,thk,0./))
   end function
 !
 ! -- free centerline motion
@@ -104,7 +108,7 @@ contains
 
     !! print
     if(mod(flow%time+flow%dt,0.125*c/f)<flow%dt) then
-      write(10,1) (flow%time*f/c,h_min/c*(i-0.5),q(i),y(i),i=1,s)
+      write(10,1) (flow%time*f/c,h_min/c*(i-0.5),q(i),y(i)/c,i=1,s)
 1     format(2e12.4,2e16.8)
       flush(10)
     end if
@@ -133,7 +137,7 @@ contains
 
     !! add inertia, damping, and forcing
     A(3,:) = A(3,:)+2*(mu+mu_a)/flow%dt**2
-    b = b-(mu+mu_a)*(-5*y+4*y0-y00)/flow%dt**2-damp*doty+q
+    b = b-(mu+mu_a)*(-5*y+4*y0-y00)/flow%dt**2-zeta*doty+q
 
     !! solve
     yn = penta(s,A,b)
@@ -179,7 +183,7 @@ contains
     real,intent(in) :: y(:),x
     integer :: i
     real :: r
-    if(x>c+4 .or. x<-4) then
+    if(x>c+10 .or. x<-10) then
       interp = 0
     else
       i = floor(x/h_min+0.5)
