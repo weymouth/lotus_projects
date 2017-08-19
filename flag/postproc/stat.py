@@ -24,6 +24,11 @@ try:
         names=["time","x","q","y"])
 except FileNotFoundError:
     exit('stat: fort.10 not found')
+try:
+    tip = pd.read_csv('fort.11',delim_whitespace = True,
+        names=["time","y"])
+except FileNotFoundError:
+    exit('stat: fort.11 not found')
 #
 # -- post process signals
 df['x'] = df['fx']+df['px']
@@ -76,6 +81,9 @@ with PdfPages('history.pdf') as pdf:
 
     plot_phase(pdf,averaged,name='q',label=r'$\widetilde q$')
     plot_phase(pdf,averaged,name='y',label=r'$\widetilde y$')
+
+    tip.plot(x='time',y='y',figsize=(8,4))
+    pdf.savefig()
 
     mg.plot(y=['res0','res','inf'],figsize=(8,4))
     plt.yscale('log')

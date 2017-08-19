@@ -8,20 +8,24 @@ program fish
   implicit none
 !
 ! -- Physical parameters
-  real,parameter     :: Re = 5e3, f = 1, m_star = 1., lam = 1, zeta = 1e-3, a_star = 3e-2
+  real,parameter     :: Re = 5e3, f = 1, m_star = 10, zeta = 1, a_star = 1E-2
+  integer,parameter  :: mode = 2
   logical,parameter  :: flowing = .false., clamped = .true., free = .true.
 !
 ! -- Numerical parameters
-  real,parameter     :: c = 128, m(3) = (/3.,1.5,0./), h_min = 1, mu_a = 0*c
+  real,parameter     :: c = 128, m(3) = (/3.,1.5,0./), h_min = 2, mu_a = 0*c
   integer            :: b(3) = (/4,4,1/), box(4) = (/-0.5*c,-0.4*c,3*c,0.8*c/)
 !
 ! -- resultant parameters
-  real,parameter     :: amp = a_star*c, mu = m_star*c, k=2*pi/(lam*c)
+  real,parameter     :: beta(3) = (/1.8751,4.6941,7.8548/) !! from modeshapes.py
+  real,parameter     :: amp = a_star*c, mu = m_star*c, k=beta(mode)/c
+  real,parameter     :: damp = m_star*zeta
   real,parameter     :: omega = 2*pi*f/c, EI=(mu+mu_a)*omega**2/k**4
   integer,parameter  :: s = c/h_min
 !
 ! -- Variables
-  real :: y(s)=0,y0(s)=0,y00(s)=0,doty(s)=0,ddoty(s)=0,U=0
+  real(8) :: y(s)=0,y0(s)=0,y00(s)=0,doty(s)=0,ddoty(s)=0
+  real    :: U=0,t=0
   integer :: n(3)
   logical :: root, there = .false.
   type(fluid) :: flow
@@ -44,27 +48,28 @@ program fish
   if(root) print *,'-----------------------------------'
   if(root) print *,' -t- , -dt- '
   do while(flow%time*f/c<15 .and..not.there)
+    t = flow%time+flow%dt
     call update_line()
-    U = tanh((flow%time+flow%dt)*f/c)
+    U = tanh(t*f/c)
     if(flowing) then
-      call geom%update(flow%time+flow%dt) ! just sets a flag
+      call geom%update(t) ! just sets a flag
       call flow%update(geom,V=(/U,0.,0./))
       flow%dt = min(flow%dt,0.5)
-      write(9,'(f10.4,f8.4,8e16.8)') flow%time*f/c,flow%dt, &
+      write(9,'(f10.4,f8.4,8e16.8)') t*f/c,flow%dt, &
          2./Re*geom%vforce(flow%velocity), &
         -2./c*geom%pforce(flow%pressure), &
          2./Re*geom%vpower(flow%velocity), &
         -2./c*geom%ppower(flow%pressure)
       flush(9)
-      if(mod(flow%time,0.125*c/f)<flow%dt) then
-        if(root) print '(f7.3,",",f6.3)',flow%time*f/c,flow%dt
+      if(mod(t,0.125*c/f)<flow%dt) then
+        if(root) print '(f7.3,",",f6.3)',t*f/c,flow%dt
         call display(flow%velocity%vorticity_Z(), 'out_vort', lim = 0.25, box=box)
         call flow%write(geom)
       end if
     else
-      flow%time = flow%time+flow%dt
-      if(mod(flow%time,c/f)<flow%dt.and.root) print *,flow%time*f/c
-      write(9,'(f10.4,f8.4,8e16.8)') flow%time*f/c,flow%dt,0.,0.,0.,0.,0.,0.,0.,0.
+      flow%time = t
+      if(mod(t,c/f)<flow%dt.and.root) print *,t*f/c
+      write(9,'(f10.4,f8.4,8e16.8)') t*f/c,flow%dt,0.,0.,0.,0.,0.,0.,0.,0.
       flush(9)
     end if
     inquire(file='.kill', exist=there)
@@ -85,7 +90,7 @@ contains
 ! -- free centerline motion
   subroutine update_line
     real,allocatable :: fp(:,:)
-    real :: yn(s),q(s),y_w, new(s)
+    real(8) :: yn(s),q(s),y_w
     integer :: i,j
 
     !! get stress and leading edge position
@@ -98,7 +103,7 @@ contains
     else
       q = 0
     end if
-    y_w = amp*sin(-2*pi*f*(flow%time+flow%dt)/c)*U
+    y_w = amp*sin(omega*t)*U
 
     !! update variables
     yn = EulerBernoulli(y_w,q)
@@ -107,8 +112,9 @@ contains
     y00 = y0; y0 = y; y = yn
 
     !! print
-    if(mod(flow%time+flow%dt,0.125*c/f)<flow%dt) then
-      write(10,1) (flow%time*f/c,h_min/c*(i-0.5),q(i),y(i)/c,i=1,s)
+    write(11,'(e12.4,e16.8)') t*f/c,h((/c,0.,0./))/c
+    if(mod(t,0.125*c/f)<flow%dt) then
+      write(10,1) (t*f/c,h_min/c*(i-0.5),q(i),y(i)/c,i=1,s)
 1     format(2e12.4,2e16.8)
       flush(10)
     end if
@@ -116,28 +122,28 @@ contains
 !
 ! -- implicit dynamic Euler-Bernoulli beam equation
   function EulerBernoulli(y_w,q) result(yn)
-    real,intent(in) :: y_w,q(s)
-    real :: b(s),A(5,s),yn(s)
+    real(8),intent(in) :: y_w,q(s)
+    real(8) :: b(s),A(5,s),yn(s)
     !! form bending matrix
     A = spread((/1,-4,6,-4,1/),2,s); b = 0
 
     !! apply boundary conditions (coefficients from stencil.py)
     if(clamped) then
-      A(:,1) = (/0.,0.,48.,-10.67,1.92/); b(1) = 39.25*y_w
-      A(:,2) = (/0.,-1.,5.67,-3.96,1./); b(2) = 1.71*y_w
+      A(:,1) = (/0,0,225,-50,9/)/9.D0; b(1) = 184/9.D0*y_w
+      A(:,2) = (/0,-18,53,-36,9/)/9.D0; b(2) = 8/9.D0*y_w
     else ! pinned
-      A(:,1) = (/0.,0.,16.70,-8.35,1.67/); b(1) = 10.02*y_w
-      A(:,2) = (/0.,-4.913,5.956,-3.991,1./); b(2) = -1.948*y_w
+      A(:,1) = (/0,0,10,-5,1/); b(1) = 6*y_w
+      A(:,2) = (/0,-5,6,-4,1/); b(2) = -2*y_w
     end if
     if(free) then
-      A(:,s-1) = (/1.,-3.828,4.656,-1.828,0./)
-      A(:,s) = (/0.828,-1.656,0.828,0.,0./)
+      A(:,s-1) = (/29,-111,135,-53,0/)/29.D0
+      A(:,s) = (/24,-48,24,0,0/)/29.D0
     end if
     A = A*EI/h_min**4; b = b*EI/h_min**4
 
     !! add inertia, damping, and forcing
     A(3,:) = A(3,:)+2*(mu+mu_a)/flow%dt**2
-    b = b-(mu+mu_a)*(-5*y+4*y0-y00)/flow%dt**2-zeta*doty+q
+    b = b-(mu+mu_a)*(-5*y+4*y0-y00)/flow%dt**2-damp*doty+q
 
     !! solve
     yn = penta(s,A,b)
@@ -147,8 +153,8 @@ contains
   function penta(n,A,b) result(x)
     implicit none
     integer,intent(in) :: n
-    real,intent(in)    :: A(5,n),b(n)
-    real :: alp(2,-1:n),bet(-1:n+2),mu,gam,x(n)
+    real(8),intent(in) :: A(5,n),b(n)
+    real(8) :: alp(2,-1:n),bet(-1:n+2),mu,gam,x(n)
     integer :: i
     alp = 0; bet = 0
     do i=1,n
@@ -180,7 +186,8 @@ contains
     dh(1) = interp(y,x(1)+0.5)-interp(y,x(1)-0.5)
   end function dh
   real pure function interp(y,x)
-    real,intent(in) :: y(:),x
+    real(8),intent(in) :: y(:)
+    real,intent(in) :: x
     integer :: i
     real :: r
     if(x>c+10 .or. x<-10) then

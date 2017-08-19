@@ -4,12 +4,13 @@
 import numpy as np
 from scipy.linalg import solve
 
-def get_ghost(h,known_vals,known_powers,unknown_powers,y):
+def get_ghost(h,known_vals,known_powers,unknown_powers,y,order=3):
     y0 = np.inner(known_vals,[h**i for i in known_powers])
-    A = np.matrix([[h**i for i in unknown_powers] for h in [0.5,1.5,2.5]])
-    b = np.array(y[0:3])-y0
+    spaces = [0.5,1.5,2.5]
+    A = np.matrix([[h**i for i in unknown_powers[0:order]] for h in spaces[0:order]])
+    b = np.array(y[0:order])-y0
     unknown_vals = solve(A,b)
-    return y0+np.inner(unknown_vals,[h**i for i in unknown_powers])
+    return y0+np.inner(unknown_vals[0:order],[h**i for i in unknown_powers[0:order]])
 
 def pinned_ghost(h,y0,y):
     return get_ghost(h,[y0,0],[0,2],[1,3,4],y)
