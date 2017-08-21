@@ -8,19 +8,19 @@ program fish
   implicit none
 !
 ! -- Physical parameters
-  real,parameter     :: Re = 5e3, f = 1, m_star = 10, zeta = 1, a_star = 1E-2
+  real,parameter     :: Re = 5e3, f = 1, m_star = 0.3, ma = 0.36*c, a_star = 1E-2
   integer,parameter  :: mode = 2
-  logical,parameter  :: flowing = .false., clamped = .true., free = .true.
+  logical,parameter  :: flowing = .true., clamped = .true., free = .true.
 !
 ! -- Numerical parameters
-  real,parameter     :: c = 128, m(3) = (/3.,1.5,0./), h_min = 2, mu_a = 0*c
+  real,parameter     :: c = 128, m(3) = (/3.,1.5,0./), h_min = 2
   integer            :: b(3) = (/4,4,1/), box(4) = (/-0.5*c,-0.4*c,3*c,0.8*c/)
 !
 ! -- resultant parameters
   real,parameter     :: beta(3) = (/1.8751,4.6941,7.8548/) !! from modeshapes.py
   real,parameter     :: amp = a_star*c, mu = m_star*c, k=beta(mode)/c
   real,parameter     :: damp = m_star*zeta
-  real,parameter     :: omega = 2*pi*f/c, EI=(mu+mu_a)*omega**2/k**4
+  real,parameter     :: omega = 2*pi*f/c, EI=(mu+ma*c)*omega**2/k**4
   integer,parameter  :: s = c/h_min
 !
 ! -- Variables
@@ -55,7 +55,7 @@ program fish
       call geom%update(t) ! just sets a flag
       call flow%update(geom,V=(/U,0.,0./))
       flow%dt = min(flow%dt,0.5)
-      write(9,'(f10.4,f8.4,8e16.8)') t*f/c,flow%dt, &
+      write(9,'(f10.4,f8.4,9e16.8)') t*f/c,flow%dt,h((/c,0.,0./))/c, &
          2./Re*geom%vforce(flow%velocity), &
         -2./c*geom%pforce(flow%pressure), &
          2./Re*geom%vpower(flow%velocity), &
@@ -69,7 +69,7 @@ program fish
     else
       flow%time = t
       if(mod(t,c/f)<flow%dt.and.root) print *,t*f/c
-      write(9,'(f10.4,f8.4,8e16.8)') t*f/c,flow%dt,0.,0.,0.,0.,0.,0.,0.,0.
+      write(9,'(f10.4,f8.4,9e16.8)') t*f/c,flow%dt,h((/c,0.,0./))/c,0.,0.,0.,0.,0.,0.,0.,0.
       flush(9)
     end if
     inquire(file='.kill', exist=there)
@@ -98,7 +98,7 @@ contains
     fp = -geom%pforce_plane(flow%pressure)/h_min
       do i=1,s
         j = xg(1)%hash(int(h_min*(i-0.5)))
-        q(i) = fp(j,1)+mu_a*ddoty(i)
+        q(i) = fp(j,1)
       end do
     else
       q = 0
@@ -112,7 +112,6 @@ contains
     y00 = y0; y0 = y; y = yn
 
     !! print
-    write(11,'(e12.4,e16.8)') t*f/c,h((/c,0.,0./))/c
     if(mod(t,0.125*c/f)<flow%dt) then
       write(10,1) (t*f/c,h_min/c*(i-0.5),q(i),y(i)/c,i=1,s)
 1     format(2e12.4,2e16.8)
@@ -142,8 +141,8 @@ contains
     A = A*EI/h_min**4; b = b*EI/h_min**4
 
     !! add inertia, damping, and forcing
-    A(3,:) = A(3,:)+2*(mu+mu_a)/flow%dt**2
-    b = b-(mu+mu_a)*(-5*y+4*y0-y00)/flow%dt**2-damp*doty+q
+    A(3,:) = A(3,:)+2*mu/flow%dt**2
+    b = b-mu*(-5*y+4*y0-y00)/flow%dt**2+q
 
     !! solve
     yn = penta(s,A,b)

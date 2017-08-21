@@ -11,7 +11,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 # -- read data
 try:
     df = pd.read_csv('fort.9',delim_whitespace = True,
-        names=["time","CFL","fx","fy","fz","px","py","pz","fp","pp"])
+        names=["time","CFL","y","fx","fy","fz","px","py","pz","fp","pp"])
 except FileNotFoundError:
     exit('stat: fort.9 not found')
 try:
@@ -24,16 +24,11 @@ try:
         names=["time","x","q","y"])
 except FileNotFoundError:
     exit('stat: fort.10 not found')
-try:
-    tip = pd.read_csv('fort.11',delim_whitespace = True,
-        names=["time","y"])
-except FileNotFoundError:
-    exit('stat: fort.11 not found')
 #
 # -- post process signals
-df['x'] = df['fx']+df['px']
-df['y'] = df['fy']+df['py']
-df['p'] = df['fp']+df['pp']
+df['Cx'] = df['fx']+df['px']
+df['Cy'] = df['fy']+df['py']
+df['Cp'] = df['fp']+df['pp']
 df.query('time > 0.1', inplace=True)
 late = df.query('time > 5')
 
@@ -69,9 +64,11 @@ def plot_phase(pdf,dat,name,label):
     pdf.savefig()
 
 with PdfPages('history.pdf') as pdf:
-    plot_hist(pdf,name='fx',label=r'$C_D$')
-    plot_hist(pdf,name='fy',label=r'$C_L$')
-    plot_hist(pdf,name='p',label=r'$C_P$')
+    plot_hist(pdf,name='y',label=r'$y_{tip}/c$')
+
+    plot_hist(pdf,name='Cx',label=r'$C_D$')
+    plot_hist(pdf,name='Cy',label=r'$C_L$')
+    plot_hist(pdf,name='Cp',label=r'$C_P$')
 
     plot_phase(pdf,first,name='q',label=r'first $ q$')
     plot_phase(pdf,first,name='y',label=r'first $y/c$')
@@ -81,9 +78,6 @@ with PdfPages('history.pdf') as pdf:
 
     plot_phase(pdf,averaged,name='q',label=r'$\widetilde q$')
     plot_phase(pdf,averaged,name='y',label=r'$\widetilde y$')
-
-    tip.plot(x='time',y='y',figsize=(8,4))
-    pdf.savefig()
 
     mg.plot(y=['res0','res','inf'],figsize=(8,4))
     plt.yscale('log')
