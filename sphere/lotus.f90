@@ -10,7 +10,7 @@ program sphere_flow
 ! -- Define parameter, declare variables
   real,parameter :: D = 2*32, Re = 30e3 ! diameter and Reynolds number
   integer :: n(3) = 32*(/4,2,2/)  ! numer of points
-  integer :: b(3) = (/4,2,2/)     ! MPI blocks (product must equal n_procs)
+  integer :: b(3) = (/2,1,1/)     ! MPI blocks (product must equal n_procs)
   logical :: root                 ! root processor
   type(fluid) :: flow
   type(body) :: geom
@@ -24,8 +24,8 @@ program sphere_flow
   call xg(1)%stretch(n(1), -2*D, -0.5*D, 0.5*D, 5*D, h_min=2., h_max=12.,prnt=root)
   call xg(2)%stretch(n(2), -2*D, -0.5*D, 0.5*D, 2*D, h_min=2.,prnt=root)
   call xg(3)%stretch(n(3), -2*D, -0.5*D, 0.5*D, 2*D, h_min=2.,prnt=root)
-  geom = sphere(2, 1, radius=0.5*D, center=0)
-  call flow%init(n,geom,V=(/1.,0.,0./),nu=D/Re)
+  geom = sphere(radius=0.5*D, center=0)
+  call flow%init(n/b,geom,V=(/1.,0.,0./),nu=D/Re)
 !
   if(root) print *,'Starting time update loop'
   if(root) print *,'-----------------------------------'
