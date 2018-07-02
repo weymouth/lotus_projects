@@ -9,13 +9,13 @@ program squeeze
   implicit none
 !
 ! -- Define parameters, declare variables
-  real,parameter    :: L = 128          ! major semi-axis size in cells
+  real,parameter    :: L = 85          ! major semi-axis size in cells
   real,parameter    :: beta0 = 0.25	   ! aspect ratio
-  real,parameter    :: beta1 = 0.0375	 ! pulse amplitude
+  real,parameter    :: beta1 = 0.025   ! pulse amplitude
   real,parameter    :: A0_Ae = 4    	 ! area ratio
   real,parameter    :: per = 3         ! periods of motion
-  real,parameter    :: thk = 2         ! membrane half thickness in cells
-  real,parameter    :: Re = 25000      ! Approx reynolds number
+  real,parameter    :: thk = 2.5       ! membrane half thickness in cells
+  real,parameter    :: Re = 25e3       ! Approx reynolds number
 						   ! Uj=10x(2L)/s with 2L = 0.05m and nu = 1*10^-6 m^2/s
 
   real,parameter    :: dm = 4*beta1/beta0       ! fraction of mass expelled
@@ -47,13 +47,13 @@ program squeeze
   call xg(2)%stretch(n(2),0.,0.,0.4*L,L,prnt=root)         ! y
   call xg(3)%stretch(n(3),0.,0.,0.4*L,L,prnt=root)         ! z
 
-  geom = ((sphere(radius=L+thk, center=0) &
-            .and.plane(norm=(/1,0,0/), center=(/L*xe,0.,0./))) &
-            .map.init_scale(2,betao,dbeta) &
-            .map.init_scale(3,betao,dbeta)) &
-        -(sphere(radius=L-thk, center=0) &
-            .map.init_scale(2,betai,dbeta) &
-            .map.init_scale(3,betai,dbeta))
+  geom = (((sphere(radius=L+thk/beta0, center=0) &
+              .map.init_scale(1,betao,zero)) &
+          .and.plane(norm=(/1,0,0/), center=(/L*xe,0.,0./))) &
+          -(sphere(radius=L-thk/beta0, center=0) &
+              .map.init_scale(1,betai,zero))) &
+            .map.init_scale(2,beta,dbeta) &
+            .map.init_scale(3,beta,dbeta)
   geom%dis_wall(2:3) = .true. ! ok to adjust velocity on +y,+z planes
 
   call flow%init(n/b, geom, V=(/0.,0.,0./), nu=nu)
@@ -71,9 +71,8 @@ program squeeze
     if(root) write(9,'(f10.4,f8.4,3e16.8)') flow%time/T,flow%dt,force
     if(root) flush(9)
     if(mod(flow%time,dprnt)<dt) then
-      if(root) print '(f10.4,4f8.4)',flow%time/T,flow%dt, &
-            betao(real(flow%time,8)),betai(real(flow%time,8)), &
-            dbeta(real(flow%time,8))*T
+      if(root) print '(f10.4,3f8.4)',flow%time/T,flow%dt, &
+            beta(real(flow%time,8)),dbeta(real(flow%time,8))*T
       call display(flow%velocity%vorticity_Z(),name='01_out')
       call flow%write(geom,lambda=.TRUE.)
     end if
@@ -81,14 +80,22 @@ program squeeze
   end do
   call mympi_end
 contains
- real(8) pure function betao(t1)  ! length scale of membrane outside
+ real(8) pure function betao(t1)   ! pre-scale outer membrane
     real(8),intent(in) :: t1
-    betao=(L*beta0+thk)/(L+thk)+beta1*cos(t1/T)
+    betao=(L+thk)/(L+thk/beta0)
   end function betao
-  real(8) pure function betai(t1)  ! length scale of membrane inside
+  real(8) pure function betai(t1)  ! pre-scale inner membrane
      real(8),intent(in) :: t1
-     betai=(L*beta0-thk)/(L-thk)+beta1*cos(t1/T)
+     betai=(L-thk)/(L-thk/beta0)
    end function betai
+   real(8) pure function zero(t1)	   ! static
+     real(8),intent(in) :: t1
+     zero=0
+   end function zero
+   real(8) pure function beta(t1)  ! length scale of membrane
+      real(8),intent(in) :: t1
+      beta=beta0+beta1*cos(t1/T)
+    end function beta
   real(8) pure function dbeta(t1)	   ! rate of change of length
     real(8),intent(in) :: t1
     dbeta=-beta1*sin(t1/T)/T
