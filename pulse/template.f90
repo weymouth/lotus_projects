@@ -9,16 +9,16 @@ program squeeze
   implicit none
 !
 ! -- Define parameters, declare variables
-  real,parameter    :: L = 85          ! major semi-axis size in cells
+  real,parameter    :: L = 128         ! major semi-axis size in cells
   real,parameter    :: beta0 = 0.25	   ! aspect ratio
-  real,parameter    :: beta1 = 0.025   ! pulse amplitude
+  real,parameter    :: dm = DM_IN      ! fraction of mass expelled
   real,parameter    :: A0_Ae = 4    	 ! area ratio
   real,parameter    :: per = 3         ! periods of motion
-  real,parameter    :: thk = 2.5       ! membrane half thickness in cells
+  real,parameter    :: thk = 3         ! membrane half thickness in cells
   real,parameter    :: Re = 25e3       ! Approx reynolds number
 						   ! Uj=10x(2L)/s with 2L = 0.05m and nu = 1*10^-6 m^2/s
 
-  real,parameter    :: dm = 4*beta1/beta0       ! fraction of mass expelled
+  real,parameter    :: beta1 = dm*beta0/4       ! pulse amplitude
   real,parameter    :: xe = sqrt(1-1/A0_Ae)     ! exit location
   real,parameter    :: Vf = 2./3.+xe-xe**3/3.   ! volume factor V= Vf pi L**3
   real,parameter    :: T = Vf*dm/2.*A0_Ae*L     ! size-change timescale
@@ -27,8 +27,8 @@ program squeeze
 
   real,parameter    :: dprnt = pi*T/12.            ! how often to print?
   real,parameter    :: Tend  = per*2*pi*T          ! when should we stop?
-  real,parameter    :: f(3)  = (/3.,0.75,0.75/)    ! approx grid factor
-  integer           :: b(3)  = (/8,2,1/)           ! MPI domain cuts in ijk
+  real,parameter    :: f(3)  = (/2.2,0.75,0.75/)   ! approx grid factor
+  integer           :: b(3)  = (/4,2,2/)           ! MPI domain cuts in ijk
   integer           :: n(3)                        ! number of cells in ijk
   real              :: force(3),dt                 ! force
   logical           :: root,there = .FALSE.        ! flag for stopping
@@ -42,8 +42,7 @@ program squeeze
   if(root) print *,'T',T,'xe',xe,'dm',dm,'Vf',Vf,'nu',nu
 
   n = composite(L*f,prnt=root)                             ! n
-  call xg(1)%stretch(n(1),-4.*L,-1.2*L,2*L,6.*L, &
-                     h_min=2.,h_max=6.,prnt=root)          ! x
+  call xg(1)%stretch(n(1),-3.*L,-1.2*L,2*L,6.*L,h_min=3.,h_max=6.,prnt=root) ! x
   call xg(2)%stretch(n(2),0.,0.,0.4*L,L,prnt=root)         ! y
   call xg(3)%stretch(n(3),0.,0.,0.4*L,L,prnt=root)         ! z
 
@@ -61,7 +60,7 @@ program squeeze
 
 ! -- Time update loop
   do while(flow%time<Tend .and. .not.there)
-    flow%dt = min(flow%dt,1.)
+    flow%dt = min(flow%dt,2.)
     dt = flow%dt
     call geom%update(flow%time+dt)            		! apply mapping to geom
     call flow%update(geom)                        ! update the flow
