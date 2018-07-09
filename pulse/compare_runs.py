@@ -5,36 +5,40 @@
 #
 import numpy as np
 import pandas as pd
+from scipy.integrate import trapz
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
 Aratio = 4
 beta0 = 0.25
 L_De = np.sqrt(Aratio)/(2*beta0)
-coeff = 0.71
+coeff = 1
 def model(t,dm):
-    return coeff*(-np.sin(t)*abs(np.sin(t))
-                  -np.cos(t)/(2./3.*dm/100*Aratio))
+    return coeff*(np.sin(t)*abs(np.sin(t))
+                  +np.cos(t)/(2./3.*dm/100*Aratio))
 def peak(dm):
-    return -min(model(np.linspace(0,2*np.pi),dm))
+    return -min(model(np.linspace(0,np.pi),dm))
+
+def mean(df,var):
+    return trapz(df[var],df.time)/(df.time.iloc[-1]-df.time.iloc[0])
 
 def str_rnd(num,d=4): return str(round(num,d))
 def read_it(folder):
     try:
         df = pd.read_csv(folder+'/fort.9',delim_whitespace = True,
-            names=["time","CFL","drag","lift","side"])
-        df[['drag','lift','side']] *= 4 # quarter domain
+            names=["time","CFL","drag","lift","side","power"])[3:]
+        df[['drag','lift','side','power']] *= 4 # quarter domain
     except:
         return pd.DataFrame()
-    return df.query('time > 1')
+    return df
 
-def plot_it(var,axis_label,list):
+def plot_hist(var,axis_label,list):
     plt.figure(figsize=(6,3))
     for i,dm in enumerate(list):
         folder = 'dm'+str(dm)
         df = read_it(folder)
         Sratio = dm/100.*Aratio*4/3*L_De
-        plt.plot(df.time/(2*np.pi),df[var]*Aratio/2.,label=str_rnd(Sratio,0))
+        plt.plot(df.time/(2*np.pi),df[var]*Aratio/2.,label=str_rnd(Sratio,1))
         plt.plot(df.time/(2*np.pi),model(df.time,dm),'--',label='',color='C'+str(i))
     plt.xlabel(r'$t/T$', fontsize=12)
     plt.ylabel(axis_label, rotation=0, fontsize=12)
@@ -42,22 +46,25 @@ def plot_it(var,axis_label,list):
     pdf.savefig()
     plt.close()
 
-# Sweep through the simulations
-with PdfPages('compare_runs.pdf') as pdf:
-    plot_it('drag',r'$C_D$',[10,50])
-
+def plot_means(fnc,axis_label,list):
     plt.figure(figsize=(5,3))
-    for dm in [5,10,15,20,25,30,40,50,60]:
-        folder = 'dm'+'{:02d}'.format(dm)
+    for dm in list:
+        folder = 'dm'+str(dm)
         df = read_it(folder)
         Sratio = dm/100.*Aratio*4/3*L_De
-        plt.scatter(Sratio,-df.drag.min()*Aratio/2.,color='C0')
-    dm = np.linspace(5,60)
-    plt.plot(dm/100.*Aratio*4/3*L_De,[peak(d) for d in dm],'--',color='C0')
-
+        plt.scatter(Sratio,fnc(df),color='C0')
+        plt.scatter(Sratio,fnc(df.query('time>3.14159')),color='C1')
     plt.xlabel(r'$S/D_e$')
-    plt.ylabel(r'$\max(C_T)$')
-    plt.ylim(0,);plt.xlim(0,); plt.tight_layout()
-    plt.legend(['Bernoulli','measured'])
+    plt.ylabel(r'$\overline{'+axis_label+r'}$');
+    plt.ylim(0,);plt.tight_layout();plt.legend(['full cycle','jet only'])
     pdf.savefig()
     plt.close()
+
+# Sweep through the simulations
+with PdfPages('compare_runs.pdf') as pdf:
+    plot_hist('drag',r'$C_D$',[10,50])
+
+    list = [5,10,15,20,25,30,40,50,60]
+    plot_means(lambda df:-mean(df,'drag')*Aratio/2.,'C_T',list)
+    plot_means(lambda df: mean(df,'power')*Aratio/2.,'C_P',list)
+    plot_means(lambda df:-mean(df,'drag')/mean(df,'power'),'\eta',list)
