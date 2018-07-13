@@ -13,17 +13,19 @@ program squeeze
   real,parameter    :: beta0 = 0.25	   ! aspect ratio
   real,parameter    :: dm = DM_IN      ! fraction of mass expelled
   real,parameter    :: A0_Ae = 4    	 ! area ratio
-  real,parameter    :: per = 2         ! periods of motion
+  real,parameter    :: per = 3         ! periods of motion
   real,parameter    :: thk = 5         ! membrane half thickness in cells
-  real,parameter    :: V = 1           ! uniform flow velocity
-  real,parameter    :: Re = 1e4        ! Approx reynolds number
+  logical,parameter :: free = F_IN     ! Is the body free to surge?
+  real              :: V = 1           ! Background flow speed
+  real,parameter    :: Re = 1e5        ! Approx reynolds number
 						   ! Uj=10x(2L)/s with 2L = 0.05m and nu = 1*10^-6 m^2/s
 
   real,parameter    :: beta1 = dm*beta0/4       ! pulse amplitude
   real,parameter    :: xe = sqrt(1-1/A0_Ae)     ! exit location
   real,parameter    :: Vf = 2./3.+xe-xe**3/3.   ! volume factor V= Vf pi L**3
   real,parameter    :: T = Vf*dm/2.*A0_Ae*L     ! size-change timescale
-  real,parameter    :: A0 = pi*(beta0*L)**2     ! mean frontal area
+  real,parameter    :: A0 = pi*(beta0*L+thk)**2/4. ! mean frontal area
+  real,parameter    :: m =  Vf*pi*beta0**2*((L+thk/beta0)**3-L**3) ! mass
   real,parameter    :: nu = 2*L/Re              ! kinematic viscosity
 
   real,parameter    :: dprnt = pi*T/12.            ! how often to print?
@@ -31,8 +33,8 @@ program squeeze
   real,parameter    :: f(3)  = (/2.2,0.75,0.75/)   ! approx grid factor
   integer           :: b(3)  = (/4,2,2/)           ! MPI domain cuts in ijk
   integer           :: n(3)                        ! number of cells in ijk
-  logical           :: root,there = .FALSE.         ! flag for stopping
-  real              :: force(3)=0,pow,dt
+  logical           :: root,there = .FALSE.        ! flag for stopping
+  real              :: force(3)=0,pow,dt,a=0,ma
   type(fluid)       :: flow
   type(body)        :: geom
 !
@@ -40,7 +42,7 @@ program squeeze
   call init_mympi(ndims=3,set_blocks=b)
   root = mympi_rank()==0
 
-  if(root) print *,'T',T,'xe',xe,'dm',dm,'Vf',Vf,'nu',nu
+  if(root) print *,'T',T,'xe',xe,'dm',dm,'Vf',Vf,'m',m,'nu',nu
 
   n = composite(L*f,prnt=root)                             ! n
   call xg(1)%stretch(n(1),-4.*L,-1.2*L,2*L,6.*L,h_min=3.,h_max=6.,prnt=root) ! x
@@ -53,19 +55,30 @@ program squeeze
          .map.init_scale(2,beta,dbeta).map.init_scale(3,beta,dbeta)
   geom%dis_wall(2:3) = .true. ! ok to adjust velocity on +y,+z planes
   call flow%init(n/b, geom, V=(/V,0.,0./), nu=nu)
+  flow%time = 0
   call flow%write(geom)
 
 ! -- Time update loop
   do while(flow%time<Tend .and. .not.there)
+
+! -- update geom
     flow%dt = min(flow%dt,2.)
     dt = flow%dt
-    call geom%update(flow%time+dt)            		! apply mapping to geom
-    call flow%update(geom)                        ! update the flow
-    force = -2.*geom%pforce(flow%pressure)/A0     ! compute the force coefficient
-    pow = 2.*geom%ppower(flow%pressure)/A0        ! compute the force coefficient
+    if(free) then ! update velocity
+      ma = beta(real(flow%time,8))
+      ma = Vf*pi*L**3*ma**2+2./3.*pi*(L*ma)**3
+      a = (a*ma+4*force(1))/(m+ma)
+      V = V-dt*a
+    end if
+    call geom%update(flow%time+dt)
+
+! -- update and measure flow
+    call flow%update(geom,V=(/V,0.,0./))
+    force = nu*geom%vforce(flow%velocity)-geom%pforce(flow%pressure) ! force
+    pow = nu*geom%vpower(flow%velocity)+geom%ppower(flow%pressure)   ! power
 
 ! -- write to file
-    if(root) write(9,'(f10.4,f8.4,4e16.8)') flow%time/T,flow%dt,force,pow
+    if(root) write(9,'(f10.4,f8.4,5e16.8)') flow%time/T,flow%dt,force/(0.5*A0),pow/(0.5*A0),V
     if(root) flush(9)
     if(mod(abs(flow%time),dprnt)<dt) then
       if(root) print '(f10.4,3f8.4)',flow%time/T,flow%dt, &

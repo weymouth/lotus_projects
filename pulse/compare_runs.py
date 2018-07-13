@@ -19,7 +19,8 @@ def model(t,dm):
 def peak(dm):
     return -min(model(np.linspace(0,np.pi),dm))
 
-def mean(df,var):
+def mean(df_in,var,T):
+    df = df_in.query('time>{}'.format(T))
     return trapz(df[var],df.time)/(df.time.iloc[-1]-df.time.iloc[0])
 
 def str_rnd(num,d=4): return str(round(num,d))
@@ -42,6 +43,7 @@ def plot_hist(var,axis_label,list):
         plt.plot(df.time/(2*np.pi),model(df.time,dm),'--',label='',color='C'+str(i))
     plt.xlabel(r'$t/T$', fontsize=12)
     plt.ylabel(axis_label, rotation=0, fontsize=12)
+    plt.ylim(-5,5)
     plt.legend(title=r'$S/D_e$'); plt.tight_layout()
     pdf.savefig()
     plt.close()
@@ -52,11 +54,11 @@ def plot_means(fnc,axis_label,list):
         folder = 'dm'+str(dm)
         df = read_it(folder)
         Sratio = dm/100.*Aratio*4/3*L_De
-        plt.scatter(Sratio,fnc(df),color='C0')
-        plt.scatter(Sratio,fnc(df.query('time>3.14159')),color='C1')
-    plt.xlabel(r'$S/D_e$')
+        plt.scatter(Sratio,fnc(df,2*np.pi),color='C0')
+        plt.scatter(Sratio,fnc(df,3*np.pi),color='C1')
+    plt.xlabel(r'$S/D_e$'); plt.ylim(0,)
     plt.ylabel(r'$\overline{'+axis_label+r'}$');
-    plt.ylim(0,);plt.tight_layout();plt.legend(['full cycle','jet only'])
+    plt.tight_layout();plt.legend(['full cycle','jet only'])
     pdf.savefig()
     plt.close()
 
@@ -65,6 +67,6 @@ with PdfPages('compare_runs.pdf') as pdf:
     plot_hist('drag',r'$C_D$',[10,50])
 
     list = [5,10,15,20,25,30,40,50,60]
-    plot_means(lambda df:-mean(df,'drag')*Aratio/2.,'C_T',list)
-    plot_means(lambda df: mean(df,'power')*Aratio/2.,'C_P',list)
-    plot_means(lambda df:-mean(df,'drag')/mean(df,'power'),'\eta',list)
+    plot_means(lambda df,T:-mean(df,'drag',T)*Aratio/2.,'C_T',list)
+    plot_means(lambda df,T: mean(df,'power',T)*Aratio/2.,'C_P',list)
+    plot_means(lambda df,T:-mean(df,'drag',T)/mean(df,'power',T),'\eta',list)

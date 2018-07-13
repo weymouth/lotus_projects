@@ -11,7 +11,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 # read data and drop unwanted rows and columns
 try:
     df = pd.read_csv('fort.9',delim_whitespace = True,
-        names=["time","CFL","drag","lift","side","power"])
+        names=["time","CFL","drag","lift","side","power","U"])
 except FileNotFoundError:
     exit('stat: fort.9 not found')
 df.drop(df.index[:3], inplace=True)
@@ -39,6 +39,7 @@ def plot_hist(pdf,name,label):
     plt.close()
 
 with PdfPages('history.pdf') as pdf:
+    plot_hist(pdf,name='U',label=r'$U/U_j$')
     plot_hist(pdf,name='drag',label=r'$C_{Xp}$')
     plot_hist(pdf,name='lift',label=r'$C_{Yp}$')
     plot_hist(pdf,name='side',label=r'$C_{Zp}$')
