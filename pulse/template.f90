@@ -13,7 +13,7 @@ program squeeze
   real,parameter    :: beta0 = 0.25	   ! aspect ratio
   real,parameter    :: dm = DM_IN      ! fraction of mass expelled
   real,parameter    :: A0_Ae = 4    	 ! area ratio
-  real,parameter    :: per = 3         ! periods of motion
+  real,parameter    :: per = PER_IN    ! periods of motion
   real,parameter    :: thk = 5         ! membrane half thickness in cells
   logical,parameter :: free = F_IN     ! Is the body free to surge?
   real              :: V = 1           ! Background flow speed
@@ -33,7 +33,7 @@ program squeeze
   real,parameter    :: f(3)  = (/2.2,0.75,0.75/)   ! approx grid factor
   integer           :: b(3)  = (/4,2,2/)           ! MPI domain cuts in ijk
   integer           :: n(3)                        ! number of cells in ijk
-  logical           :: root,there = .FALSE.        ! flag for stopping
+  logical           :: root, there = .FALSE., on = .FALSE.
   real              :: force(3)=0,pow,dt,a=0,ma
   type(fluid)       :: flow
   type(body)        :: geom
@@ -64,11 +64,13 @@ program squeeze
 ! -- update geom
     flow%dt = min(flow%dt,2.)
     dt = flow%dt
-    if(free) then ! update velocity
+    if(on) then ! update velocity
       ma = beta(real(flow%time,8))
       ma = Vf*pi*L**3*ma**2+2./3.*pi*(L*ma)**3
       a = (a*ma+4*force(1))/(m+ma)
       V = V-dt*a
+    else if(free.and.force(1)<0) then
+      on = .TRUE.
     end if
     call geom%update(flow%time+dt)
 
@@ -81,8 +83,8 @@ program squeeze
     if(root) write(9,'(f10.4,f8.4,5e16.8)') flow%time/T,flow%dt,force/(0.5*A0),pow/(0.5*A0),V
     if(root) flush(9)
     if(mod(abs(flow%time),dprnt)<dt) then
-      if(root) print '(f10.4,3f8.4)',flow%time/T,flow%dt, &
-            beta(real(flow%time,8)),dbeta(real(flow%time,8))*T
+      if(root) print '(f10.4,4f8.4)',flow%time/T,flow%dt, &
+            beta(real(flow%time,8)),dbeta(real(flow%time,8))*T,V
       call display(flow%velocity%vorticity_Z(),name='01_out',lim=0.25)
       call flow%write(geom,lambda=.TRUE.)
     end if
