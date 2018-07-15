@@ -13,8 +13,9 @@ def average(df,var):
 
 def cycle_mean(df,var):
     return [average(group,var) for cycle,group in df.groupby('cycle')]
-def print_means(df,var):
-    print(var,', '.join('{:.3g}'.format(i) for i in cycle_mean(df,var)))
+
+def fmt(list,s='{:.3g}'):
+    return ', '.join(s.format(i) for i in list)
 
 def read_it(folder,trim=True):
     try:
@@ -31,16 +32,16 @@ def read_it(folder,trim=True):
 # df[["drag","lift","side","power"]] *= 4/1.25 # correct the area-scale
 # df[["time","CFL","drag","lift","side","power","U"]].to_csv(r'dm20_free/fort.9', header=None, index=None, sep=' ', mode='a')
 
-R100 = cycle_mean(read_it('towU100'),'drag')[-1]
-R112 = cycle_mean(read_it('towU112'),'drag')[-1]/(1.12)**2
+R100 = cycle_mean(read_it('towU100'),'drag')[-1]*4/1.25
+R112 = cycle_mean(read_it('towU112'),'drag')[-1]/(1.12)**2*4/1.25
 def RU(U):
     r = (U-1)/(0.12)
     return (R100*(1-r)+R112*r)*U**3
 
-# for dm in [5,10,15,20,25,30,40,50,60]:
-#     for folder in ['dm{:02d}_'.format(dm)+s for s in ['U100','free']]:
-#         print(folder)
-#         df = read_it(folder)
-#         [print_means(df,var) for var in ['drag','power','U']]
-
-dm = [5,10,15,20,25,30,40]
+df = pd.DataFrame({'dm':[5,10,15,20,25,30,40,50]})
+df['folder'] = ['dm{:02d}_free'.format(dm) for dm in df.dm]
+for var in ['drag','power','U']:
+    df[var] = [cycle_mean(read_it(f),var)[-1] for f in df.folder]
+df['eta'] = RU(df.U)/df.power
+print(df)
+df.to_csv('free_swimming_AoAe4.csv')
