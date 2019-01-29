@@ -10,37 +10,25 @@ from matplotlib.backends.backend_pdf import PdfPages
 #
 # read data and drop unwanted rows and columns
 df = pd.read_csv('fort.9',delim_whitespace = True,
-    names=["time","CFL","moment","phi"])
+    names=["time","CFL","power","phi"])
 df.drop(df.index[:3], inplace=True)
-#
-# -- define cycle, phase
-df['cycle'] = np.floor(df.time)
-df['phase'] = df.time-df.cycle
-#
-# -- remove early (transient) and last (incomplete) cycles
-df.query('cycle > .0', inplace=True)
-maxCycle = max(df.cycle)
-df.query('cycle < @maxCycle', inplace=True)
-maxCycle = max(df.cycle)
-#
-# -- group by cycle
-grouped = df.groupby('cycle')
+
+def average(df,var):
+    return np.trapz(df[var],df.time)/(df.time.iloc[-1]-df.time.iloc[0])
 #
 # -- plot PDF pages
-figSize = (10,4)
 with PdfPages('history.pdf') as pdf:
-    df.plot(x='time',y='moment',figsize=figSize)
+    ax = df.plot(x='time',y='power',figsize=(10,4))
     plt.xlabel(r'$t/T$', fontsize=12)
-    plt.ylabel(r'$C_M$', fontsize=12)
-    pdf.savefig()
-    plt.close()
-#
-    fig, ax = plt.subplots(figsize=figSize)
-    for cycle, group in grouped:
-        if cycle>maxCycle-10:
-            group.plot(x='phase',y='moment',ax=ax,label=cycle)
-    plt.xlabel(r'$t/T$', fontsize=12)
-    plt.ylabel(r'$C_M$', fontsize=12)
+    plt.ylabel(r'$C_P$', fontsize=12)
+
+    mean,mad = average(df,'power'), 1.5748*df.power.mad()
+    x1,x2,y1,y2 = plt.axis()
+    mx,mn = min(y2,mean+3*mad),max(y1,mean-3*mad)
+    plt.ylim([mn,mx])
+    txt = 'mean={:.3g}, mad={:.3g}'.format(mean,mad)
+    plt.text(0.5,0.01,txt,transform=ax.transAxes)
+
     pdf.savefig()
     plt.close()
 
