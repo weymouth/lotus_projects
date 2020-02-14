@@ -12,11 +12,11 @@ program squeeze
   real,parameter    :: L = 170         ! major semi-axis size in cells
   real,parameter    :: beta0 = 0.25	   ! aspect ratio
   real,parameter    :: dm = DM_IN      ! fraction of mass expelled
-  real,parameter    :: A0_Ae = 4    	 ! area ratio
+  real,parameter    :: A0_Ae = AR_IN 	 ! area ratio
   real,parameter    :: per = PER_IN    ! periods of motion
   real,parameter    :: thk = 5         ! membrane half thickness in cells
   logical,parameter :: free = F_IN     ! Is the body free to surge?
-  real              :: V = 1           ! Background flow speed
+  real              :: V = V_IN, a = a_IN   ! Background flow speed,accelation
   real,parameter    :: Re = 1e5        ! Approx reynolds number
 						   ! Uj=10x(2L)/s with 2L = 0.05m and nu = 1*10^-6 m^2/s
 
@@ -24,17 +24,21 @@ program squeeze
   real,parameter    :: xe = sqrt(1-1/A0_Ae)     ! exit location
   real,parameter    :: Vf = 2./3.+xe-xe**3/3.   ! volume factor V= Vf pi L**3
   real,parameter    :: T = Vf*dm/2.*A0_Ae*L     ! size-change timescale
-  real,parameter    :: A0 = pi*(beta0*L+thk)**2/4. ! mean frontal area
-  real,parameter    :: m =  Vf*pi*beta0**2*((L+thk/beta0)**3-L**3) ! mass
+  real,parameter    :: Af = pi*(beta0*L+thk)**2/4. ! mean frontal area
+  real,parameter    :: A0 = pi*(beta0*L)**2/4. ! mean inner cross-section
+  real,parameter    :: m =  2*Vf*pi*beta0**2*((L+thk/beta0)**3-L**3) ! mass
   real,parameter    :: nu = 2*L/Re              ! kinematic viscosity
 
-  real,parameter    :: dprnt = pi*T/12.            ! how often to print?
+  real,parameter    :: dprnt = 2*pi*T/DP_IN        ! how often to print?
   real,parameter    :: Tend  = per*2*pi*T          ! when should we stop?
+  real,parameter    :: h_min = 3                    ! stretching in x
   real,parameter    :: f(3)  = (/2.2,0.75,0.75/)   ! approx grid factor
   integer           :: b(3)  = (/4,2,2/)           ! MPI domain cuts in ijk
   integer           :: n(3)                        ! number of cells in ijk
+  integer           :: box(4) = (/-1.5*L,0.,5*L,L/) ! view for display
   logical           :: root, there = .FALSE., on = .FALSE.
-  real              :: force(3)=0,pow,dt,a=0,ma
+  real              :: force(3)=0,pow,dt,ma
+  real, allocatable :: u0(:,:)
   type(fluid)       :: flow
   type(body)        :: geom
 !
@@ -45,7 +49,8 @@ program squeeze
   if(root) print *,'T',T,'xe',xe,'dm',dm,'Vf',Vf,'m',m,'nu',nu
 
   n = composite(L*f,prnt=root)                             ! n
-  call xg(1)%stretch(n(1),-4.*L,-1.2*L,2*L,6.*L,h_min=3.,h_max=6.,prnt=root) ! x
+  allocate(u0(1,n(1))); u0=0
+  call xg(1)%stretch(n(1),-4.*L,-1.2*L,2*L,6.*L,h_min=h_min,h_max=6.,prnt=root) ! x
   call xg(2)%stretch(n(2),0.,0.,0.4*L,2*L,prnt=root)         ! y
   call xg(3)%stretch(n(3),0.,0.,0.4*L,2*L,prnt=root)         ! z
 
@@ -56,7 +61,8 @@ program squeeze
   geom%dis_wall(2:3) = .true. ! ok to adjust velocity on +y,+z planes
   call flow%init(n/b, geom, V=(/V,0.,0./), nu=nu)
   flow%time = 0
-  call flow%write(geom)
+  call flow%write(geom,lambda=.TRUE.)
+  call line()
 
 ! -- Time update loop
   do while(flow%time<Tend .and. .not.there)
@@ -69,7 +75,7 @@ program squeeze
       ma = Vf*pi*L**3*ma**2+2./3.*pi*(L*ma)**3
       a = (a*ma+4*force(1))/(m+ma)
       V = V-dt*a
-    else if(free.and.force(1)<0) then
+    else if(free) then
       on = .TRUE.
     end if
     call geom%update(flow%time+dt)
@@ -77,7 +83,7 @@ program squeeze
 ! -- update and measure flow
     call flow%update(geom,V=(/V,0.,0./))
     force = nu*geom%vforce(flow%velocity)-geom%pforce(flow%pressure) ! force
-    pow = nu*geom%vpower(flow%velocity)+geom%ppower(flow%pressure)   ! power
+    pow = -nu*geom%vpower(flow%velocity)+geom%ppower(flow%pressure)  ! power
 
 ! -- write to file
     if(root) write(9,'(f10.4,f8.4,5e16.8)') flow%time/T,flow%dt,force/(0.5*A0),pow/(0.5*A0),V
@@ -88,6 +94,7 @@ program squeeze
       call display(flow%velocity%vorticity_Z(),name='01_out',lim=0.25)
       call flow%write(geom,lambda=.TRUE.)
     end if
+    call line()
     inquire(file='.kill', exist=there)
   end do
   call mympi_end
@@ -113,4 +120,36 @@ contains
     dbeta=+beta1*sin(t1/T)/T
   end function dbeta
 
+  subroutine line()
+    real,allocatable :: pin(:,:),pout(:,:),a(:,:),au(:,:),au2(:,:),p(:,:)
+    real :: u(1,n(1)),du(1,n(1))
+    real :: cf(3),pdsi,pdse,dudv,udse
+    integer :: i,s,e
+    pin = geom%pforce_xslice(flow%pressure,0)/(0.5*A0)
+    pout = geom%pforce_xslice(flow%pressure,1)/(0.5*A0)
+    a = geom%flux_xslice(flow%pressure,0)/(0.5*A0)
+    p = geom%flux_xslice(flow%pressure,1)/(0.5*A0)
+    au = geom%flux_xslice(flow%velocity%e(1),1)/(0.5*A0)
+    au2 = geom%flux_xslice(flow%velocity%e(1),2)/(0.5*A0)
+    if(mod(abs(flow%time),dprnt)<dt) then
+      s = xg(1)%hash(nint(-L-30)); e = xg(1)%hash(nint(L+15))
+      write(10,'(f10.4,f8.4,10e16.8)') (flow%time/T,xg(1)%x(i)/L, &
+        pin(:,i),pout(:,i),a(:,i),au(:,i),au2(:,i),p(:,i),i=s,e)
+      flush(10)
+    end if
+
+    s = xg(1)%hash(nint(-L-3)); e = xg(1)%hash(nint(L))
+    cf = (nu*geom%vforce(flow%velocity)-geom%pforce(flow%pressure))/(0.5*A0)
+    u = merge(au/a,0.,a>0)
+    du = (u-u0)/flow%dt
+    u0 = u
+    pdsi = sum(pin(1,s:e))
+    pdse = p(1,e)
+    dudv = sum(a(1,s:e)*du(1,s:e)*h_min)
+    udse = au2(1,e)
+    write(11,'(f10.4,4e16.8,2f12.2)') flow%time/T,pdsi,pdse,dudv,udse, &
+          100*(-sum(pout(1,s:e))-pdsi-cf(1)), & ! pressure integral check
+          100*(dudv+udse-pdsi-pdse)             ! momentum CV check
+    flush(11)
+  end subroutine line
 end program squeeze
