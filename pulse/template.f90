@@ -11,12 +11,21 @@ program squeeze
 ! -- Define parameters, declare variables
   real,parameter    :: L = 170         ! major semi-axis size in cells
   real,parameter    :: beta0 = 0.25	   ! aspect ratio
+<<<<<<< HEAD
   real,parameter    :: dm = DM_IN      ! fraction of mass expelled
   real,parameter    :: A0_Ae = AR_IN 	 ! area ratio
   real,parameter    :: per = PER_IN    ! periods of motion
   real,parameter    :: thk = 5         ! membrane half thickness in cells
   logical,parameter :: free = F_IN     ! Is the body free to surge?
   real              :: V = V_IN, a = a_IN   ! Background flow speed,accelation
+=======
+  real,parameter    :: dm = 0.2        ! fraction of mass expelled
+  real,parameter    :: A0_Ae = A_IN  	 ! area ratio
+  real,parameter    :: per = 6         ! periods of motion
+  real,parameter    :: thk = 5         ! membrane half thickness in cells
+  logical,parameter :: free = .true.   ! Is the body free to surge?
+  real              :: V = 1.          ! Background flow speed
+>>>>>>> 41ca8b21370cab41f0bc68d62078ad0b4a6ee25d
   real,parameter    :: Re = 1e5        ! Approx reynolds number
 						   ! Uj=10x(2L)/s with 2L = 0.05m and nu = 1*10^-6 m^2/s
 
@@ -24,12 +33,20 @@ program squeeze
   real,parameter    :: xe = sqrt(1-1/A0_Ae)     ! exit location
   real,parameter    :: Vf = 2./3.+xe-xe**3/3.   ! volume factor V= Vf pi L**3
   real,parameter    :: T = Vf*dm/2.*A0_Ae*L     ! size-change timescale
+<<<<<<< HEAD
   real,parameter    :: Af = pi*(beta0*L+thk)**2/4. ! mean frontal area
   real,parameter    :: A0 = pi*(beta0*L)**2/4. ! mean inner cross-section
   real,parameter    :: m =  2*Vf*pi*beta0**2*((L+thk/beta0)**3-L**3) ! mass
   real,parameter    :: nu = 2*L/Re              ! kinematic viscosity
 
   real,parameter    :: dprnt = 2*pi*T/DP_IN        ! how often to print?
+=======
+  real,parameter    :: A0 = pi*(beta0*L+thk)**2/4. ! mean frontal area
+  real,parameter    :: m =  2*Vf*pi*beta0**2*((L+thk/beta0)**3-L**3) ! mass
+  real,parameter    :: nu = 2*L/Re              ! kinematic viscosity
+
+  real,parameter    :: dprnt = pi*T/2.             ! how often to print?
+>>>>>>> 41ca8b21370cab41f0bc68d62078ad0b4a6ee25d
   real,parameter    :: Tend  = per*2*pi*T          ! when should we stop?
   real,parameter    :: h_min = 3                    ! stretching in x
   real,parameter    :: f(3)  = (/2.2,0.75,0.75/)   ! approx grid factor
