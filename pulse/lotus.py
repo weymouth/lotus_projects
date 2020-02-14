@@ -4,7 +4,7 @@ import subprocess
 import os
 import shutil
 
-def run(n_proc=0,run_folder='test',read_folder=None):
+def run(n_proc=0,run_folder='test',read_folder=None,test=False):
     "setup and run Lotus using lotus.f90 and the files in postproc"
 
     print('Number of proccessors :{}'.format(n_proc))
@@ -40,6 +40,12 @@ def run(n_proc=0,run_folder='test',read_folder=None):
     subprocess.call('make -C $MGLHOME/oop/ libfluid.a', shell=True)
     subprocess.call('make -f $MGLHOME/oop/Makefile lotus', shell=True)
     print('Finished executable ')
+
+    if(test):
+        print('Finished test ')
+        print('Popping back up')
+        os.chdir('../.')
+        return
 
     print('Running executable ')
     if read_folder:

@@ -1,35 +1,26 @@
 !-------------------------------------------------------!
-!------------------- Tandem Cylinders ------------------!
+!------------------------ Cylinder ---------------------!
 !-------------------------------------------------------!
 program tandem
   use fluidMod,   only: fluid
   use bodyMod,    only: body
   use mympiMod,   only: init_mympi,mympi_end,mympi_rank
   use gridMod,    only: xg,composite
+  use imageMod,   only: display
   use geom_shape  ! to define geom (set,eps,plane, etc)
   implicit none
-  real,parameter     :: f = 2              ! scaling factor
-  real,parameter     :: D = 100/f          ! length scale
+  real,parameter     :: D = 64             ! length scale
   real,parameter     :: Re = 160           ! Reynolds number
-  real,parameter     :: amp = 0.4*D        ! amplitude
-  real,parameter     :: freq = 0.006        ! freqency
-  integer,parameter  :: periods = 41       ! number of periods
-  logical,parameter  :: pflow = .false.    ! use potential flow tangent velocity?
-  logical,parameter  :: upstream = .true.  ! place upstream body?
 !
-  integer,parameter  :: ndims = 2                       ! dimensions
-  logical,parameter  :: p(2) = .false.                  ! periodic BCs
-  real,parameter     :: nu = D/Re                       ! viscosity
-  real,parameter     :: Ufric = sqrt(0.013/Re**(1./7.)) ! friction est.
-  real,parameter     :: omega = 2*pi*freq/D             ! friction est.
-  integer            :: b(2) = (/4,4/)                  ! blocks
-  integer            :: n(3)
-  real               :: t1,dt,dtPrint=1./freq,pforce(3),vforce(3)
-  real               :: finish=(periods-0.74)/freq
+  integer,parameter  :: ndims = 2          ! dimensions
+  logical,parameter  :: p(2) = .false.     ! periodic BCs
+  real,parameter     :: nu = D/Re          ! viscosity
+  integer            :: b(3) = (/4,4,1/)   ! blocks
+  integer            :: n(3)               ! number of points
+  logical            :: root               ! are you root?
 !
   type(fluid)        :: flow
-  type(set)          :: back
-  type(body)         :: bodies
+  type(body)         :: geom
 !
 ! -- Initialize MPI (if MPI is ON)
 #if MPION
@@ -39,64 +30,43 @@ program tandem
 #endif
 !
 ! -- Print run info
-  if(mympi_rank()==0) print *, '-- Tandem Test --'
-  if(mympi_rank()==0) print '("   D=",f0.4,", nu=",f0.4,", y+=",f0.4)',D,nu,Ufric/nu
+  root = mympi_rank()==0
+  if(root) print '("   D=",f0.4,", nu=",f0.4)',D,nu
 !
 ! -- Initialize array size
-  n(:2) = composite(D*(/20,10/)/b); n(3) = 1
+  n = composite((/6*D,4*D,0./),prnt=root)
 !
 ! -- Initialize and print grid
-  call xg(1)%init(n(1)*b(1),5.6*D,8.5*D,1.0,f=f,r=1.02,d=4.)
-  call xg(2)%init(n(2)*b(2),3.2*D,3.2*D,1.0,f=f,r=1.02)
-  if(mympi_rank()==0) then
-     call xg(1)%write(D)
-     call xg(2)%write(D)
-     print '("   total points=",i0)', product(n(1:2)*b)
-  end if
-!!$  call mympi_end()
-!!$  stop
+  call xg(1)%stretch(n(1),-5*D,-0.6*D,2*D,10*D,h_max=5.,prnt=root)
+  call xg(2)%stretch(n(2),-5*D,-D,D,5*D,prnt=root)
 !
-! -- Initialize the tandem geometry
-  if(pflow) then
-     back = (cylinder(1,1,3,D/2.,0.,0.,0.).map.init_velocity(circle).map.init_rigid(2,height,zip))
-  else
-     back = (cylinder(1,1,3,D/2.,0.,0.,0.).map.init_rigid(2,height,velocity))
-  end if
-  if(upstream) then
-     bodies = back.or.cylinder(1,2,3,D/2.,(/-5*D,0.,0./),0.,0.) ! no force data
-  else
-     bodies = back
-  end if
+! -- Initialize the geometry and add the potential flow velocity BC
+  geom = cylinder(axis=3,radius=D/2.,center=0.).map.init_velocity(circle)
 !
 ! -- Initialize fluid
-  call flow%init(n,bodies,V=(/1.,0.,0./),nu=nu)
-  if(flow%time==0) call flow%write(bodies)
-  if(mympi_rank()==0) print *, '-- init complete --'
+  call flow%init(n/b,geom,V=(/1.,0.,0./),nu=nu)
 !
 ! -- Time update loop
-  do while (flow%time/D<finish)
+  if(root) print *, '-- init complete --'
+  do while (flow%time/D<40)
 !
 ! -- update body and fluid
-     dt = flow%dt
-     t1 = flow%time+dt
-     call bodies%update(t1)
-     call flow%update(bodies)
+     call geom%update(flow%time)
+     call flow%update(geom)
 !
 ! -- print force
-     pforce = -bodies%pforce(flow%pressure)
-     vforce = nu*bodies%vforce(flow%velocity)
-     write(9,'(f10.4,f8.4,6e16.8)') t1/D,dt,2.*pforce/D,2.*vforce/D
+     write(9,'(f10.4,f8.4,6e16.8)') flow%time/D,flow%dt,& ! time and CFL
+                -geom%pforce(flow%pressure)/(0.5*D),&   ! pressure force
+              nu*geom%vforce(flow%velocity)/(0.5*D)     ! viscous force
      flush(9)
-!
-! -- full output
-     if(mod(t1,dtPrint*D)<dt) then
-        call flow%write(bodies)
-        if(mympi_rank()==0) print 1,t1/D,height(REAL(t1,8))/D,velocity(REAL(t1,8))
-1       format("   t=",f0.4," height=",f7.4," velocity=",f7.4)
+     if(mod(flow%time,D)<flow%dt) then
+       if(mympi_rank()==0) print *,flow%time/D,flow%dt
+       call display(flow%velocity%vorticity_Z(),name='01_out',lim=0.25)
+       call flow%write()
      end if
   end do
-  if(mympi_rank()==0) write(6,*) '--- complete --- '
-  !
+  if(root) print *, '--- complete ---'
+!
 ! -- Finalize MPI
 #if MPION
   call mympi_end
@@ -104,29 +74,12 @@ program tandem
 
 contains
 !
-! -- motion definitions
-  real(8) pure function velocity(ts)
-    implicit none
-    real(8),intent(in) :: ts
-    velocity = amp*omega*cos(omega*ts)
-  end function velocity
-  real(8) pure function height(ts)
-    implicit none
-    real(8),intent(in) :: ts
-    height = amp*sin(omega*ts)
-  end function height
-  real(8) pure function zip(ts)
-    implicit none
-    real(8),intent(in) :: ts
-    zip = 0
-  end function zip
-!
 ! -- pflow definitions
   pure function dipole(x) result(v)
     implicit none
-    real(8),intent(in) :: x(3)
-    real(8)            :: v(3)
-    real(8)            :: r2,theta,ur,ut
+    real,intent(in) :: x(3)
+    real            :: v(3)
+    real            :: r2,theta,ur,ut
     r2 = sum(x**2)/(0.5*D)**2
     theta = atan2(x(2),x(1))
     ur =  -cos(theta)/r2
@@ -137,14 +90,11 @@ contains
   end function dipole
   pure function circle(x) result(v)
     implicit none
-    real(8),intent(in) :: x(3)
-    real(8)            :: v(3),dip(3),vel,m
-    dip = dipole(x)
-    vel = velocity(REAL(t1,8))
-    v(1) = 1+dip(1)+vel*dip(2)
-    v(2) = 0+dip(2)-vel*dip(1)
-    v(3) = 0
-    m = sqrt(sum(v**2)/(1+vel**2))*(1-eps/D)**2/2.
+    real,intent(in) :: x(3)
+    real            :: v(3),m
+    v = dipole(x)
+    v(1) = 1+v(1)
+    m = sqrt(sum(v**2))*(1-eps/D)**2/2.
     if(m>1) v = v/m ! moderate the singularity
   end function circle
 end program tandem
