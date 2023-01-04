@@ -1,0 +1,18 @@
+unknown option --use-offscreen-rendering
+usage: pvbatch [option] ... [-c cmd | -m mod | file | -] [arg] ...
+Try `python -h' for more information.
+[0m[1m[91m
+Loguru caught a signal: SIGSEGV
+[0m[0m[31mStack trace:
+10      0x55ab2967e895 pvbatch(+0x2895) [0x55ab2967e895]
+9       0x14d33d8295c9 __libc_start_main + 137
+8       0x14d33d829510 /lib64/libc.so.6(+0x27510) [0x14d33d829510]
+7       0x55ab2967f068 pvbatch(+0x3068) [0x55ab2967f068]
+6       0x14d33c503421 vtkInitializationHelper::Finalize() + 129
+5       0x14d33d743f22 vtkProcessModule::Finalize() + 322
+4       0x14d33ac65f18 Py_FinalizeEx + 136
+3       0x14d33ac76ca3 _PyThreadState_DeleteExcept + 35
+2       0x14d33aba58d8 PyThread_acquire_lock_timed + 152
+1       0x14d33d894f0d sem_wait + 13
+0       0x14d33d83eb50 /lib64/libc.so.6(+0x3cb50) [0x14d33d83eb50][0m
+[0m[31m(   0.009s) [pvbatch         ]                       :0     FATL| Signal: SIGSEGV[0m

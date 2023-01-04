@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#SBATCH --ntasks=256
+#SBATCH --nodes=4
+#SBATCH --partition=amd
+#SBATCH --job-name=test
+#SBATCH --time=60:00:00
+#SBATCH --output=JOB.out
+# SBATCH --exclude=ruby035,ruby036,ruby037
+# SBATCH --dependency=afterok:1908224
+
+echo "Starting calculation at $(date)"
+echo "---------------------------------------------------------------"
+
+module purge
+module load openmpi/4.0.5/amd
+module load python/3.10 conda
+source activate analysis
+
+python3 run.py
+python save_np_binary.py

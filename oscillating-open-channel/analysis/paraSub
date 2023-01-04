@@ -1,0 +1,14 @@
+#!/bin/sh
+  
+#SBATCH --nodes=1
+#SBATCH --partition=amd
+#SBATCH --time=08:50:00
+#SBATCH --ntasks=64
+#SBATCH --output=paraview.out
+#SBATCH --error=paraview.out
+
+module purge
+module load paraview/5.10.1 python/3.10
+
+mpiexec pvserver --connect-id=11111 --egl-device-index=0 : pvserver --egl-device-index=1
+mpiexec -n $SLURM_NPROCS pvserver --connect-id=11111 --displays=0
