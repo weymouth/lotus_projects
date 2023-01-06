@@ -6,9 +6,9 @@ program tke_test
 
   type(fluid)       :: flow
   real              :: Re=1.e5,tke,nu,tkebox
-  integer,parameter :: L=2048,num=9,ndims=2
-  integer           ::n(3),b(3)=[1,1,1]
-  real              :: lbox(3)=[0.,0.,0.],hbox(3)=[1.,1.,0.]
+  integer,parameter :: L=256,num=9,ndims=3
+  integer           ::n(3),b(3)=[1,4,1]
+  real              :: lbox(3)=[0.,0.,0.],hbox(3)=[1.,1.,1.]
 !
 ! -- Set parameters
     nu = L/(Re)
@@ -24,8 +24,8 @@ program tke_test
     call flow%init(n/b,nu=nu)
     call flow%velocity%eval(tgv)
     ! call flow%reset_u0()
-    tke = flow%velocity%tke()
-    tkebox = flow%velocity%tke(mean=.true.,lowerb=lbox*L, upperb=hbox*L)
+    tke = flow%velocity%tke(mean=.true.)
+    tkebox = flow%velocity%tke(mean=.true.,lcorn=lbox*L, ucorn=hbox*L)
 
     if(mympi_rank()==0) write(*,*) '--- TKE Test --- '
     if(mympi_rank()==0) write(*,*) 'tke',tke,tkebox!,flow%velocity%tke(lowerb=lbox*L, upperb=hbox*L),flow%velocity%tke()
