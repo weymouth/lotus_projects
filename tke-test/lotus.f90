@@ -8,16 +8,19 @@ program tke_test
   real              :: Re=1.e5,tke,nu,tkebox
   integer,parameter :: L=256,num=9,ndims=3
   integer           ::n(3),b(3)=[2,4,1]
-  real              :: lbox(3)=[0.,0.,0.],hbox(3)=[1.,1.,1.]
+  real              :: lbox(3)=[0.,-0.5,0.],hbox(3)=[2.,0.5,2.]
 !
 ! -- Set parameters
     nu = L/(Re)
     call init_mympi(ndims,set_blocks=b)
-    n = composite(L*[1.,1.,1.],prnt=mympi_rank()==0)
-    call xg(1)%stretch(n(1), -1.*L, -.25*L, 0.25*L, 1.*L, prnt=mympi_rank()==0)
-    call xg(2)%stretch(n(2), -1.*L, -.25*L, 0.25*L, 1.*L, prnt=mympi_rank()==0)
+    n = composite(L*[1.,1.,0.03125],prnt=mympi_rank()==0)
+    ! call xg(1)%stretch(n(1), -1.*L, -.25*L, 0.25*L, 1.*L, prnt=mympi_rank()==0)
+    ! call xg(2)%stretch(n(2), -1.*L, -.25*L, 0.25*L, 1.*L, prnt=mympi_rank()==0)
     ! call xg(1)%stretch(n(1), 0., 0., 0.5*L, 2.0*L, prnt=mympi_rank()==0)
     ! call xg(2)%stretch(n(2), 0., 0., 0.5*L, 2.0*L, prnt=mympi_rank()==0)
+    ! - Add in a test grid from the thicc swimming project - !
+    call xg(1)%stretch(n(1), -1.5*L, -.35*L, 2.*L, 5.5*L, h_min=4., h_max=18., prnt=mympi_rank()==0)
+    call xg(2)%stretch(n(2), -1.5*L, -0.35*L, 0.35*L, 1.5*L, prnt=mympi_rank()==0)
     if(ndims==3) xg(3)%h = 4.
 !
 ! -- Initialize the velocity field
@@ -28,7 +31,7 @@ program tke_test
     tkebox = flow%velocity%tke(mean=.true.,lcorn=lbox*L, ucorn=hbox*L)
 
     if(mympi_rank()==0) write(*,*) '--- TKE Test --- '
-    if(mympi_rank()==0) write(*,*) 'tke',tke,tkebox!,flow%velocity%tke(lowerb=lbox*L, upperb=hbox*L),flow%velocity%tke()
+    if(mympi_rank()==0) write(*,*) 'tke',tke,tkebox
     call mympi_end()
   contains
     pure function tgv(x) result(v)
